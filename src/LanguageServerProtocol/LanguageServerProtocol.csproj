@@ -13,4 +13,8 @@
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\JsonRpc\JsonRpc.csproj" />
+  </ItemGroup>
+
 </Project>

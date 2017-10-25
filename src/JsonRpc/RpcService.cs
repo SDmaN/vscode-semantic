@@ -42,7 +42,22 @@ namespace JsonRpc
 
         public async Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
         {
-            JToken request = await input.ReadAsync(cancellationToken);
+            JToken request;
+
+            try
+            {
+                request = await input.ReadAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                await output.WriteAsync(
+                    JToken.FromObject(Response.CreateParseError(new MessageId(null),
+                        $"Could not parse request: {e.Message}")),
+                    cancellationToken);
+
+                return;
+            }
+            
             JToken responseToken = null;
 
             switch (request)

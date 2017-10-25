@@ -1,9 +1,13 @@
 ﻿using System;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc;
 using JsonRpc.HandleResult;
 using JsonRpc.Messages;
+using LanguageServerProtocol.IPC;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace TestingApp
@@ -55,11 +59,28 @@ namespace TestingApp
         {
             Task.Run(async () =>
             {
+                string json = JsonConvert.SerializeObject(new A { Name = "123" });
+                Console.WriteLine(json);
+                
+
+                StreamInput streamInput = new StreamInput(Console.OpenStandardInput());
+                
                 RpcService service = new RpcService();
                 service.RegisterHandler(new Handler());
 
-                await service.HandleRequest(new Input(), new Output());
+                await service.HandleRequest(streamInput, new Output());
             }).Wait();
+        }
+
+        private static Task M(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() =>
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    Thread.Sleep(1000);
+                }
+            }, cancellationToken);
         }
     }
 }

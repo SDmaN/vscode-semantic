@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using JsonRpc.Handlers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace JsonRpc.DependencyInjection
 {
@@ -15,14 +16,15 @@ namespace JsonRpc.DependencyInjection
             }
 
             IDictionary<string, Type> handlers = HandlerHelper.CollectHandlerTypes();
-            handlers.Add("$/cancelRequest", typeof(CancelRequestHandler));
 
             foreach (Type handlerType in handlers.Values)
             {
-                serviceCollection.AddTransient(handlerType);
+                serviceCollection.TryAddTransient(handlerType);
             }
 
             serviceCollection.AddSingleton<IHandlerFactory, ServiceProviderHandlerFactory>();
+
+            serviceCollection.AddScoped<IRequestCancellationManager, RequestCancellationManager>();
             serviceCollection.AddScoped<IRpcService, RpcService>();
         }
     }

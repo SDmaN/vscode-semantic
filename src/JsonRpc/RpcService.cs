@@ -18,13 +18,12 @@ namespace JsonRpc
     public class RpcService : IRpcService
     {
         private readonly IHandlerFactory _handlerFactory;
+        private readonly IRequestCancellationManager _cancellationManager;
 
-        private readonly IDictionary<MessageId, CancellationTokenSource> _requestCancellations =
-            new ConcurrentDictionary<MessageId, CancellationTokenSource>();
-
-        public RpcService(IHandlerFactory handlerFactory)
+        public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager)
         {
             _handlerFactory = handlerFactory;
+            _cancellationManager = cancellationManager;
         }
 
         public async Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
@@ -102,17 +101,7 @@ namespace JsonRpc
             {
                 id = ParseMessageId(requestObject);
 
-                if (id != MessageId.Empty)
-                {
-                    if (_requestCancellations.ContainsKey(id))
-                    {
-                        throw new RequestWithIdAlreadyExistsException(id,
-                            $"Request with this id ({id}) already exists.");
-                    }
-
-                    CancellationTokenSource requestTokenSource = new CancellationTokenSource();
-                    _requestCancellations.Add(id, requestTokenSource);
-                }
+                _cancellationManager.AddCancellation(id);
 
                 RemoteMethodHandler handler = GetHandler(id, requestObject);
 
@@ -121,44 +110,48 @@ namespace JsonRpc
 
                 JToken paramsToken = requestObject[ParamsPropertyName];
                 object[] handleParameterValues = await GetHandlerParameterValues(paramsToken, handlerParameters);
-                EnsureCanceled(id);
+                _cancellationManager.EnsureCancelled(id);
 
                 IResponse response = await CallHandler(id, handler, handleMethod, handleParameterValues);
-                EnsureCanceled(id);
+                _cancellationManager.EnsureCancelled(id);
 
-                if (id != MessageId.Empty)
-                {
-                    _requestCancellations.Remove(id);
-                }
+                _cancellationManager.RemoveCancellation(id);
 
                 return response;
             }
             catch (JsonSerializationException)
             {
+                _cancellationManager.RemoveCancellation(id);
                 return Response.CreateParseErrorOrNull(id, "JSON parsing error occured.");
             }
             catch (RequestWithIdAlreadyExistsException e)
             {
+                _cancellationManager.RemoveCancellation(id);
                 return Response.CreateInvalidRequestErrorOrNull(id, e.Message);
             }
             catch (HandleMethodNotSpecifiedException e)
             {
+                _cancellationManager.RemoveCancellation(id);
                 return Response.CreateInvalidRequestErrorOrNull(id, e.Message);
             }
             catch (ParameterException e)
             {
+                _cancellationManager.RemoveCancellation(id);
                 return Response.CreateInvalidParamsErrorOrNull(id, e.Message);
             }
             catch (TargetInvocationException e)
             {
+                _cancellationManager.RemoveCancellation(id);
                 return Response.CreateInternalErrorOrNull(id, e.InnerException.Message);
             }
             catch (TaskCanceledException)
             {
+                _cancellationManager.RemoveCancellation(id);
                 return Response.CreateRequestCancelledErrorOrNull(id, string.Empty);
             }
             catch (Exception e)
             {
+                _cancellationManager.RemoveCancellation(id);
                 return Response.CreateInternalErrorOrNull(id, e.Message);
             }
         }
@@ -174,17 +167,8 @@ namespace JsonRpc
 
             RemoteMethodHandler handler = _handlerFactory.CreateHandler(method.ToLower());
 
-            if (handler is CancelRequestHandler cancelRequestHandler)
-            {
-                cancelRequestHandler.RequestCancellations = _requestCancellations;
-            }
-
             handler.Request = requestObject.ToObject<Request>();
-
-            if (id != MessageId.Empty)
-            {
-                handler.CancellationToken = _requestCancellations[id].Token;
-            }
+            handler.CancellationToken = _cancellationManager.GetToken(id);
 
             return handler;
         }
@@ -326,22 +310,6 @@ namespace JsonRpc
             }
 
             return result;
-        }
-
-        private void EnsureCanceled(MessageId id)
-        {
-            if (id == MessageId.Empty)
-            {
-                return;
-            }
-
-            CancellationToken token = _requestCancellations[id].Token;
-
-            if (token.IsCancellationRequested)
-            {
-                _requestCancellations.Remove(id);
-                token.ThrowIfCancellationRequested();
-            }
         }
     }
 }

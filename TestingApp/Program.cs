@@ -40,7 +40,7 @@ namespace TestingApp
             {
                 request = null;
 
-                await Task.Delay(50000);
+                await Task.Delay(5000);
             }
 
             return JToken.FromObject(

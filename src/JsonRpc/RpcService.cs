@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc.Exceptions;
+using JsonRpc.Handlers;
 using JsonRpc.HandleResult;
 using JsonRpc.Messages;
 using Newtonsoft.Json;
@@ -16,32 +17,14 @@ namespace JsonRpc
 {
     public class RpcService : IRpcService
     {
-        private readonly IDictionary<string, object> _handlers = new Dictionary<string, object>();
+        private readonly IHandlerFactory _handlerFactory;
 
         private readonly IDictionary<MessageId, CancellationTokenSource> _requestCancellations =
             new ConcurrentDictionary<MessageId, CancellationTokenSource>();
 
-        public void RegisterHandler(object handler)
+        public RpcService(IHandlerFactory handlerFactory)
         {
-            Type handlerType = handler.GetType();
-            RemoteMethodHandlerAttribute handlerAttribute =
-                handler.GetType().GetCustomAttribute<RemoteMethodHandlerAttribute>();
-
-            if (handlerAttribute == null)
-            {
-                throw new NotHandlerRegisteringException(handlerType,
-                    $"Registering type is not marked with {typeof(RemoteMethodHandlerAttribute).Name} attribute.");
-            }
-
-            MethodInfo handleMethod = GetHandleMethod(handlerType);
-
-            if (handleMethod == null)
-            {
-                throw new HandleMethodNotFoundException(handlerAttribute.MethodName, handlerType,
-                    $"Method {HandleMethodName} not found in {handlerType.Name}.");
-            }
-
-            _handlers.Add(handlerAttribute.MethodName.ToLower(), handler);
+            _handlerFactory = handlerFactory;
         }
 
         public Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
@@ -106,7 +89,6 @@ namespace JsonRpc
                 {
                     await output.WriteAsync(responseToken, cancellationToken);
                 }
-
             }, cancellationToken);
         }
 
@@ -124,9 +106,9 @@ namespace JsonRpc
                     _requestCancellations.Add(id, requestTokenSource);
                 }
 
-                object handler = GetHandler(requestObject);
+                RemoteMethodHandler handler = GetHandler(id, requestObject);
 
-                MethodInfo handleMethod = GetHandleMethod(handler.GetType());
+                MethodInfo handleMethod = HandlerHelper.GetHandleMethod(handler.GetType());
                 ParameterInfo[] handlerParameters = handleMethod.GetParameters();
 
                 JToken paramsToken = requestObject[ParamsPropertyName];
@@ -140,7 +122,7 @@ namespace JsonRpc
             }
             catch (JsonSerializationException)
             {
-                return Response.CreateParseError(new MessageId(null), "JSON parsing error occured.");
+                return Response.CreateParseErrorOrNull(id, "JSON parsing error occured.");
             }
             catch (HandleMethodNotSpecifiedException e)
             {
@@ -164,7 +146,7 @@ namespace JsonRpc
             }
         }
 
-        private object GetHandler(JObject requestObject)
+        private RemoteMethodHandler GetHandler(MessageId id, JObject requestObject)
         {
             string method = requestObject[MethodPropertyName]?.ToString();
 
@@ -173,9 +155,13 @@ namespace JsonRpc
                 throw new HandleMethodNotSpecifiedException("Method not specified.");
             }
 
-            if (!_handlers.TryGetValue(method.ToLower(), out object handler))
+            RemoteMethodHandler handler = _handlerFactory.CreateHandler(method.ToLower());
+
+            handler.Request = requestObject.ToObject<Request>();
+
+            if (id != MessageId.Empty)
             {
-                throw new HandlerNotFoundException(method, $"Method handler for {method} not exists");
+                handler.CancellationToken = _requestCancellations[id].Token;
             }
 
             return handler;
@@ -264,7 +250,7 @@ namespace JsonRpc
                     return GetResponseFromCallResult(id, callResult);
                 }
 
-                Task callTask = (Task)handlerMethod.Invoke(handler, handlerParameters);
+                Task callTask = (Task) handlerMethod.Invoke(handler, handlerParameters);
                 await callTask;
 
                 if (!callTask.GetType().IsGenericType)
@@ -299,12 +285,6 @@ namespace JsonRpc
                 default:
                     return new Response(id, callResult);
             }
-        }
-
-        private static MethodInfo GetHandleMethod(IReflect handlerType)
-        {
-            return handlerType.GetMethod(HandleMethodName,
-                BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
         }
 
         private static ParameterInfo SearchParameter(string name, IEnumerable<ParameterInfo> parameters)

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonRpc
+namespace JsonRpc.Handlers
 {
     public class RemoteMethodHandlerAttribute : Attribute
     {

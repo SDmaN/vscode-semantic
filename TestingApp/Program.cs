@@ -2,8 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc;
+using JsonRpc.DependencyInjection;
+using JsonRpc.Handlers;
 using JsonRpc.HandleResult;
 using JsonRpc.Messages;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 
 namespace TestingApp
@@ -26,11 +29,11 @@ namespace TestingApp
     }
 
     [RemoteMethodHandler("abc")]
-    internal class Handler
+    internal class Handler : RemoteMethodHandler
     {
-        public static Task<ErrorResult> Handle(string name, int k)
+        public Task<ErrorResult> Handle(string name, int k)
         {
-            Console.WriteLine($"Handled: {k}");
+            Console.WriteLine($"Handled: {Request.Method}");
 
             return Task.FromResult(
                 new ErrorResult(new Error(ErrorCode.InternalError, "abcdefg", new { ABC = 5000 }))
@@ -56,8 +59,10 @@ namespace TestingApp
 
         private static async Task MainAsync(string[] args)
         {
-            RpcService rpcService = new RpcService();
-            rpcService.RegisterHandler(new Handler());
+            IServiceCollection col = new ServiceCollection();
+            col.AddJsonRpc();
+
+            IRpcService rpcService = col.BuildServiceProvider().GetRequiredService<IRpcService>();
             await rpcService.HandleRequest(new Input(), new Output());
         }
     }

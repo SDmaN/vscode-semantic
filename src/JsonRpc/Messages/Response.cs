@@ -46,6 +46,11 @@
             return new Response(id, new Error(ErrorCode.ParseError, message));
         }
 
+        public static Response CreateParseErrorOrNull(MessageId id, string message)
+        {
+            return id == MessageId.Empty ? null : CreateParseError(id, message);
+        }
+
         public static Response CreateMethodNotFoundError(MessageId id, string message)
         {
             return new Response(id, new Error(ErrorCode.MethodNotFound, message));

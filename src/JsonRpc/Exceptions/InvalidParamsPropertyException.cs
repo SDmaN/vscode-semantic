@@ -2,7 +2,11 @@
 
 namespace JsonRpc.Exceptions
 {
-    public class InvalidParamsPropertyException : ApplicationException
+    public class InvalidParamsPropertyException : ParameterException
     {
+        public InvalidParamsPropertyException(string message)
+            : base(message)
+        {
+        }
     }
 }

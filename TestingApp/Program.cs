@@ -1,13 +1,9 @@
 ﻿using System;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc;
 using JsonRpc.HandleResult;
 using JsonRpc.Messages;
-using LanguageServerProtocol.IPC;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace TestingApp
@@ -21,7 +17,7 @@ namespace TestingApp
     {
         public Task<JToken> ReadAsync(CancellationToken cancellationToken = default)
         {
-            Request request = new Request(new MessageId(123), "abc", new object[] { "add" });
+            Request request = new Request(new MessageId(123), "abc", new { Name = "add", K = 5 });
 
             return Task.FromResult(JToken.FromObject(
                 request
@@ -32,11 +28,9 @@ namespace TestingApp
     [RemoteMethodHandler("abc")]
     internal class Handler
     {
-        public static Task<ErrorResult> Handle(string s)
+        public static Task<ErrorResult> Handle(string name, int k)
         {
-            Console.WriteLine($"Handled: ");
-
-            throw new Exception("EXCEPTION BLYAT");
+            Console.WriteLine($"Handled: {k}");
 
             return Task.FromResult(
                 new ErrorResult(new Error(ErrorCode.InternalError, "abcdefg", new { ABC = 5000 }))
@@ -57,30 +51,14 @@ namespace TestingApp
     {
         private static void Main(string[] args)
         {
-            Task.Run(async () =>
-            {
-                string json = JsonConvert.SerializeObject(new A { Name = "123" });
-                Console.WriteLine(json);
-                
-
-                StreamInput streamInput = new StreamInput(Console.OpenStandardInput());
-                
-                RpcService service = new RpcService();
-                service.RegisterHandler(new Handler());
-
-                await service.HandleRequest(streamInput, new Output());
-            }).Wait();
+            MainAsync(args).Wait();
         }
 
-        private static Task M(CancellationToken cancellationToken = default)
+        private static async Task MainAsync(string[] args)
         {
-            return Task.Run(() =>
-            {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    Thread.Sleep(1000);
-                }
-            }, cancellationToken);
+            RpcService rpcService = new RpcService();
+            rpcService.RegisterHandler(new Handler());
+            await rpcService.HandleRequest(new Input(), new Output());
         }
     }
 }

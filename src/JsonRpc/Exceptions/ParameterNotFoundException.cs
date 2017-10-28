@@ -2,13 +2,11 @@
 
 namespace JsonRpc.Exceptions
 {
-    internal class ParameterNotFoundException : ApplicationException
+    internal class ParameterNotFoundException : ParameterException
     {
-        public ParameterNotFoundException(string paramName)
+        public ParameterNotFoundException(string parameterName, string message)
+            : base(parameterName, message)
         {
-            ParamName = paramName;
         }
-
-        public string ParamName { get; }
     }
 }

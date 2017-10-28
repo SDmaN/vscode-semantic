@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -16,6 +17,9 @@ namespace JsonRpc
     public class RpcService : IRpcService
     {
         private readonly IDictionary<string, object> _handlers = new Dictionary<string, object>();
+
+        private readonly IDictionary<MessageId, CancellationTokenSource> _requestCancellations =
+            new ConcurrentDictionary<MessageId, CancellationTokenSource>();
 
         public void RegisterHandler(object handler)
         {
@@ -40,129 +44,141 @@ namespace JsonRpc
             _handlers.Add(handlerAttribute.MethodName.ToLower(), handler);
         }
 
-        public async Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
+        public Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
         {
-            JToken request;
-
-            try
+            return Task.Run(async () =>
             {
-                request = await input.ReadAsync(cancellationToken);
-            }
-            catch (Exception e)
-            {
-                await output.WriteAsync(
-                    JToken.FromObject(Response.CreateParseError(new MessageId(null),
-                        $"Could not parse request: {e.Message}")),
-                    cancellationToken);
+                JToken request;
 
-                return;
-            }
-            
-            JToken responseToken = null;
+                try
+                {
+                    request = await input.ReadAsync(cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    await output.WriteAsync(
+                        JToken.FromObject(Response.CreateParseError(new MessageId(null),
+                            $"Could not parse request: {e.Message}")),
+                        cancellationToken);
 
-            switch (request)
-            {
-                case JArray requestArray:
-                    JArray responseArray = new JArray();
+                    return;
+                }
 
-                    foreach (JToken jToken in requestArray)
-                    {
-                        if (jToken.Type == JTokenType.Object)
+                JToken responseToken = null;
+
+                switch (request)
+                {
+                    case JArray requestArray:
+                        JArray responseArray = new JArray();
+
+                        foreach (JToken jToken in requestArray)
                         {
-                            IResponse response = await HandleRequestObject(jToken as JObject);
-
-                            if (response != null)
+                            if (jToken.Type == JTokenType.Object)
                             {
-                                responseArray.Add(JObject.FromObject(response));
+                                IResponse response = await HandleRequestObject(jToken as JObject);
+
+                                if (response != null)
+                                {
+                                    responseArray.Add(JObject.FromObject(response));
+                                }
                             }
                         }
-                    }
 
-                    responseToken = responseArray;
-                    break;
+                        responseToken = responseArray;
+                        break;
 
-                case JObject requestObject:
-                    IResponse responseObject = await HandleRequestObject(requestObject);
+                    case JObject requestObject:
+                        IResponse responseObject = await HandleRequestObject(requestObject);
 
-                    if (responseObject != null)
-                    {
-                        responseToken = JToken.FromObject(responseObject);
-                    }
-                    break;
+                        if (responseObject != null)
+                        {
+                            responseToken = JToken.FromObject(responseObject);
+                        }
+                        break;
 
-                default:
-                    responseToken = JToken.FromObject(Response.CreateParseError(new MessageId(null),
-                        "Request could not be parsed."));
-                    break;
-            }
+                    default:
+                        responseToken = JToken.FromObject(Response.CreateParseError(new MessageId(null),
+                            "Request could not be parsed."));
+                        break;
+                }
 
-            if (responseToken != null)
-            {
-                await output.WriteAsync(responseToken, cancellationToken);
-            }
+                if (responseToken != null)
+                {
+                    await output.WriteAsync(responseToken, cancellationToken);
+                }
+
+            }, cancellationToken);
         }
 
         private async Task<IResponse> HandleRequestObject(JObject requestObject)
         {
-            JToken idToken = requestObject[IdPropertyName];
             MessageId id = MessageId.Empty;
 
             try
             {
-                if (idToken != null)
+                id = ParseMessageId(requestObject);
+
+                if (id != MessageId.Empty)
                 {
-                    id = idToken.ToObject<MessageId>();
+                    CancellationTokenSource requestTokenSource = new CancellationTokenSource();
+                    _requestCancellations.Add(id, requestTokenSource);
                 }
 
-                string method = requestObject[MethodPropertyName]?.ToString();
-
-                if (method == null && id != MessageId.Empty)
-                {
-                    return Response.CreateInvalidParamsErrorOrNull(id, $"Method not specified");
-                }
-
-                if (!_handlers.TryGetValue(method.ToLower(), out object handler))
-                {
-                    return Response.CreateMethodNotFoundErrorOrNull(id, $"Method {method} not exists.");
-                }
+                object handler = GetHandler(requestObject);
 
                 MethodInfo handleMethod = GetHandleMethod(handler.GetType());
                 ParameterInfo[] handlerParameters = handleMethod.GetParameters();
 
                 JToken paramsToken = requestObject[ParamsPropertyName];
                 object[] handleParameterValues = await GetHandlerParameterValues(paramsToken, handlerParameters);
+                EnsureCanceled(id);
 
-                return await CallHandler(id, handler, handleMethod, handleParameterValues);
+                IResponse response = await CallHandler(id, handler, handleMethod, handleParameterValues);
+                EnsureCanceled(id);
+
+                return response;
             }
             catch (JsonSerializationException)
             {
                 return Response.CreateParseError(new MessageId(null), "JSON parsing error occured.");
             }
-            catch (ParametersCountMismatchException)
+            catch (HandleMethodNotSpecifiedException e)
             {
-                return Response.CreateInvalidParamsErrorOrNull(id, $"Parameters count mismatch.");
+                return Response.CreateInvalidRequestErrorOrNull(id, e.Message);
             }
-            catch (ParameterNotFoundException e)
+            catch (ParameterException e)
             {
-                return Response.CreateInvalidParamsErrorOrNull(id,
-                    $"Parameter {e.ParamName} is not a method parameter.");
-            }
-            catch (InvalidParamsPropertyException)
-            {
-                return Response.CreateInvalidParamsErrorOrNull(id, "Params property is not an object or array.");
-            }
-            catch (ArgumentException)
-            {
-                return Response.CreateInvalidParamsErrorOrNull(id, "Parameters mismatch.");
+                return Response.CreateInvalidParamsErrorOrNull(id, e.Message);
             }
             catch (TargetInvocationException e)
             {
                 return Response.CreateInternalErrorOrNull(id, e.InnerException.Message);
             }
+            catch (TaskCanceledException)
+            {
+                return Response.CreateRequestCancelledErrorOrNull(id, string.Empty);
+            }
             catch (Exception e)
             {
                 return Response.CreateInternalErrorOrNull(id, e.Message);
             }
+        }
+
+        private object GetHandler(JObject requestObject)
+        {
+            string method = requestObject[MethodPropertyName]?.ToString();
+
+            if (string.IsNullOrWhiteSpace(method))
+            {
+                throw new HandleMethodNotSpecifiedException("Method not specified.");
+            }
+
+            if (!_handlers.TryGetValue(method.ToLower(), out object handler))
+            {
+                throw new HandlerNotFoundException(method, $"Method handler for {method} not exists");
+            }
+
+            return handler;
         }
 
         private static async Task<object[]> GetHandlerParameterValues(JToken paramsToken,
@@ -183,7 +199,7 @@ namespace JsonRpc
                         break;
 
                     default:
-                        throw new InvalidParamsPropertyException();
+                        throw new InvalidParamsPropertyException("Params is not an object or array.");
                 }
             }
 
@@ -195,7 +211,8 @@ namespace JsonRpc
         {
             if (paramsArray.Count != handlerParameters.Count)
             {
-                throw new ParametersCountMismatchException();
+                throw new ParametersCountMismatchException(
+                    $"Parameters count mismatch. Handler method has {handlerParameters.Count} and request has {paramsArray.Count}");
             }
 
             object[] result = new object[paramsArray.Count];
@@ -214,7 +231,8 @@ namespace JsonRpc
         {
             if (paramsObject.Count != handlerParameters.Count)
             {
-                throw new ParametersCountMismatchException();
+                throw new ParametersCountMismatchException(
+                    $"Parameters count mismatch. Handler method has {handlerParameters.Count} and request has {paramsObject.Count}");
             }
 
             object[] result = new object[paramsObject.Count];
@@ -225,7 +243,8 @@ namespace JsonRpc
 
                 if (parameter == null)
                 {
-                    throw new ParameterNotFoundException(paramsProperty.Name);
+                    throw new ParameterNotFoundException(paramsProperty.Name,
+                        $"Parameter {paramsProperty.Name} not found.");
                 }
 
                 result[parameter.Position] = paramsProperty.Value.ToObject(parameter.ParameterType);
@@ -237,22 +256,29 @@ namespace JsonRpc
         private static async Task<IResponse> CallHandler(MessageId id, object handler, MethodInfo handlerMethod,
             object[] handlerParameters)
         {
-            if (!typeof(Task).IsAssignableFrom(handlerMethod.ReturnType))
+            try
             {
-                object callResult = handlerMethod.Invoke(handler, handlerParameters);
-                return GetResponseFromCallResult(id, callResult);
+                if (!typeof(Task).IsAssignableFrom(handlerMethod.ReturnType))
+                {
+                    object callResult = handlerMethod.Invoke(handler, handlerParameters);
+                    return GetResponseFromCallResult(id, callResult);
+                }
+
+                Task callTask = (Task)handlerMethod.Invoke(handler, handlerParameters);
+                await callTask;
+
+                if (!callTask.GetType().IsGenericType)
+                {
+                    return null;
+                }
+
+                PropertyInfo resultProperty = callTask.GetType().GetProperty("Result");
+                return GetResponseFromCallResult(id, resultProperty.GetValue(callTask));
             }
-
-            Task callTask = (Task) handlerMethod.Invoke(handler, handlerParameters);
-            await callTask;
-
-            if (!callTask.GetType().IsGenericType)
+            catch (ArgumentException)
             {
-                return null;
+                throw new ParameterException("Parameters mismatch.");
             }
-
-            PropertyInfo resultProperty = callTask.GetType().GetProperty("Result");
-            return GetResponseFromCallResult(id, resultProperty.GetValue(callTask));
         }
 
         private static IResponse GetResponseFromCallResult(MessageId id, object callResult)
@@ -265,7 +291,7 @@ namespace JsonRpc
             switch (callResult)
             {
                 case null:
-                    throw new HandlerNotAnsweredForRequest("Handler not answered for request.");
+                    throw new HandlerNotAnsweredForRequestException("Handler not answered for request.");
 
                 case IRpcHandleResult rpcHandleResult:
                     return rpcHandleResult.GetResponse(id);
@@ -285,6 +311,35 @@ namespace JsonRpc
         {
             return parameters.FirstOrDefault(
                 x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        private static MessageId ParseMessageId(JToken token)
+        {
+            MessageId result = MessageId.Empty;
+            JToken idToken = token[IdPropertyName];
+
+            if (idToken != null)
+            {
+                result = idToken.ToObject<MessageId>();
+            }
+
+            return result;
+        }
+
+        private void EnsureCanceled(MessageId id)
+        {
+            if (id == MessageId.Empty)
+            {
+                return;
+            }
+
+            CancellationToken token = _requestCancellations[id].Token;
+
+            if (token.IsCancellationRequested)
+            {
+                _requestCancellations.Remove(id);
+                token.ThrowIfCancellationRequested();
+            }
         }
     }
 }

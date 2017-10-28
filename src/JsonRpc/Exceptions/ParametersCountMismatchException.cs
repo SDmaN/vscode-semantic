@@ -2,7 +2,11 @@
 
 namespace JsonRpc.Exceptions
 {
-    internal class ParametersCountMismatchException : ApplicationException
+    internal class ParametersCountMismatchException : ParameterException
     {
+        public ParametersCountMismatchException(string message)
+            : base(message)
+        {
+        }
     }
 }

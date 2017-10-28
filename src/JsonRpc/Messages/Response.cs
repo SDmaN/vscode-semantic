@@ -75,6 +75,16 @@
         {
             return id == MessageId.Empty ? null : CreateInternalError(id, message);
         }
+
+        public static Response CreateRequestCancelledError(MessageId id, string message)
+        {
+            return new Response(id, new Error(ErrorCode.RequestCanceled, message));
+        }
+
+        public static Response CreateRequestCancelledErrorOrNull(MessageId id, string message)
+        {
+            return id == MessageId.Empty ? null : CreateRequestCancelledError(id, message);
+        }
     }
 
     public sealed class Response<TResult> : Response, IResponse<TResult> where TResult : class

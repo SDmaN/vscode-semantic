@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace JsonRpc.Exceptions
+﻿namespace JsonRpc.Exceptions
 {
     public class InvalidParamsPropertyException : ParameterException
     {

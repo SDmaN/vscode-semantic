@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace JsonRpc.Exceptions
+﻿namespace JsonRpc.Exceptions
 {
     internal class ParameterNotFoundException : ParameterException
     {

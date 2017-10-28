@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc;
-using JsonRpc.Converters;
 using JsonRpc.DependencyInjection;
 using JsonRpc.Handlers;
 using JsonRpc.HandleResult;
 using JsonRpc.Messages;
-using LanguageServerProtocol.IPC;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace TestingApp
@@ -22,7 +18,7 @@ namespace TestingApp
 
     internal class Input : IInput
     {
-        private int _count = 0;
+        private int _count;
 
         public async Task<JToken> ReadAsync(CancellationToken cancellationToken = default)
         {
@@ -82,7 +78,7 @@ namespace TestingApp
             {
                 Console.WriteLine(response);
             }
-            
+
             return Task.CompletedTask;
         }
     }
@@ -107,8 +103,8 @@ namespace TestingApp
             // Content-Length: 62
             // {"jsonrpc": "2.0", "method": "$/cancelRequest", "params": [1]}
 
-            var input = new Input();
-            var output  = new Output();
+            Input input = new Input();
+            Output output = new Output();
 
             while (true)
             {

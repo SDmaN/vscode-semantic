@@ -13,8 +13,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static JsonRpc.Constants;
 
-#pragma warning disable 4014
-
 namespace JsonRpc
 {
     public class RpcService : IRpcService
@@ -46,8 +44,8 @@ namespace JsonRpc
 
                 return;
             }
-
-            Task.Run(async () =>
+            
+            Task task = new Task(async () =>
             {
                 JToken responseToken = null;
 
@@ -91,7 +89,9 @@ namespace JsonRpc
                 {
                     await output.WriteAsync(responseToken, cancellationToken);
                 }
-            }, cancellationToken);
+            });
+
+            task.Start();
         }
 
         private async Task<IResponse> HandleRequestObject(JObject requestObject)
@@ -106,7 +106,8 @@ namespace JsonRpc
                 {
                     if (_requestCancellations.ContainsKey(id))
                     {
-                        throw new RequestWithIdAlreadyExistsException(id, $"Request with this id ({id}) already exists.");
+                        throw new RequestWithIdAlreadyExistsException(id,
+                            $"Request with this id ({id}) already exists.");
                     }
 
                     CancellationTokenSource requestTokenSource = new CancellationTokenSource();

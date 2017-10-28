@@ -13,6 +13,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static JsonRpc.Constants;
 
+#pragma warning disable 4014
+
 namespace JsonRpc
 {
     public class RpcService : IRpcService
@@ -27,26 +29,26 @@ namespace JsonRpc
             _handlerFactory = handlerFactory;
         }
 
-        public Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
+        public async Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
         {
-            return Task.Run(async () =>
+            JToken request;
+
+            try
             {
-                JToken request;
+                request = await input.ReadAsync(cancellationToken);
+            }
+            catch (Exception e)
+            {
+                await output.WriteAsync(
+                    JToken.FromObject(Response.CreateParseError(new MessageId(null),
+                        $"Could not parse request: {e.Message}")),
+                    cancellationToken);
 
-                try
-                {
-                    request = await input.ReadAsync(cancellationToken);
-                }
-                catch (Exception e)
-                {
-                    await output.WriteAsync(
-                        JToken.FromObject(Response.CreateParseError(new MessageId(null),
-                            $"Could not parse request: {e.Message}")),
-                        cancellationToken);
+                return;
+            }
 
-                    return;
-                }
-
+            Task.Run(async () =>
+            {
                 JToken responseToken = null;
 
                 switch (request)
@@ -102,6 +104,11 @@ namespace JsonRpc
 
                 if (id != MessageId.Empty)
                 {
+                    if (_requestCancellations.ContainsKey(id))
+                    {
+                        throw new RequestWithIdAlreadyExistsException(id, $"Request with this id ({id}) already exists.");
+                    }
+
                     CancellationTokenSource requestTokenSource = new CancellationTokenSource();
                     _requestCancellations.Add(id, requestTokenSource);
                 }
@@ -118,11 +125,20 @@ namespace JsonRpc
                 IResponse response = await CallHandler(id, handler, handleMethod, handleParameterValues);
                 EnsureCanceled(id);
 
+                if (id != MessageId.Empty)
+                {
+                    _requestCancellations.Remove(id);
+                }
+
                 return response;
             }
             catch (JsonSerializationException)
             {
                 return Response.CreateParseErrorOrNull(id, "JSON parsing error occured.");
+            }
+            catch (RequestWithIdAlreadyExistsException e)
+            {
+                return Response.CreateInvalidRequestErrorOrNull(id, e.Message);
             }
             catch (HandleMethodNotSpecifiedException e)
             {
@@ -157,6 +173,11 @@ namespace JsonRpc
 
             RemoteMethodHandler handler = _handlerFactory.CreateHandler(method.ToLower());
 
+            if (handler is CancelRequestHandler cancelRequestHandler)
+            {
+                cancelRequestHandler.RequestCancellations = _requestCancellations;
+            }
+
             handler.Request = requestObject.ToObject<Request>();
 
             if (id != MessageId.Empty)
@@ -172,7 +193,7 @@ namespace JsonRpc
         {
             object[] handlerParameterValues = null;
 
-            if (paramsToken != null)
+            if (paramsToken != null && paramsToken.Type != JTokenType.Null)
             {
                 switch (paramsToken)
                 {

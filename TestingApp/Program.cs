@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc;
+using JsonRpc.Converters;
 using JsonRpc.DependencyInjection;
 using JsonRpc.Handlers;
 using JsonRpc.HandleResult;
 using JsonRpc.Messages;
+using LanguageServerProtocol.IPC;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace TestingApp
@@ -18,22 +22,49 @@ namespace TestingApp
 
     internal class Input : IInput
     {
-        public Task<JToken> ReadAsync(CancellationToken cancellationToken = default)
-        {
-            Request request = new Request(new MessageId(123), "abc", new { Name = "add", K = 5 });
+        private int _count = 0;
 
-            return Task.FromResult(JToken.FromObject(
+        public async Task<JToken> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            Request request;
+
+            if (_count == 0)
+            {
+                request = new Request(new MessageId(1), "abc", null);
+
+                _count++;
+            }
+
+            else if (_count == 1)
+            {
+                request = new Request(new MessageId(null), "$/cancelRequest", new { id = 1L });
+                _count++;
+            }
+            else
+            {
+                request = null;
+
+                await Task.Delay(50000);
+            }
+
+            return JToken.FromObject(
                 request
-            ));
+            );
         }
     }
 
     [RemoteMethodHandler("abc")]
     internal class Handler : RemoteMethodHandler
     {
-        public Task<ErrorResult> Handle(string name, int k)
+        public Task<ErrorResult> Handle()
         {
-            Console.WriteLine($"Handled: {Request.Method}");
+            while (true)
+            {
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+            }
 
             return Task.FromResult(
                 new ErrorResult(new Error(ErrorCode.InternalError, "abcdefg", new { ABC = 5000 }))
@@ -43,9 +74,15 @@ namespace TestingApp
 
     internal class Output : IOutput
     {
+        private readonly object _locker = new object();
+
         public Task WriteAsync(JToken response, CancellationToken cancellationToken = default)
         {
-            Console.WriteLine(response);
+            lock (_locker)
+            {
+                Console.WriteLine(response);
+            }
+            
             return Task.CompletedTask;
         }
     }
@@ -63,7 +100,20 @@ namespace TestingApp
             col.AddJsonRpc();
 
             IRpcService rpcService = col.BuildServiceProvider().GetRequiredService<IRpcService>();
-            await rpcService.HandleRequest(new Input(), new Output());
+
+            // Content-Length: 44
+            // {"jsonrpc": "2.0", "id": 1, "method": "abc"}
+
+            // Content-Length: 62
+            // {"jsonrpc": "2.0", "method": "$/cancelRequest", "params": [1]}
+
+            var input = new Input();
+            var output  = new Output();
+
+            while (true)
+            {
+                await rpcService.HandleRequest(input, output);
+            }
         }
     }
 }

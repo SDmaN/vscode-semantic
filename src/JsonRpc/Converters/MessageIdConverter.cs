@@ -36,7 +36,7 @@ namespace JsonRpc.Converters
                 case JsonToken.Null:
                     return new MessageId(null);
                 default:
-                    throw new JsonException("Json parsing error.");
+                    throw new JsonException("Message id parsing error.");
             }
         }
 

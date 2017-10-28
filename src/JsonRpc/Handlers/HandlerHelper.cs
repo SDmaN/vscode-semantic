@@ -11,9 +11,18 @@ namespace JsonRpc.Handlers
     {
         internal static IDictionary<string, Type> CollectHandlerTypes()
         {
-            IDictionary<string, Type> collectedHandlers = new ConcurrentDictionary<string, Type>();
+            Assembly entryAssembly = Assembly.GetEntryAssembly();
+            IEnumerable<KeyValuePair<string, Type>> entryHandlers = GetAssemblyHandlers(entryAssembly);
 
-            Assembly assembly = Assembly.GetEntryAssembly();
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            IEnumerable<KeyValuePair<string, Type>> executingHandlers = GetAssemblyHandlers(executingAssembly);
+
+            return new ConcurrentDictionary<string, Type>(entryHandlers.Concat(executingHandlers));
+        }
+
+        private static IEnumerable<KeyValuePair<string, Type>> GetAssemblyHandlers(Assembly assembly)
+        {
+            IList<KeyValuePair<string, Type>> collectedHandlers = new List<KeyValuePair<string, Type>>();
 
             IEnumerable<Type> handlerTypes =
                 assembly.GetTypes().Where(x =>
@@ -39,7 +48,8 @@ namespace JsonRpc.Handlers
                         $"Method {Constants.HandleMethodName} not found in {handlerType.FullName}.");
                 }
 
-                collectedHandlers.Add(handlerAttribute.MethodName.ToLower(), handlerType);
+                collectedHandlers.Add(
+                    new KeyValuePair<string, Type>(handlerAttribute.MethodName.ToLower(), handlerType));
             }
 
             return collectedHandlers;

@@ -15,6 +15,7 @@ namespace JsonRpc.DependencyInjection
             }
 
             IDictionary<string, Type> handlers = HandlerHelper.CollectHandlerTypes();
+            handlers.Add("$/cancelRequest", typeof(CancelRequestHandler));
 
             foreach (Type handlerType in handlers.Values)
             {

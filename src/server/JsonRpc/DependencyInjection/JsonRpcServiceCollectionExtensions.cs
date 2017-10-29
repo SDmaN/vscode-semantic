@@ -8,7 +8,7 @@ namespace JsonRpc.DependencyInjection
 {
     public static class JsonRpcServiceCollectionExtensions
     {
-        public static void AddJsonRpc(this IServiceCollection serviceCollection)
+        public static void AddRpcHandlers(this IServiceCollection serviceCollection)
         {
             if (serviceCollection == null)
             {
@@ -21,6 +21,16 @@ namespace JsonRpc.DependencyInjection
             {
                 serviceCollection.TryAddTransient(handlerType);
             }
+        }
+
+        public static void AddJsonRpc(this IServiceCollection serviceCollection)
+        {
+            if (serviceCollection == null)
+            {
+                throw new ArgumentNullException(nameof(serviceCollection));
+            }
+
+            AddRpcHandlers(serviceCollection);
 
             serviceCollection.AddSingleton<IHandlerFactory, ServiceProviderHandlerFactory>();
 

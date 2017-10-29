@@ -2,24 +2,42 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as lsp from 'vscode-languageclient';
+import * as path from 'path';
+
+const isDebug = true;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    let serverModule;
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "semantic-language" is now active!');
+    if(isDebug) {
+        serverModule = context.asAbsolutePath("../../server/src/PluginServer/bin/Debug/netcoreapp2.0/PluginServer.dll");
+    }
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
-        // The code you place here will be executed every time your command is executed
+    let serverWorkPath = path.dirname(serverModule);
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
-    });
+    let serverOptions: lsp.ServerOptions = {
+        run: { command: "dotnet", args: [ serverModule ], options: { cwd: serverWorkPath }},
+        debug: { command: "dotnet", args: [ serverModule ], options: { cwd: serverWorkPath }},
+    };
+
+    let clientOptions: lsp.LanguageClientOptions = {
+        documentSelector: [ {scheme: "file", language: "plaintext" } ],
+        synchronize: {
+            configurationSection: "semanticLanguage",
+            fileEvents: [
+                vscode.workspace.createFileSystemWatcher("**/.clientrc"),
+                vscode.workspace.createFileSystemWatcher("**/.demo")
+            ]
+        }
+    };
+
+    let client = new lsp.LanguageClient("semanticLanguageServer", "Semantic Language Server",
+        serverOptions, clientOptions);
+
+    let disposable = client.start();
 
     context.subscriptions.push(disposable);
 }

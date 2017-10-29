@@ -2,7 +2,7 @@
     "version": "",
     "configurations": [
         {
-            "name": "Attach Language Server",
+            "name": "Launch Language Server",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build-client",
@@ -13,7 +13,7 @@
             "console": "internalConsole"
         },
         {
-            "name": "Launch Language Server",
+            "name": "Attach Language Server",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:pickProcess}"

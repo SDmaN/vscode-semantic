@@ -2,6 +2,7 @@
 
 namespace JsonRpc.Handlers
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
     public class RemoteMethodHandlerAttribute : Attribute
     {
         public RemoteMethodHandlerAttribute(string methodName)

@@ -15,11 +15,13 @@ namespace LanguageServerProtocol.IPC
         private const char HeaderSeparator = ':';
         private const string ContentLengthHeader = "Content-Length";
 
+        private const char Cr = '\r';
+        private const char Lf = '\n';
         private readonly Stream _inputStream;
 
         public StreamInput(Stream inputStream)
         {
-            _inputStream = new BufferedStream(inputStream);
+            _inputStream = inputStream;
         }
 
         public void Dispose()
@@ -32,21 +34,39 @@ namespace LanguageServerProtocol.IPC
             IDictionary<string, string> headers = await ReadHeaders(cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
 
-            return await ReadBody(headers);
+            return await ReadBody(headers, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IDictionary<string, string>> ReadHeaders(CancellationToken cancellationToken = default)
         {
             IDictionary<string, string> result = new Dictionary<string, string>();
-            StreamReader reader = new StreamReader(_inputStream, Encoding.ASCII);
+            byte[] buffer = new byte[100];
 
-            string line = await reader.ReadLineAsync();
+            int readCount = _inputStream.Read(buffer, 0, 1);
 
-            while (!string.IsNullOrEmpty(line))
+            StringBuilder headerLineBuilder = new StringBuilder();
+
+            while (readCount > 0 && !(buffer[0] == Cr && buffer[1] == Lf))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                result.Add(GetHeaderKeyValue(line));
-                line = await reader.ReadLineAsync().ConfigureAwait(false);
+                if (readCount >= 2 && buffer[readCount - 2] == Cr && buffer[readCount - 1] == Lf)
+                {
+                    string headerLinePart = Encoding.ASCII.GetString(buffer, 0, readCount - 2);
+                    headerLineBuilder.Append(headerLinePart);
+
+                    KeyValuePair<string, string> headerKeyValue = GetHeaderKeyValue(headerLineBuilder.ToString());
+                    result.Add(headerKeyValue);
+
+                    headerLineBuilder.Clear();
+
+                    readCount = 0;
+                }
+                else if (readCount == buffer.Length)
+                {
+                    headerLineBuilder.Append(Encoding.ASCII.GetString(buffer));
+                    readCount = 0;
+                }
+
+                readCount += await _inputStream.ReadAsync(buffer, readCount, 1, cancellationToken);
             }
 
             return result;
@@ -67,7 +87,8 @@ namespace LanguageServerProtocol.IPC
             return new KeyValuePair<string, string>(key, value);
         }
 
-        private async Task<JToken> ReadBody(IDictionary<string, string> headers)
+        private async Task<JToken> ReadBody(IDictionary<string, string> headers,
+            CancellationToken cancellationToken = default)
         {
             if (!headers.TryGetValue(ContentLengthHeader, out string value))
             {
@@ -80,17 +101,17 @@ namespace LanguageServerProtocol.IPC
                     $"{ContentLengthHeader} has invalid value ({value}).");
             }
 
-            StreamReader reader = new StreamReader(_inputStream);
-            char[] buffer = new char[contentLength];
-
-            int readCount = await reader.ReadBlockAsync(buffer, 0, buffer.Length);
+            byte[] buffer = new byte[contentLength];
+            int readCount = await _inputStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
 
             if (readCount != contentLength)
             {
-                throw new BodyLengthException($"Invalid body length ({readCount} except of {contentLength}).");
+                throw new InvalidOperationException("Invalid body length.");
             }
 
-            return JToken.Parse(new string(buffer));
+            string json = Encoding.UTF8.GetString(buffer);
+
+            return JToken.Parse(json);
         }
     }
 }

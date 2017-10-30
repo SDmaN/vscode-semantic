@@ -32,7 +32,7 @@ namespace JsonRpc
 
             try
             {
-                request = await input.ReadAsync(cancellationToken);
+                request = await input.ReadAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {

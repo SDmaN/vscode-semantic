@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -17,8 +16,8 @@ namespace JsonRpc
 {
     public class RpcService : IRpcService
     {
-        private readonly IHandlerFactory _handlerFactory;
         private readonly IRequestCancellationManager _cancellationManager;
+        private readonly IHandlerFactory _handlerFactory;
 
         public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager)
         {
@@ -43,7 +42,7 @@ namespace JsonRpc
 
                 return;
             }
-            
+
             Task task = new Task(async () =>
             {
                 JToken responseToken = null;

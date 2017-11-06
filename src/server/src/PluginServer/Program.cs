@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc;
 using JsonRpc.DependencyInjection;
-using JsonRpc.HandleResult;
-using LanguageServerProtocol.Initialize;
 using LanguageServerProtocol.IPC;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,15 +50,6 @@ namespace PluginServer
                 {
                     await service.HandleRequest(input, output);
                 }
-            }
-        }
-
-        public class InitializeHandler : DefaultInitializeHandler
-        {
-            public override async Task<IRpcHandleResult<InitializeResult>> Handle(long processId, string rootPath,
-                Uri rootUri, ClientCapabilities capabilities, string trace)
-            {
-                return new SuccessResult<InitializeResult>(new InitializeResult());
             }
         }
     }

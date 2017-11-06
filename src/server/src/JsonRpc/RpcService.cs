@@ -42,7 +42,7 @@ namespace JsonRpc
             try
             {
                 request = await input.ReadAsync(cancellationToken).ConfigureAwait(false);
-                _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Message is incomming:\r\n{request}", request);
+                _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Message is incomming:\n{request}", request);
             }
             catch (Exception e)
             {
@@ -100,8 +100,13 @@ namespace JsonRpc
 
                 if (responseToken != null)
                 {
-                    _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message:\r\n");
+                    _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message: {response}\n",
+                        responseToken);
                     await output.WriteAsync(responseToken, cancellationToken);
+                }
+                else
+                {
+                    _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message is missing.");
                 }
             });
 

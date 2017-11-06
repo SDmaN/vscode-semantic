@@ -4,10 +4,12 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using JsonRpc.Events;
 using JsonRpc.Exceptions;
 using JsonRpc.Handlers;
 using JsonRpc.HandleResult;
 using JsonRpc.Messages;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static JsonRpc.Constants;
@@ -18,11 +20,19 @@ namespace JsonRpc
     {
         private readonly IRequestCancellationManager _cancellationManager;
         private readonly IHandlerFactory _handlerFactory;
+        private readonly ILogger<RpcService> _logger;
 
         public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager)
         {
             _handlerFactory = handlerFactory;
             _cancellationManager = cancellationManager;
+        }
+
+        public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager,
+            ILogger<RpcService> logger)
+            : this(handlerFactory, cancellationManager)
+        {
+            _logger = logger;
         }
 
         public async Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
@@ -32,9 +42,12 @@ namespace JsonRpc
             try
             {
                 request = await input.ReadAsync(cancellationToken).ConfigureAwait(false);
+                _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Message is incomming:\r\n{request}", request);
             }
             catch (Exception e)
             {
+                _logger?.LogWarning(LogEvents.CouldNotParseRequestEventId, e, "Could not parse request.");
+
                 await output.WriteAsync(
                     JToken.FromObject(Response.CreateParseError(new MessageId(null),
                         $"Could not parse request: {e.Message}")),
@@ -54,14 +67,16 @@ namespace JsonRpc
 
                         foreach (JToken jToken in requestArray)
                         {
-                            if (jToken.Type == JTokenType.Object)
+                            if (jToken.Type != JTokenType.Object)
                             {
-                                IResponse response = await HandleRequestObject(jToken as JObject);
+                                continue;
+                            }
 
-                                if (response != null)
-                                {
-                                    responseArray.Add(JObject.FromObject(response));
-                                }
+                            IResponse response = await HandleRequestObject(jToken as JObject);
+
+                            if (response != null)
+                            {
+                                responseArray.Add(JObject.FromObject(response));
                             }
                         }
 
@@ -85,6 +100,7 @@ namespace JsonRpc
 
                 if (responseToken != null)
                 {
+                    _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message:\r\n");
                     await output.WriteAsync(responseToken, cancellationToken);
                 }
             });
@@ -100,57 +116,60 @@ namespace JsonRpc
             {
                 id = ParseMessageId(requestObject);
 
-                _cancellationManager.AddCancellation(id);
+                using (_logger?.BeginScope("Handling {0}", id != MessageId.Empty ? $"request ({id})" : "notification"))
+                {
+                    _cancellationManager.AddCancellation(id);
 
-                RemoteMethodHandler handler = GetHandler(id, requestObject);
+                    RemoteMethodHandler handler = GetHandler(id, requestObject);
 
-                MethodInfo handleMethod = HandlerHelper.GetHandleMethod(handler.GetType());
-                ParameterInfo[] handlerParameters = handleMethod.GetParameters();
+                    MethodInfo handleMethod = HandlerHelper.GetHandleMethod(handler.GetType());
+                    ParameterInfo[] handlerParameters = handleMethod.GetParameters();
 
-                JToken paramsToken = requestObject[ParamsPropertyName];
-                object[] handleParameterValues = await GetHandlerParameterValues(paramsToken, handlerParameters);
-                _cancellationManager.EnsureCancelled(id);
+                    JToken paramsToken = requestObject[ParamsPropertyName];
+                    object[] handleParameterValues = await GetHandlerParameterValues(paramsToken, handlerParameters);
+                    _cancellationManager.EnsureCancelled(id);
 
-                IResponse response = await CallHandler(id, handler, handleMethod, handleParameterValues);
-                _cancellationManager.EnsureCancelled(id);
+                    IResponse response = await CallHandler(id, handler, handleMethod, handleParameterValues);
+                    _cancellationManager.EnsureCancelled(id);
 
-                _cancellationManager.RemoveCancellation(id);
+                    _cancellationManager.RemoveCancellation(id);
 
-                return response;
+                    return response;
+                }
             }
-            catch (JsonSerializationException)
+            catch (JsonSerializationException e)
             {
                 _cancellationManager.RemoveCancellation(id);
+                _logger?.LogWarning(LogEvents.JsonSerializationErrorEventId, e, "JSON parsing error occured.");
+
                 return Response.CreateParseErrorOrNull(id, "JSON parsing error occured.");
             }
-            catch (RequestWithIdAlreadyExistsException e)
+            catch (JsonRpcException e)
             {
                 _cancellationManager.RemoveCancellation(id);
-                return Response.CreateInvalidRequestErrorOrNull(id, e.Message);
-            }
-            catch (HandleMethodNotSpecifiedException e)
-            {
-                _cancellationManager.RemoveCancellation(id);
-                return Response.CreateInvalidRequestErrorOrNull(id, e.Message);
-            }
-            catch (ParameterException e)
-            {
-                _cancellationManager.RemoveCancellation(id);
-                return Response.CreateInvalidParamsErrorOrNull(id, e.Message);
+                _logger?.LogError(LogEvents.JsonRpcErrorEventId, e, "JSON rpc error occured.");
+
+                return e.CreateResponse(id);
             }
             catch (TargetInvocationException e)
             {
                 _cancellationManager.RemoveCancellation(id);
+                _logger?.LogError(LogEvents.HandlerInvocationErrorEventId, e, "Handler invocation error occured.");
+
                 return Response.CreateInternalErrorOrNull(id, e.InnerException.Message);
             }
             catch (TaskCanceledException)
             {
                 _cancellationManager.RemoveCancellation(id);
+                _logger?.LogInformation(LogEvents.RequestCancelledEventId, "Request {id} cancelled.", id);
+
                 return Response.CreateRequestCancelledErrorOrNull(id, string.Empty);
             }
             catch (Exception e)
             {
                 _cancellationManager.RemoveCancellation(id);
+                _logger?.LogCritical(LogEvents.UnknownRpcErrorEventId, e, "Unkown error occured.");
+
                 return Response.CreateInternalErrorOrNull(id, e.Message);
             }
         }
@@ -168,6 +187,9 @@ namespace JsonRpc
 
             handler.Request = requestObject.ToObject<Request>();
             handler.CancellationToken = _cancellationManager.GetToken(id);
+
+            _logger?.LogInformation(LogEvents.HandlingRequestWithEventId, "Handling request with method: {method}",
+                method);
 
             return handler;
         }

@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace JsonRpc.Exceptions
+﻿namespace JsonRpc.Exceptions
 {
-    public class HandleMethodException : ApplicationException
+    public class HandleMethodException : JsonRpcException
     {
         public HandleMethodException(string message)
             : this(null, message)

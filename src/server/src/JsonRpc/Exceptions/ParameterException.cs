@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace JsonRpc.Exceptions
+﻿namespace JsonRpc.Exceptions
 {
-    public class ParameterException : ApplicationException
+    public class ParameterException : JsonRpcException
     {
         public ParameterException(string message)
             : this(null, message)

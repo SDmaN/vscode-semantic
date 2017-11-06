@@ -1,9 +1,8 @@
-﻿using System;
-using JsonRpc.Messages;
+﻿using JsonRpc.Messages;
 
 namespace JsonRpc.Exceptions
 {
-    public class RequestWithIdAlreadyExistsException : ApplicationException
+    public class RequestWithIdAlreadyExistsException : JsonRpcException
     {
         public RequestWithIdAlreadyExistsException(MessageId id, string message)
             : base(message)

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using JsonRpc.Handlers;
 using JsonRpc.HandleResult;
 
-namespace LanguageServerProtocol.Initialize
+namespace LanguageServerProtocol.Handlers.Initialize
 {
     [RemoteMethodHandler("initialize")]
     public abstract class DefaultInitializeHandler : RemoteMethodHandler

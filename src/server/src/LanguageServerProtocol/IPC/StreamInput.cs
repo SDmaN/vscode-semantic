@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace LanguageServerProtocol.IPC
 {
-    public class StreamInput : IInput, IDisposable
+    public class StreamInput : IInput
     {
         private const char HeaderSeparator = ':';
         private const string ContentLengthHeader = "Content-Length";

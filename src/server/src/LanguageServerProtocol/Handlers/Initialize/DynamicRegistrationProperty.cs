@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace LanguageServerProtocol.Initialize
+namespace LanguageServerProtocol.Handlers.Initialize
 {
     public class DynamicRegistrationProperty
     {

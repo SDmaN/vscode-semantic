@@ -20,35 +20,40 @@ namespace JsonRpc
     {
         private readonly IRequestCancellationManager _cancellationManager;
         private readonly IHandlerFactory _handlerFactory;
+        private readonly IInput _input;
         private readonly ILogger<RpcService> _logger;
+        private readonly IOutput _output;
 
-        public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager)
+        public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager,
+            IInput input, IOutput output)
         {
             _handlerFactory = handlerFactory;
             _cancellationManager = cancellationManager;
+            _input = input;
+            _output = output;
         }
 
         public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager,
-            ILogger<RpcService> logger)
-            : this(handlerFactory, cancellationManager)
+            IInput input, IOutput output, ILogger<RpcService> logger)
+            : this(handlerFactory, cancellationManager, input, output)
         {
             _logger = logger;
         }
 
-        public async Task HandleRequest(IInput input, IOutput output, CancellationToken cancellationToken = default)
+        public async Task HandleRequest(CancellationToken cancellationToken = default)
         {
             JToken request;
 
             try
             {
-                request = await input.ReadAsync(cancellationToken).ConfigureAwait(false);
+                request = await _input.ReadAsync(cancellationToken).ConfigureAwait(false);
                 _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Message is incomming:\n{request}", request);
             }
             catch (Exception e)
             {
                 _logger?.LogWarning(LogEvents.CouldNotParseRequestEventId, e, "Could not parse request.");
 
-                await output.WriteAsync(
+                await _output.WriteAsync(
                     JToken.FromObject(Response.CreateParseError(new MessageId(null),
                         $"Could not parse request: {e.Message}")),
                     cancellationToken);
@@ -102,7 +107,7 @@ namespace JsonRpc
                 {
                     _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message: {response}\n",
                         responseToken);
-                    await output.WriteAsync(responseToken, cancellationToken);
+                    await _output.WriteAsync(responseToken, cancellationToken);
                 }
                 else
                 {

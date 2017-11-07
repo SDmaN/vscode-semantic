@@ -37,19 +37,15 @@ namespace PluginServer
                 builder.AddDebug();
             });
 
+            serviceCollection.AddStdIo();
             serviceCollection.AddJsonRpc();
 
             IServiceProvider provider = serviceCollection.BuildServiceProvider();
-
             IRpcService service = provider.GetService<IRpcService>();
 
-            using (StreamInput input = new StreamInput(Console.OpenStandardInput()))
-            using (StreamOutput output = new StreamOutput(Console.OpenStandardOutput()))
+            while (true)
             {
-                while (true)
-                {
-                    await service.HandleRequest(input, output);
-                }
+                await service.HandleRequest();
             }
         }
     }

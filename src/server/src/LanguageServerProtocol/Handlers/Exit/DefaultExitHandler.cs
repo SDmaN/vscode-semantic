@@ -1,7 +1,11 @@
-﻿namespace LanguageServerProtocol.Handlers.Exit
+﻿using System.Threading.Tasks;
+using JsonRpc.Handlers;
+
+namespace LanguageServerProtocol.Handlers.Exit
 {
-    public class DefaultExitHandler
+    [RemoteMethodHandler("exit")]
+    public abstract class DefaultExitHandler : RemoteMethodHandler
     {
-        
+        public abstract Task Handle();
     }
 }

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PluginServer": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "RPCCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

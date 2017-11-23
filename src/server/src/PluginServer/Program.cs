@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc;
 using JsonRpc.DependencyInjection;
+using LanguageServerProtocol;
 using LanguageServerProtocol.IPC;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace PluginServer
 {
-    internal class Program
+    internal static class Program
     {
         internal static async Task Main(string[] args)
         {
@@ -29,6 +31,13 @@ namespace PluginServer
                 .AddJsonFile("appsettings.json")
                 .Build();
 
+            List<int> l = new List<int>();
+            
+            foreach(int i in l)
+            {
+
+            }
+
             IServiceCollection serviceCollection = new ServiceCollection();
 
             serviceCollection.AddLogging(builder =>
@@ -39,6 +48,7 @@ namespace PluginServer
 
             serviceCollection.AddStdIo();
             serviceCollection.AddJsonRpc();
+            serviceCollection.AddLsp();
 
             IServiceProvider provider = serviceCollection.BuildServiceProvider();
             IRpcService service = provider.GetService<IRpcService>();

@@ -61,7 +61,7 @@ namespace JsonRpc
                 return;
             }
 
-            Task task = new Task(async () =>
+            await Task.Run(async () =>
             {
                 JToken responseToken = null;
 
@@ -113,9 +113,7 @@ namespace JsonRpc
                 {
                     _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message is missing.");
                 }
-            });
-
-            task.Start();
+            }, cancellationToken);
         }
 
         private async Task<IResponse> HandleRequestObject(JObject requestObject)

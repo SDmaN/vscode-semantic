@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using LanguageServerProtocol.Handlers.TextDocument;
+using LanguageServerProtocol.Handlers.TextDocument.DidChange;
 
 namespace PluginServer.Handlers
 {

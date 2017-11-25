@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace LanguageServerProtocol.Handlers.TextDocument
+namespace LanguageServerProtocol.Handlers.TextDocument.DidChange
 {
     public class TextDocumentContentChangeEvent
     {

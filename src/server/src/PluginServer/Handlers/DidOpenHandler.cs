@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using LanguageServerProtocol.Handlers.TextDocument;
+using LanguageServerProtocol.Handlers.TextDocument.DidOpen;
 using LanguageServerProtocol.IPC.Window;
 
 namespace PluginServer.Handlers

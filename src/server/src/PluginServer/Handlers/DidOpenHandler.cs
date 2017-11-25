@@ -16,11 +16,7 @@ namespace PluginServer.Handlers
 
         public override async Task Handle(TextDocumentItem textDocument)
         {
-            await _messageSender.ShowMessage(new ShowMessageParams
-            {
-                Message = textDocument.Uri.ToString(),
-                Type = MessageType.Info
-            });
+            await _messageSender.LogMessage(MessageType.Info, $"Did open: {textDocument.Uri}");
         }
     }
 }

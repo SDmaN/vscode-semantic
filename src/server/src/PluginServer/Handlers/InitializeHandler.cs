@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using JsonRpc.HandleResult;
 using LanguageServerProtocol.Handlers.Initialize;
@@ -9,25 +8,20 @@ namespace PluginServer.Handlers
 {
     public class InitializeHandler : DefaultInitializeHandler
     {
-        private readonly IMessageSender _messageSender;
+        private readonly IWindowMessageSender _windowMessageSender;
 
-        public InitializeHandler(IMessageSender messageSender)
+        public InitializeHandler(IWindowMessageSender windowMessageSender)
         {
-            _messageSender = messageSender;
+            _windowMessageSender = windowMessageSender;
         }
 
         public override async Task<IRpcHandleResult<InitializeResult>> Handle(long processId, string rootPath,
             Uri rootUri, ClientCapabilities capabilities, string trace)
         {
-            MessageActionItem a = await _messageSender.ShowMessageRequest(new ShowMessageRequestParams
+            await _windowMessageSender.LogMessage(new LogMessageParams
             {
-                Message = "Hi",
-                Type = MessageType.Info,
-                Actions = new List<MessageActionItem>
-                {
-                    new MessageActionItem { Title = "A" },
-                    new MessageActionItem { Title = "B" }
-                }
+                Message = "Plugin server initialized.",
+                Type = MessageType.Info
             });
 
             InitializeResult initResult = new InitializeResult

@@ -19,35 +19,36 @@ namespace JsonRpc
     public class RpcService : IRpcService
     {
         private readonly IRequestCancellationManager _cancellationManager;
+        private readonly IClientResponseManager _clientResponseManager;
         private readonly IHandlerFactory _handlerFactory;
         private readonly IInput _input;
         private readonly ILogger<RpcService> _logger;
         private readonly IOutput _output;
 
         public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager,
-            IInput input, IOutput output)
+            IInput input, IOutput output, IClientResponseManager clientResponseManager)
         {
             _handlerFactory = handlerFactory;
             _cancellationManager = cancellationManager;
             _input = input;
             _output = output;
+            _clientResponseManager = clientResponseManager;
         }
 
         public RpcService(IHandlerFactory handlerFactory, IRequestCancellationManager cancellationManager,
-            IInput input, IOutput output, ILogger<RpcService> logger)
-            : this(handlerFactory, cancellationManager, input, output)
+            IInput input, IOutput output, IClientResponseManager clientResponseManager, ILogger<RpcService> logger)
+            : this(handlerFactory, cancellationManager, input, output, clientResponseManager)
         {
             _logger = logger;
         }
 
-        public async Task HandleRequest(CancellationToken cancellationToken = default)
+        public async Task HandleMessage(CancellationToken cancellationToken = default)
         {
-            JToken request;
+            JToken message;
 
             try
             {
-                request = await _input.ReadAsync(cancellationToken).ConfigureAwait(false);
-                _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Message is incomming:\n{request}", request);
+                message = await _input.ReadAsync(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -65,53 +66,63 @@ namespace JsonRpc
             {
                 JToken responseToken = null;
 
-                switch (request)
+                if (message["result"] != null)
                 {
-                    case JArray requestArray:
-                        JArray responseArray = new JArray();
-
-                        foreach (JToken jToken in requestArray)
-                        {
-                            if (jToken.Type != JTokenType.Object)
-                            {
-                                continue;
-                            }
-
-                            IResponse response = await HandleRequestObject(jToken as JObject);
-
-                            if (response != null)
-                            {
-                                responseArray.Add(JObject.FromObject(response));
-                            }
-                        }
-
-                        responseToken = responseArray;
-                        break;
-
-                    case JObject requestObject:
-                        IResponse responseObject = await HandleRequestObject(requestObject);
-
-                        if (responseObject != null)
-                        {
-                            responseToken = JToken.FromObject(responseObject);
-                        }
-                        break;
-
-                    default:
-                        responseToken = JToken.FromObject(Response.CreateParseError(new MessageId(null),
-                            "Request could not be parsed."));
-                        break;
-                }
-
-                if (responseToken != null)
-                {
-                    _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message: {response}\n",
-                        responseToken);
-                    await _output.WriteAsync(responseToken, cancellationToken);
+                    _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Response message is incomming:\n{message}", message);
+                    _clientResponseManager.ResponseIncomming(message);
                 }
                 else
                 {
-                    _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message is missing.");
+                    _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Request message is incomming:\n{message}", message);
+                    
+                    switch (message)
+                    {
+                        case JArray requestArray:
+                            JArray responseArray = new JArray();
+
+                            foreach (JToken jToken in requestArray)
+                            {
+                                if (jToken.Type != JTokenType.Object)
+                                {
+                                    continue;
+                                }
+
+                                IResponse response = await HandleRequestObject(jToken as JObject);
+
+                                if (response != null)
+                                {
+                                    responseArray.Add(JObject.FromObject(response));
+                                }
+                            }
+
+                            responseToken = responseArray;
+                            break;
+
+                        case JObject requestObject:
+                            IResponse responseObject = await HandleRequestObject(requestObject);
+
+                            if (responseObject != null)
+                            {
+                                responseToken = JToken.FromObject(responseObject);
+                            }
+                            break;
+
+                        default:
+                            responseToken = JToken.FromObject(Response.CreateParseError(new MessageId(null),
+                                "Request could not be parsed."));
+                            break;
+                    }
+
+                    if (responseToken != null)
+                    {
+                        _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message: {response}\n",
+                            responseToken);
+                        await _output.WriteAsync(responseToken, cancellationToken);
+                    }
+                    else
+                    {
+                        _logger?.LogDebug(LogEvents.OutgoingResponseEventId, "Response message is missing.");
+                    }
                 }
             }, cancellationToken);
         }
@@ -122,7 +133,7 @@ namespace JsonRpc
 
             try
             {
-                id = ParseMessageId(requestObject);
+                id = requestObject.GetMessageId();
 
                 using (_logger?.BeginScope("Handling {0}", id != MessageId.Empty ? $"request ({id})" : "notification"))
                 {
@@ -326,19 +337,6 @@ namespace JsonRpc
         {
             return parameters.FirstOrDefault(
                 x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
-        }
-
-        private static MessageId ParseMessageId(JToken token)
-        {
-            MessageId result = MessageId.Empty;
-            JToken idToken = token[IdPropertyName];
-
-            if (idToken != null)
-            {
-                result = idToken.ToObject<MessageId>();
-            }
-
-            return result;
         }
     }
 }

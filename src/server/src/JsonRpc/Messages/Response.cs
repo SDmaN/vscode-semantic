@@ -1,12 +1,21 @@
-﻿namespace JsonRpc.Messages
+﻿using Newtonsoft.Json;
+
+namespace JsonRpc.Messages
 {
     public class Response : Message, IResponse
     {
-        public Response(MessageId id, object result)
+        [JsonConstructor]
+        internal Response([JsonProperty("id")] MessageId id, [JsonProperty("result")] object result,
+            [JsonProperty("error")] Error error)
         {
             Id = id;
             Result = result;
-            Error = null;
+            Error = error;
+        }
+
+        public Response(MessageId id, object result)
+            : this(id, result, null)
+        {
         }
 
         public Response(Request request, object result)
@@ -15,10 +24,8 @@
         }
 
         public Response(MessageId id, Error error)
+            : this(id, null, error)
         {
-            Id = id;
-            Result = null;
-            Error = error;
         }
 
         public Response(Request request, Error error)
@@ -94,10 +101,17 @@
 
     public sealed class Response<TResult> : Response, IResponse<TResult> where TResult : class
     {
-        public Response(MessageId id, TResult result)
-            : base(id, result)
+        [JsonConstructor]
+        internal Response([JsonProperty("id")] MessageId id, [JsonProperty("result")] TResult result,
+            [JsonProperty("error")] Error error)
+            : base(id, result, error)
         {
             Result = result;
+        }
+
+        public Response(MessageId id, TResult result)
+            : this(id, result, null)
+        {
         }
 
         public Response(Request request, TResult result)
@@ -106,9 +120,8 @@
         }
 
         public Response(MessageId id, Error error)
-            : base(id, error)
+            : this(id, null, error)
         {
-            Result = null;
         }
 
         public Response(Request request, Error error)

@@ -13,7 +13,7 @@ namespace LanguageServerProtocol
                 throw new ArgumentNullException(nameof(serviceCollection));
             }
 
-            serviceCollection.AddTransient<IMessageSender, MessageSender>();
+            serviceCollection.AddTransient<IWindowMessageSender, WindowMessageSender>();
         }
     }
 }

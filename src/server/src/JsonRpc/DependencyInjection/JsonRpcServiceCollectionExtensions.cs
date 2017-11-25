@@ -36,6 +36,7 @@ namespace JsonRpc.DependencyInjection
 
             serviceCollection.AddScoped<IRequestCancellationManager, RequestCancellationManager>();
             serviceCollection.AddScoped<IRpcService, RpcService>();
+            serviceCollection.AddSingleton<IClientResponseManager, ClientResponseManager>();
         }
     }
 }

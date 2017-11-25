@@ -5,12 +5,15 @@ namespace JsonRpc.Messages
     public class Error
     {
         public Error(ErrorCode code, string message)
+            : this(code, message, null)
         {
             Code = code;
             Message = message;
         }
 
-        public Error(ErrorCode code, string message, object data)
+        [JsonConstructor]
+        public Error([JsonProperty("code")] ErrorCode code, [JsonProperty("message")] string message,
+            [JsonProperty("data")] object data)
         {
             Code = code;
             Message = message;

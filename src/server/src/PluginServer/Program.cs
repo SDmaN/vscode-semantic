@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -31,13 +30,6 @@ namespace PluginServer
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            List<int> l = new List<int>();
-            
-            foreach(int i in l)
-            {
-
-            }
-
             IServiceCollection serviceCollection = new ServiceCollection();
 
             serviceCollection.AddLogging(builder =>
@@ -55,7 +47,7 @@ namespace PluginServer
 
             while (true)
             {
-                await service.HandleRequest();
+                await service.HandleMessage();
             }
         }
     }

@@ -5,6 +5,6 @@ namespace JsonRpc
 {
     public interface IRpcService
     {
-        Task HandleRequest(CancellationToken cancellationToken = default);
+        Task HandleMessage(CancellationToken cancellationToken = default);
     }
 }

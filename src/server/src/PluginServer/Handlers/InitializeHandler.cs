@@ -32,7 +32,8 @@ namespace PluginServer.Handlers
                     RenameProvider = true,
                     TextDocumentSync = new TextDocumentSyncOptions
                     {
-                        OpenClose = true
+                        OpenClose = true,
+                        Change = TextDocumentSyncKind.Incremental
                     }
                 }
             };

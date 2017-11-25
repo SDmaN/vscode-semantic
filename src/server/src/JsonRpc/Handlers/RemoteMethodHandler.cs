@@ -9,9 +9,19 @@ namespace JsonRpc.Handlers
         public IRequest Request { get; internal set; }
         public CancellationToken CancellationToken { get; internal set; }
 
+        protected IRpcHandleResult Ok(object result)
+        {
+            return new SuccessResult(result);
+        }
+
         protected IRpcHandleResult<TResultValue> Ok<TResultValue>(TResultValue value) where TResultValue : class
         {
             return new SuccessResult<TResultValue>(value);
+        }
+
+        protected IRpcHandleResult Error(Error error)
+        {
+            return new ErrorResult(error);
         }
     }
 }

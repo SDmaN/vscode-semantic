@@ -35,7 +35,8 @@ namespace PluginServer.Handlers
                         OpenClose = true,
                         Change = TextDocumentSyncKind.Incremental,
                         WillSave = false,
-                        WillSaveWaitUntil = true
+                        WillSaveWaitUntil = true,
+                        Save = new SaveOptions { IncludeText = true }
                     }
                 }
             };

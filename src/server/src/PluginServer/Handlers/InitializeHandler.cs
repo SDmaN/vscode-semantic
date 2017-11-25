@@ -33,7 +33,9 @@ namespace PluginServer.Handlers
                     TextDocumentSync = new TextDocumentSyncOptions
                     {
                         OpenClose = true,
-                        Change = TextDocumentSyncKind.Incremental
+                        Change = TextDocumentSyncKind.Incremental,
+                        WillSave = false,
+                        WillSaveWaitUntil = true
                     }
                 }
             };

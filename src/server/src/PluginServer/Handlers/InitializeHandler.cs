@@ -37,8 +37,7 @@ namespace PluginServer.Handlers
                 }
             };
 
-            IRpcHandleResult<InitializeResult> handleResult = new SuccessResult<InitializeResult>(initResult);
-            return handleResult;
+            return Ok(initResult);
         }
     }
 }

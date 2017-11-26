@@ -34,7 +34,7 @@ namespace PluginServer.Handlers
                     },
                     CompletionProvider = new CompletionOptions
                     {
-                        ResolveProvider = true
+                        ResolveProvider = false
                     }
                 }
             };

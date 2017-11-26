@@ -263,11 +263,15 @@ namespace JsonRpc
         private static Task<object[]> ConvertObjectParams(JObject paramsObject,
             IReadOnlyCollection<ParameterInfo> handlerParameters)
         {
-            /*if (paramsObject.Count != handlerParameters.Count)
+            if (handlerParameters.Count == 1 && handlerParameters.Any(x => x.IsDefined(typeof(ObjectParamAttribute))))
             {
-                throw new ParametersCountMismatchException(
-                    $"Parameters count mismatch. Handler method has {handlerParameters.Count} and request has {paramsObject.Count}");
-            }*/
+                ParameterInfo firstParameter = handlerParameters.First();
+
+                if (firstParameter.IsDefined(typeof(ObjectParamAttribute)))
+                {
+                    return Task.FromResult(new[] { paramsObject.ToObject(firstParameter.ParameterType) });
+                }
+            }
 
             object[] result = new object[handlerParameters.Count];
 
@@ -283,19 +287,6 @@ namespace JsonRpc
 
                 result[parameter.Position] = value?.ToObject(parameter.ParameterType);
             }
-
-//            foreach (JProperty paramsProperty in paramsObject.Properties())
-//            {
-//                ParameterInfo parameter = SearchParameter(paramsProperty.Name, handlerParameters);
-//
-//                if (parameter == null)
-//                {
-//                    throw new ParameterNotFoundException(paramsProperty.Name,
-//                        $"Parameter {paramsProperty.Name} not found.");
-//                }
-//
-//                result[parameter.Position] = paramsProperty.Value.ToObject(parameter.ParameterType);
-//            }
 
             return Task.FromResult(result);
         }

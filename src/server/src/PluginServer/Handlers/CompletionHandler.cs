@@ -22,6 +22,15 @@ namespace PluginServer.Handlers
                     {
                         Kind = MarkupKind.Markdown,
                         Value = "##DOCS"
+                    },
+                    TextEdit = new TextEdit
+                    {
+                        NewText = "Hi there!",
+                        Range = new Range
+                        {
+                            Start = position,
+                            End = new Position(position.Line, position.Character + "Hi there!".Length)
+                        }
                     }
                 },
                 new CompletionItem

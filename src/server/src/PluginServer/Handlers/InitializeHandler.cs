@@ -18,12 +18,6 @@ namespace PluginServer.Handlers
         public override async Task<IRpcHandleResult<InitializeResult>> Handle(long processId, string rootPath,
             Uri rootUri, ClientCapabilities capabilities, string trace)
         {
-            await _windowMessageSender.LogMessage(new LogMessageParams
-            {
-                Message = "Plugin server initialized.",
-                Type = MessageType.Info
-            });
-
             InitializeResult initResult = new InitializeResult
             {
                 Capabilities = new ServerCapabilities
@@ -37,9 +31,12 @@ namespace PluginServer.Handlers
                         WillSave = false,
                         WillSaveWaitUntil = true,
                         Save = new SaveOptions { IncludeText = true }
-                    }
+                    },
+                    CompletionProvider = new CompletionOptions()
                 }
             };
+
+            await _windowMessageSender.LogMessage(MessageType.Info, "Plugin server initialized");
 
             return Ok(initResult);
         }

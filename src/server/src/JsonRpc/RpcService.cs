@@ -68,13 +68,15 @@ namespace JsonRpc
 
                 if (message["result"] != null)
                 {
-                    _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Response message is incomming:\n{message}", message);
+                    _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Response message is incomming:\n{message}",
+                        message);
                     _clientResponseManager.ResponseIncomming(message);
                 }
                 else
                 {
-                    _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Request message is incomming:\n{message}", message);
-                    
+                    _logger?.LogDebug(LogEvents.IncommingMessageEventId, "Request message is incomming:\n{message}",
+                        message);
+
                     switch (message)
                     {
                         case JArray requestArray:
@@ -261,26 +263,39 @@ namespace JsonRpc
         private static Task<object[]> ConvertObjectParams(JObject paramsObject,
             IReadOnlyCollection<ParameterInfo> handlerParameters)
         {
-            if (paramsObject.Count != handlerParameters.Count)
+            /*if (paramsObject.Count != handlerParameters.Count)
             {
                 throw new ParametersCountMismatchException(
                     $"Parameters count mismatch. Handler method has {handlerParameters.Count} and request has {paramsObject.Count}");
-            }
+            }*/
 
-            object[] result = new object[paramsObject.Count];
+            object[] result = new object[handlerParameters.Count];
 
-            foreach (JProperty paramsProperty in paramsObject.Properties())
+            foreach (ParameterInfo parameter in handlerParameters)
             {
-                ParameterInfo parameter = SearchParameter(paramsProperty.Name, handlerParameters);
+                JToken value = paramsObject.GetValue(parameter.Name, StringComparison.InvariantCultureIgnoreCase);
 
-                if (parameter == null)
+                if (value == null && !parameter.IsDefined(typeof(CanIgnoreAttribute)))
                 {
-                    throw new ParameterNotFoundException(paramsProperty.Name,
-                        $"Parameter {paramsProperty.Name} not found.");
+                    throw new ParameterNotFoundException(parameter.Name,
+                        $"Value for parameter \"{parameter.Name}\" not found.");
                 }
 
-                result[parameter.Position] = paramsProperty.Value.ToObject(parameter.ParameterType);
+                result[parameter.Position] = value?.ToObject(parameter.ParameterType);
             }
+
+//            foreach (JProperty paramsProperty in paramsObject.Properties())
+//            {
+//                ParameterInfo parameter = SearchParameter(paramsProperty.Name, handlerParameters);
+//
+//                if (parameter == null)
+//                {
+//                    throw new ParameterNotFoundException(paramsProperty.Name,
+//                        $"Parameter {paramsProperty.Name} not found.");
+//                }
+//
+//                result[parameter.Position] = paramsProperty.Value.ToObject(parameter.ParameterType);
+//            }
 
             return Task.FromResult(result);
         }

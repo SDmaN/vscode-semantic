@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using JsonRpc;
 using JsonRpc.Messages;
@@ -9,6 +11,7 @@ namespace LanguageServerProtocol.IPC.Client
     public class CapabilityRegisterer : ICapabilityRegisterer
     {
         private readonly IClientResponseManager _clientResponseManager;
+        private readonly IDictionary<string, string> _methodCapabilityId = new ConcurrentDictionary<string, string>();
         private readonly IOutput _output;
 
         public CapabilityRegisterer(IOutput output, IClientResponseManager clientResponseManager)
@@ -24,7 +27,18 @@ namespace LanguageServerProtocol.IPC.Client
             TaskCompletionSource<IResponse> taskCompletionSource = new TaskCompletionSource<IResponse>();
 
             _clientResponseManager.RegisterHandler<object>(messageId,
-                response => taskCompletionSource.SetResult(response));
+                response =>
+                {
+                    if (response.Error == null)
+                    {
+                        foreach (Registration registration in registrations.Registrations)
+                        {
+                            _methodCapabilityId.Add(registration.Method, registration.Id);
+                        }
+                    }
+
+                    taskCompletionSource.SetResult(response);
+                });
 
             IRequest request = new Request(messageId, "client/registerCapability", registrations);
 

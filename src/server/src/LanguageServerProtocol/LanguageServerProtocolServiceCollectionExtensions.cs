@@ -15,7 +15,7 @@ namespace LanguageServerProtocol
             }
 
             serviceCollection.AddTransient<IWindowMessageSender, WindowMessageSender>();
-            serviceCollection.AddTransient<ICapabilityRegisterer, CapabilityRegisterer>();
+            serviceCollection.AddSingleton<ICapabilityRegisterer, CapabilityRegisterer>();
         }
     }
 }

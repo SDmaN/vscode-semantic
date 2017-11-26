@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using LanguageServerProtocol.Handlers.Initialize;
 using LanguageServerProtocol.Handlers.Initialized;
-using LanguageServerProtocol.Handlers.TextDocument;
 using LanguageServerProtocol.IPC.Client;
-using Newtonsoft.Json;
 
 namespace PluginServer.Handlers
 {
@@ -19,35 +17,26 @@ namespace PluginServer.Handlers
 
         public override Task Handle()
         {
-            _capabilityRegisterer.RegisterCapability(new RegistrationParams
+            const string language = "slang";
+
+            IList<Registration> registrations = new List<Registration>
             {
-                Registrations = new List<Registration>
+                Registration.GetDidOpenRegistration(language),
+                Registration.GetDidChangeRegistration(TextDocumentSyncKind.Incremental, language),
+                Registration.GetWillSaveRegistration(language),
+                Registration.GetWillSaveWaitUntilRegistration(language),
+                Registration.GetDidSaveRegistration(true, language),
+                Registration.GetDidCloseRegistration(language),
+                Registration.GetCompletionRegistration(new List<string>
                 {
-                    new Registration
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Method = "textDocument/didOpen",
-                        RegisterOptions = new TextDocumentRegistrationOptions
-                        {
-                            DocumentSelector = new List<DocumentFilter>
-                            {
-                                new DocumentFilter
-                                {
-                                    Language = "slang"
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
+                    "f",
+                    "g"
+                }, true, language)
+            };
+
+            _capabilityRegisterer.RegisterCapability(registrations);
+
             return Task.CompletedTask;
         }
-    }
-
-    public class TextDocumentRegistrationOptions
-    {
-        [JsonProperty("documentSelector")]
-        public IEnumerable<DocumentFilter> DocumentSelector { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using JsonRpc.HandleResult;
 using LanguageServerProtocol.Handlers.TextDocument;
 using LanguageServerProtocol.Handlers.TextDocument.Completion;
@@ -7,23 +8,31 @@ namespace PluginServer.Handlers
 {
     public class CompletionHandler : DefaultCompletionHandler
     {
-        public override Task<IRpcHandleResult<CompletionList>> Handle(TextDocumentIdentifier textDocument,
+        public override Task<IRpcHandleResult<IEnumerable<CompletionItem>>> Handle(TextDocumentIdentifier textDocument,
             Position position, CompletionContext context)
         {
-            CompletionList result = new CompletionList
+            IEnumerable<CompletionItem> result = new List<CompletionItem>
             {
-                IsIncomplete = false,
-                Items = new[]
+                new CompletionItem
                 {
-                    new CompletionItem
+                    Label = "Completion method",
+                    Kind = CompletionItemKind.Method,
+                    Detail = "HUMAN DETAIL",
+                    Documentation = new MarkupContent
                     {
-                        Label = "Completion 1",
-                        Detail = "HUMAN DETAIL",
-                        Documentation = new MarkupContent
-                        {
-                            Kind = MarkupKind.PlainText,
-                            Value = "DOCS"
-                        }
+                        Kind = MarkupKind.Markdown,
+                        Value = "##DOCS"
+                    }
+                },
+                new CompletionItem
+                {
+                    Label = "Completion value",
+                    Kind = CompletionItemKind.Value,
+                    Detail = "HUMAN DETAIL",
+                    Documentation = new MarkupContent
+                    {
+                        Kind = MarkupKind.Markdown,
+                        Value = "##DOCS"
                     }
                 }
             };

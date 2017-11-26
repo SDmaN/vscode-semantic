@@ -27,11 +27,7 @@ namespace PluginServer.Handlers
                 Registration.GetWillSaveWaitUntilRegistration(language),
                 Registration.GetDidSaveRegistration(true, language),
                 Registration.GetDidCloseRegistration(language),
-                Registration.GetCompletionRegistration(new List<string>
-                {
-                    "f",
-                    "g"
-                }, true, language)
+                Registration.GetCompletionRegistration(null, true, language)
             };
 
             _capabilityRegisterer.RegisterCapability(registrations);

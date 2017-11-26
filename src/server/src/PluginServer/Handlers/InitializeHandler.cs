@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using JsonRpc.HandleResult;
 using LanguageServerProtocol.Handlers.Initialize;
@@ -19,8 +18,6 @@ namespace PluginServer.Handlers
         public override async Task<IRpcHandleResult<InitializeResult>> Handle(long processId, string rootPath,
             Uri rootUri, ClientCapabilities capabilities, string trace)
         {
-            await _windowMessageSender.ShowMessage(MessageType.Warning, "Init");
-
             InitializeResult initResult = new InitializeResult
             {
                 Capabilities = new ServerCapabilities
@@ -37,11 +34,6 @@ namespace PluginServer.Handlers
                     },
                     CompletionProvider = new CompletionOptions
                     {
-                        TriggerCharacters = new List<string>
-                        {
-                            "f",
-                            "g"
-                        },
                         ResolveProvider = true
                     }
                 }

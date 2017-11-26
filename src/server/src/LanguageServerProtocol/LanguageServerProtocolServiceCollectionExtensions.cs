@@ -1,4 +1,5 @@
 ﻿using System;
+using LanguageServerProtocol.IPC.Client;
 using LanguageServerProtocol.IPC.Window;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,7 @@ namespace LanguageServerProtocol
             }
 
             serviceCollection.AddTransient<IWindowMessageSender, WindowMessageSender>();
+            serviceCollection.AddTransient<ICapabilityRegisterer, CapabilityRegisterer>();
         }
     }
 }

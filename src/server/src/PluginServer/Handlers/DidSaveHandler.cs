@@ -1,14 +1,22 @@
 ﻿using System.Threading.Tasks;
 using LanguageServerProtocol.Handlers.TextDocument;
 using LanguageServerProtocol.Handlers.TextDocument.DidSave;
+using LanguageServerProtocol.IPC.Window;
 
 namespace PluginServer.Handlers
 {
     public class DidSaveHandler : DefaultDidSaveHandler
     {
-        public override Task Handle(TextDocumentIdentifier textDocument, string text)
+        private readonly IWindowMessageSender _messageSender;
+
+        public DidSaveHandler(IWindowMessageSender messageSender)
         {
-            return Task.CompletedTask;
+            _messageSender = messageSender;
+        }
+
+        public override async Task Handle(TextDocumentIdentifier textDocument, string text)
+        {
+            await _messageSender.LogMessage(MessageType.Info, $"Did save: {textDocument.Uri}");
         }
     }
 }

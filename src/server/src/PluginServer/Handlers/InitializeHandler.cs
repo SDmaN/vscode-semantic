@@ -18,12 +18,14 @@ namespace PluginServer.Handlers
         public override async Task<IRpcHandleResult<InitializeResult>> Handle(long processId, string rootPath,
             Uri rootUri, ClientCapabilities capabilities, string trace)
         {
+            await _windowMessageSender.ShowMessage(MessageType.Warning, "Init");
+            
             InitializeResult initResult = new InitializeResult
             {
                 Capabilities = new ServerCapabilities
                 {
-                    HoverProvider = true,
-                    RenameProvider = true,
+                    HoverProvider = false,
+                    RenameProvider = false,
                     TextDocumentSync = new TextDocumentSyncOptions
                     {
                         OpenClose = true,
@@ -32,7 +34,10 @@ namespace PluginServer.Handlers
                         WillSaveWaitUntil = true,
                         Save = new SaveOptions { IncludeText = true }
                     },
-                    CompletionProvider = new CompletionOptions()
+                    CompletionProvider = new CompletionOptions
+                    {
+                        ResolveProvider = true
+                    }
                 }
             };
 

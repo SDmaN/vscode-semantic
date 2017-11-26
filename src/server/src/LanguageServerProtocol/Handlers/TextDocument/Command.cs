@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace LanguageServerProtocol.Handlers.TextDocument
@@ -12,7 +11,7 @@ namespace LanguageServerProtocol.Handlers.TextDocument
         [JsonProperty("command")]
         public string CommandId { get; set; }
 
-        [JsonProperty("arguments")]
+        [JsonProperty("arguments", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public IList<object> Arguments { get; set; }
     }
 }

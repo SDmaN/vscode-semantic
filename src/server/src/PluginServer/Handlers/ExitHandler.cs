@@ -1,13 +1,21 @@
 ﻿using System.Threading.Tasks;
 using LanguageServerProtocol.Handlers.Exit;
+using LanguageServerProtocol.IPC.Window;
 
 namespace PluginServer.Handlers
 {
     public class ExitHandler : DefaultExitHandler
     {
-        public override Task Handle()
+        private readonly IWindowMessageSender _messageSender;
+
+        public ExitHandler(IWindowMessageSender messageSender)
         {
-            return Task.CompletedTask;
+            _messageSender = messageSender;
+        }
+
+        public override async Task Handle()
+        {
+            await _messageSender.LogMessage(MessageType.Info, "Exit");
         }
     }
 }

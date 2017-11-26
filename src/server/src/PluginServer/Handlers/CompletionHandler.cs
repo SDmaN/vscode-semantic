@@ -14,18 +14,16 @@ namespace PluginServer.Handlers
             {
                 IsIncomplete = false,
                 Items = new[]
-                {    
+                {
                     new CompletionItem
                     {
                         Label = "Completion 1",
-                        Kind = CompletionItemKind.Value,
                         Detail = "HUMAN DETAIL",
                         Documentation = new MarkupContent
                         {
                             Kind = MarkupKind.PlainText,
                             Value = "DOCS"
-                        },
-                        
+                        }
                     }
                 }
             };

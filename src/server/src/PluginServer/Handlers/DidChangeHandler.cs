@@ -2,15 +2,23 @@
 using System.Threading.Tasks;
 using LanguageServerProtocol.Handlers.TextDocument;
 using LanguageServerProtocol.Handlers.TextDocument.DidChange;
+using LanguageServerProtocol.IPC.Window;
 
 namespace PluginServer.Handlers
 {
     public class DidChangeHandler : DefaultDidChangeHandler
     {
-        public override Task Handle(VersionedTextDocumentIdentifier textDocument,
+        private readonly IWindowMessageSender _messageSender;
+
+        public DidChangeHandler(IWindowMessageSender messageSender)
+        {
+            _messageSender = messageSender;
+        }
+
+        public override async Task Handle(VersionedTextDocumentIdentifier textDocument,
             IList<TextDocumentContentChangeEvent> contentChanges)
         {
-            return Task.CompletedTask;
+            await _messageSender.LogMessage(MessageType.Info, "Did change");
         }
     }
 }

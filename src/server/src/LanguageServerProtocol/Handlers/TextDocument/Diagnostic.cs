@@ -7,13 +7,13 @@ namespace LanguageServerProtocol.Handlers.TextDocument
         [JsonProperty("range")]
         public Range Range { get; set; }
 
-        [JsonProperty("severity")]
-        public DiagnosticSeverity Severity { get; set; }
+        [JsonProperty("severity", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public DiagnosticSeverity? Severity { get; set; }
 
-        [JsonProperty("code")]
+        [JsonProperty("code", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Code { get; set; }
 
-        [JsonProperty("source")]
+        [JsonProperty("source", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Source { get; set; }
 
         [JsonProperty("message")]

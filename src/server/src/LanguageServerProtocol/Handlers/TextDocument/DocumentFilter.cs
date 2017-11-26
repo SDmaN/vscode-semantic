@@ -4,13 +4,13 @@ namespace LanguageServerProtocol.Handlers.TextDocument
 {
     public class DocumentFilter
     {
-        [JsonProperty("language")]
+        [JsonProperty("language", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Language { get; set; }
-        
-        [JsonProperty("scheme")]
+
+        [JsonProperty("scheme", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Scheme { get; set; }
-        
-        [JsonProperty("pattern")]
+
+        [JsonProperty("pattern", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Pattern { get; set; }
     }
 }

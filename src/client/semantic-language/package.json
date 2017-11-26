@@ -11,10 +11,22 @@
         "Other"
     ],
     "activationEvents": [
-        "*"        
+        "workspaceContains:*.slproj",
+        "onLanguage:slang"
     ],
     "main": "./out/extension",
     "contributes": {
+        "languages": [
+            {
+                "id": "slang",
+                "extensions": [
+                    ".slang"
+                ],
+                "aliases": [
+                    "Slang"
+                ]
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

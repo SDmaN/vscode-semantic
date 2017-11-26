@@ -7,7 +7,7 @@ namespace LanguageServerProtocol.Handlers.TextDocument.Completion
         [JsonProperty("triggerKind")]
         public CompletionTriggerKind TriggerKind { get; set; }
 
-        [JsonProperty("triggerCharacter")]
+        [JsonProperty("triggerCharacter", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string TriggerCharacter { get; set; }
     }
 }

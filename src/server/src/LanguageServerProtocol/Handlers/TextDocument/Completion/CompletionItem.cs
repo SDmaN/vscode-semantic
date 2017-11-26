@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace LanguageServerProtocol.Handlers.TextDocument.Completion
@@ -9,37 +8,37 @@ namespace LanguageServerProtocol.Handlers.TextDocument.Completion
         [JsonProperty("label")]
         public string Label { get; set; }
 
-        [JsonProperty("kind")]
-        public CompletionItemKind Kind { get; set; }
+        [JsonProperty("kind", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public CompletionItemKind? Kind { get; set; }
 
-        [JsonProperty("detail")]
+        [JsonProperty("detail", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Detail { get; set; }
 
-        [JsonProperty("documentation")]
+        [JsonProperty("documentation", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public MarkupContent Documentation { get; set; }
 
-        [JsonProperty("sortText")]
+        [JsonProperty("sortText", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string SortText { get; set; }
 
-        [JsonProperty("filterText")]
+        [JsonProperty("filterText", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string FilterText { get; set; }
 
-        [JsonProperty("insertTextFormat")]
+        [JsonProperty("insertTextFormat", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public InsertTextFormat? InsertTextFormat { get; set; }
 
-        [JsonProperty("textEdit")]
+        [JsonProperty("textEdit", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public TextEdit TextEdit { get; set; }
 
-        [JsonProperty("additionalTextEdits")]
+        [JsonProperty("additionalTextEdits", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public IEnumerable<TextEdit> AdditionalTextEdits { get; set; }
 
-        [JsonProperty("commitCharacters")]
+        [JsonProperty("commitCharacters", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public IEnumerable<string> CommitCharacters { get; set; }
 
-        [JsonProperty("command")]
+        [JsonProperty("command", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public Command Command { get; set; }
 
-        [JsonProperty("data")]
+        [JsonProperty("data", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public object Data { get; set; }
     }
 }

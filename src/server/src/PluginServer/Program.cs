@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using JsonRpc;
 using JsonRpc.DependencyInjection;
@@ -10,6 +8,7 @@ using LanguageServerProtocol.IPC;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PluginServer.Settings;
 
 namespace PluginServer
 {
@@ -37,6 +36,8 @@ namespace PluginServer
                 builder.AddConfiguration(configuration.GetSection("Logging"));
                 builder.AddDebug();
             });
+
+            serviceCollection.Configure<LanguageOptions>(configuration.GetSection("LanguageOptions"));
 
             serviceCollection.AddStdIo();
             serviceCollection.AddJsonRpc();

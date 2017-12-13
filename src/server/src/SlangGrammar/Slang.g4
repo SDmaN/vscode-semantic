@@ -8,6 +8,7 @@
 
  moduleImports: ('import' Id)*;
 
+
  module: 'module' Id moduleBlock;
  moduleBlock: BeginBlock (func | proc)* EndBlock;
 

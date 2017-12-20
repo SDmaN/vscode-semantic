@@ -1,7 +1,6 @@
 ﻿using Antlr4.Runtime;
-using SlangGrammar;
 
-namespace PluginServer.LanguageServices
+namespace SlangGrammar.Factories
 {
     public class ParserFactory : IParserFactory
     {

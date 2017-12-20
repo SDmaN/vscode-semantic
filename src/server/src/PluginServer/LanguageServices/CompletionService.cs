@@ -7,6 +7,7 @@ using Antlr4.Runtime.Sharpen;
 using LanguageServerProtocol.Handlers.TextDocument;
 using LanguageServerProtocol.Handlers.TextDocument.Completion;
 using SlangGrammar;
+using SlangGrammar.Factories;
 
 namespace PluginServer.LanguageServices
 {

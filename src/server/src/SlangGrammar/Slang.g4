@@ -8,7 +8,6 @@
 
  moduleImports: ('import' Id)*;
 
-
  module: 'module' Id moduleBlock;
  moduleBlock: BeginBlock (func | proc)* EndBlock;
 
@@ -18,16 +17,26 @@
 
  statementBlock: BeginBlock statementSequence EndBlock;
  statementSequence: (statement)*;
- statement: input | output;
+ statement: declare | let | input | output | return;
 
- declare: Type Id ('=' mathExp)?;
+ declare: Type Id ('=' mathExp | '=' boolOr)?;
+ let: Id '=' mathExp | Id '=' boolOr | Id '=' let;
+ return: 'return' (mathExp | boolOr);
+
  input: 'input' Id;
- output: 'output' mathExp;
+ output: 'output' (mathExp | boolOr);
 
- mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpDiv;
- mathTerm: mathFactor | mathFactor '*' mathTerm | mathFactor '/' mathTerm | mathFactor '%' mathTerm;
- mathFactor : mathAtom | '(' mathExp ')' | '+' mathFactor | '-' mathFactor;
+ mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpSub;
+ mathTerm: mathFactor #MathTermEmpty | mathFactor '*' mathTerm #MathTermMul | mathFactor '/' mathTerm #MathTermDiv | mathFactor '%' mathTerm #MathTermMod;
+ mathFactor : mathAtom #MathFactorEmpty | '(' mathExp ')' #MathFactorBrackets | '+' mathFactor #MathFactorUnaryPlus | '-' mathFactor #MathFactorUnaryMinus;
  mathAtom: IntValue | RealValue | Id;
+
+boolOr: boolAnd #BoolOrEmpty | boolAnd '||' boolOr #LogicOr;
+boolAnd: boolEquality #BoolAndEmpty | boolEquality '&&' boolAnd #LogicAnd;
+boolEquality: boolInequality #BoolEqualityEmpty | boolInequality '==' boolEquality #BoolEqual | mathExp '==' mathExp #MathEqual | boolInequality '!=' boolEquality #BoolNotEqual | mathExp '!=' mathExp #MathNotEqual;
+boolInequality: boolFactor #BoolInequalityEmpty | mathExp '>' mathExp #Bigger | mathExp '<' mathExp #Lesser | mathExp '>=' mathExp #BiggerOrEqual | mathExp '<=' mathExp #LesserOrEqual;
+boolFactor: boolAtom #BoolAtomEmpty | '!' boolAtom #Not | '(' boolOr ')' #BoolAtomBrackets | '!' '(' boolOr ')' #BoolAtomBracketsNot;
+boolAtom: Bool | Id;
 
 /*
  * Lexer Rules

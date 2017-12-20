@@ -1,93 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using Antlr4.Runtime.Atn;
+using CompillerServices.Backend;
+using CompillerServices.Backend.Writers;
+using CompillerServices.DependencyInjection;
 using JsonRpc;
 using JsonRpc.DependencyInjection;
 using LanguageServerProtocol;
-using LanguageServerProtocol.Handlers.TextDocument;
 using LanguageServerProtocol.IPC;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PluginServer.LanguageServices;
 using PluginServer.Settings;
+using SlangGrammar.Factories;
 
 namespace PluginServer
 {
-    internal class ParserStack
-    {
-        private readonly IEnumerable<ATNState> _states;
-
-        public ParserStack(IEnumerable<ATNState> states)
-        {
-            _states = states;
-        }
-
-        public (bool IsSuccess, ParserStack ParserStack) Process(ATNState state)
-        {
-            switch (state)
-            {
-                case RuleStartState _:
-                case StarBlockStartState _:
-                case BasicBlockStartState _:
-                case PlusBlockStartState _:
-                case StarLoopEntryState _:
-                    return (true, new ParserStack(_states.Append(state)));
-
-                case BlockEndState blockEndState:
-                    return _states.Last().Equals(blockEndState.startState)
-                        ? (true, new ParserStack(_states.SkipLast(1)))
-                        : (false, this);
-
-                case LoopEndState loopEndState:
-                {
-                    bool cont = _states.Last() is StarLoopEntryState last &&
-                                last.loopBackState.Equals(loopEndState.loopBackState);
-
-                    return cont ? (true, new ParserStack(_states.SkipLast(1))) : (false, this);
-                }
-
-                case RuleStopState ruleStopState:
-                    bool cont1 = _states.Last() is RuleStartState last1 && last1.stopState.Equals(ruleStopState);
-                    return cont1 ? (true, new ParserStack(_states.SkipLast(1))) : (false, this);
-
-                case BasicState _:
-                case StarLoopbackState _:
-                case PlusLoopbackState _:
-                    return (true, this);
-
-                default:
-                    throw new InvalidOperationException($"{nameof(ParserStack)} exception.");
-            }
-        }
-    }
-
-    internal static class ParserStackExtensions
-    {
-        public static bool IsCompatible(this ParserStack parserStack, ATNState state)
-        {
-            if (parserStack == null)
-            {
-                throw new ArgumentNullException(nameof(parserStack));
-            }
-
-            (bool IsSuccess, ParserStack ParserStack) result = parserStack.Process(state);
-
-            return !state.OnlyHasEpsilonTransitions ||
-                   state.Transitions.Any(x => result.ParserStack.IsCompatible(x.target));
-        }
-    }
-
-    internal class EditorContext
-    {
-        public EditorContext(string code)
-        {
-        }
-    }
-
     internal static class Program
     {
         internal static async Task Main(string[] args)
@@ -121,24 +49,31 @@ namespace PluginServer
 
             serviceCollection.AddSingleton<ILexerFactory, LexerFactory>();
             serviceCollection.AddSingleton<IParserFactory, ParserFactory>();
-            serviceCollection.AddSingleton<ICompletionService, CompletionService>();
-            serviceCollection.AddSingleton<IFileContentKeeper, FileContentKeeper>();
+
+            serviceCollection.AddCompillers();
 
             IServiceProvider provider = serviceCollection.BuildServiceProvider();
 
-            IFileContentKeeper contentKeeper = provider.GetService<IFileContentKeeper>();
-            Uri uri = new Uri("http://google.com");
-            contentKeeper.Add(uri,
-                @"   
-input 
-");
+            var b = provider.GetService<IBackendCompiller>();
+            await b.Compile(new DirectoryInfo("C:/Users/sdman/Desktop/semlang/"),
+                new DirectoryInfo("C:/Users/sdman/Desktop/semlang/out/"),
+                (p, r) => Path.GetRelativePath(p.FullName, r.FullName));
 
-            ICompletionService completionService = provider.GetService<ICompletionService>();
-            completionService.GetCompletionItems(new TextDocumentIdentifier
-                {
-                    Uri = uri
-                },
-                new Position(0, 3));
+            /*StringWriter h = new StringWriter();
+            StringWriter s = new StringWriter();
+
+            CppTextWriterFactory wf = new CppTextWriterFactory(h, s);
+            BackendCompiller compiller = new BackendCompiller(provider.GetService<ILexerFactory>(),
+                provider.GetService<IParserFactory>(), wf);
+
+            await compiller.Compile(new FileInfo("C:/Users/sdman/Desktop/semlang/main.slang"), "C:/Users/sdman/Desktop/semlang/out");
+
+            Console.WriteLine("header:");
+            Console.WriteLine(h.ToString());
+
+            Console.WriteLine();
+            Console.WriteLine("source:");
+            Console.WriteLine(s.ToString());*/
 
             return;
 

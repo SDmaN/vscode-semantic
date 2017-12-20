@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{85AFEF3F-F94F-4911-94B7-BC4AC446FC95}"
 EndProject
@@ -10,7 +10,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguageServerProtocol", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginServer", "src\PluginServer\PluginServer.csproj", "{0A44D3DD-826F-4F02-A74A-715898AB70D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlangGrammar", "src\SlangGrammar\SlangGrammar.csproj", "{1C0FD673-9B5C-4818-8EFD-01EF9A9F237E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SlangGrammar", "src\SlangGrammar\SlangGrammar.csproj", "{1C0FD673-9B5C-4818-8EFD-01EF9A9F237E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompillerServices", "src\CompillerServices\CompillerServices.csproj", "{41188986-37EA-40D1-972A-C13CFE146958}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +36,10 @@ Global
 		{1C0FD673-9B5C-4818-8EFD-01EF9A9F237E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C0FD673-9B5C-4818-8EFD-01EF9A9F237E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C0FD673-9B5C-4818-8EFD-01EF9A9F237E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41188986-37EA-40D1-972A-C13CFE146958}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41188986-37EA-40D1-972A-C13CFE146958}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41188986-37EA-40D1-972A-C13CFE146958}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41188986-37EA-40D1-972A-C13CFE146958}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,6 +49,7 @@ Global
 		{D0D2B1E5-6DE3-4440-ADA9-85E8A96C93AC} = {85AFEF3F-F94F-4911-94B7-BC4AC446FC95}
 		{0A44D3DD-826F-4F02-A74A-715898AB70D9} = {85AFEF3F-F94F-4911-94B7-BC4AC446FC95}
 		{1C0FD673-9B5C-4818-8EFD-01EF9A9F237E} = {85AFEF3F-F94F-4911-94B7-BC4AC446FC95}
+		{41188986-37EA-40D1-972A-C13CFE146958} = {85AFEF3F-F94F-4911-94B7-BC4AC446FC95}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E6C25730-D778-42B1-B0E8-001B508ED827}

@@ -1,6 +1,4 @@
-﻿using SlangGrammar;
-
-namespace PluginServer.LanguageServices
+namespace SlangGrammar.Factories
 {
     public interface ILexerFactory
     {

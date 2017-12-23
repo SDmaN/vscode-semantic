@@ -37,11 +37,14 @@ export function activate(context: vscode.ExtensionContext) {
     let client = new lsp.LanguageClient("semanticLanguageServer", "Semantic Language Server",
         serverOptions, clientOptions);
 
-    let disposable = client.start();
+    // let disposable = client.start();
 
-    context.subscriptions.push(disposable);
+    // context.subscriptions.push(disposable);
+
+    console.log("Slang activated");
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {
+    console.log("Slang activated");
 }

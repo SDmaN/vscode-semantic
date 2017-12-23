@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Antlr4.Runtime;
+using CompillerServices.Backend.ProjectFile;
 using CompillerServices.Backend.Writers;
 using SlangGrammar;
 using SlangGrammar.Factories;
@@ -11,9 +12,10 @@ using RelativePathGetter = System.Func<System.IO.DirectoryInfo, System.IO.Direct
 
 namespace CompillerServices.Backend
 {
-    class ExceptionErrorListener : BaseErrorListener
+    internal class ExceptionErrorListener : BaseErrorListener
     {
-        public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg,
+        public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line,
+            int charPositionInLine, string msg,
             RecognitionException e)
         {
             throw new Exception(msg);
@@ -26,29 +28,27 @@ namespace CompillerServices.Backend
 
         private readonly ILexerFactory _lexerFactory;
         private readonly IParserFactory _parserFactory;
+        private readonly IProjectFileManager _projectFileManager;
         private readonly ISourceWriterFactory _sourceWriterFactory;
 
         public BackendCompiller(ILexerFactory lexerFactory, IParserFactory parserFactory,
-            ISourceWriterFactory sourceWriterFactory)
+            IProjectFileManager projectFileManager, ISourceWriterFactory sourceWriterFactory)
         {
             _lexerFactory = lexerFactory;
             _parserFactory = parserFactory;
+            _projectFileManager = projectFileManager;
             _sourceWriterFactory = sourceWriterFactory;
         }
 
         public async Task Compile(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
             RelativePathGetter relativePathGetter)
         {
-            if (outputDirectory.Exists)
-            {
-                await ClearDirectory(outputDirectory);
-            }
-            else
+            if (!outputDirectory.Exists)
             {
                 outputDirectory.Create();
             }
 
-            IEnumerable<FileInfo> inputFiles = inputDirectory.GetFiles(SlangFileMask, SearchOption.AllDirectories);
+            IEnumerable<FileInfo> inputFiles = inputDirectory.GetFiles(SlangFileMask, SearchOption.TopDirectoryOnly);
 
             foreach (FileInfo inputFile in inputFiles)
             {

@@ -24,7 +24,14 @@
                 ],
                 "aliases": [
                     "Slang"
-                ]
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "slang",
+                
             }
         ]
     },

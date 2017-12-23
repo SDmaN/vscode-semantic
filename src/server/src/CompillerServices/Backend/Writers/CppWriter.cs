@@ -1,5 +1,4 @@
-﻿using System;
-using System.CodeDom.Compiler;
+﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -13,7 +12,7 @@ namespace CompillerServices.Backend.Writers
     {
         #region Standard library modules
 
-        private static readonly IDictionary<string, string> _moduleStandardIncludes;
+        private static readonly IDictionary<string, string> ModuleStandardIncludes;
 
         #endregion
 
@@ -27,7 +26,7 @@ namespace CompillerServices.Backend.Writers
                 { "Math", "cmath" }
             };
 
-            _moduleStandardIncludes = new ReadOnlyDictionary<string, string>(moduleIncludes);
+            ModuleStandardIncludes = new ReadOnlyDictionary<string, string>(moduleIncludes);
         }
 
         public CppWriter(TextWriter headerWriter, TextWriter sourceWriter)
@@ -129,6 +128,10 @@ namespace CompillerServices.Backend.Writers
 
         public void WriteProcedure(string accessModifier, string name, IEnumerable<FunctionArgument> arguments)
         {
+            if (name == "main")
+            {
+            }
+
             WriteFunction(accessModifier, "void", name, arguments);
         }
 
@@ -280,12 +283,18 @@ namespace CompillerServices.Backend.Writers
 
         private static bool IsStandard(string module)
         {
-            return _moduleStandardIncludes.ContainsKey(module);
+            return ModuleStandardIncludes.ContainsKey(module);
         }
 
         private static string ModuleToInclude(string module)
         {
-            return IsStandard(module) ? _moduleStandardIncludes[module] : $"{module}.h";
+            return IsStandard(module) ? ModuleStandardIncludes[module] : $"{module}.h";
         }
+
+        #region Standard functions
+
+        private const string EntryFunctionName = "main";
+
+        #endregion
     }
 }

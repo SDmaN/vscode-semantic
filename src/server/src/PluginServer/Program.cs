@@ -59,22 +59,6 @@ namespace PluginServer
                 new DirectoryInfo("C:/Users/sdman/Desktop/semlang/out/"),
                 (p, r) => Path.GetRelativePath(p.FullName, r.FullName));
 
-            /*StringWriter h = new StringWriter();
-            StringWriter s = new StringWriter();
-
-            CppTextWriterFactory wf = new CppTextWriterFactory(h, s);
-            BackendCompiller compiller = new BackendCompiller(provider.GetService<ILexerFactory>(),
-                provider.GetService<IParserFactory>(), wf);
-
-            await compiller.Compile(new FileInfo("C:/Users/sdman/Desktop/semlang/main.slang"), "C:/Users/sdman/Desktop/semlang/out");
-
-            Console.WriteLine("header:");
-            Console.WriteLine(h.ToString());
-
-            Console.WriteLine();
-            Console.WriteLine("source:");
-            Console.WriteLine(s.ToString());*/
-
             return;
 
             IRpcService service = provider.GetService<IRpcService>();

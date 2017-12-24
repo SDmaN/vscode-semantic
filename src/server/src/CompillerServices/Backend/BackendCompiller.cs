@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Antlr4.Runtime;
-using CompillerServices.Backend.ProjectFile;
+using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.Writers;
 using SlangGrammar;
 using SlangGrammar.Factories;
@@ -25,19 +25,19 @@ namespace CompillerServices.Backend
     public class BackendCompiller : IBackendCompiller
     {
         private const string SlangFileMask = "*" + Constants.SlangExtension;
+        private readonly IEntryPointWriter _entryPointWriter;
 
         private readonly ILexerFactory _lexerFactory;
         private readonly IParserFactory _parserFactory;
-        private readonly IProjectFileManager _projectFileManager;
         private readonly ISourceWriterFactory _sourceWriterFactory;
 
         public BackendCompiller(ILexerFactory lexerFactory, IParserFactory parserFactory,
-            IProjectFileManager projectFileManager, ISourceWriterFactory sourceWriterFactory)
+            ISourceWriterFactory sourceWriterFactory, IEntryPointWriter entryPointWriter)
         {
             _lexerFactory = lexerFactory;
             _parserFactory = parserFactory;
-            _projectFileManager = projectFileManager;
             _sourceWriterFactory = sourceWriterFactory;
+            _entryPointWriter = entryPointWriter;
         }
 
         public async Task Compile(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
@@ -57,6 +57,8 @@ namespace CompillerServices.Backend
 
                 await Compile(inputFile, outputPath);
             }
+
+            await _entryPointWriter.WriteEntryPoint(inputDirectory, outputDirectory);
         }
 
         public async Task Compile(FileInfo inputFile, string outputPath)

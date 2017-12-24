@@ -1,5 +1,6 @@
 ﻿using System;
 using CompillerServices.Backend;
+using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.ProjectFile;
 using CompillerServices.Backend.Writers;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ namespace CompillerServices.DependencyInjection
             serviceCollection.TryAddTransient<ISourceWriterFactory, CppFileWriterFactory>();
             serviceCollection.TryAddTransient<IBackendCompiller, BackendCompiller>();
             serviceCollection.TryAddTransient<IProjectFileManager, ProjectFileManager>();
+            serviceCollection.TryAddTransient<IEntryPointWriter, EntryPointWriter>();
 
             return serviceCollection;
         }

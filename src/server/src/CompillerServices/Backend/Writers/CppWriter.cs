@@ -13,8 +13,6 @@ namespace CompillerServices.Backend.Writers
     {
         #region Standard functions
 
-        private const string EntryFunctionName = "main";
-
         #endregion
 
         #region Standard library modules
@@ -104,7 +102,6 @@ namespace CompillerServices.Backend.Writers
         {
             _sourceWriter.Indent--;
             _sourceWriter.WriteLine("}");
-            _sourceWriter.WriteLine();
         }
 
         public void WriteFunction(string accessModifier, string returningType, string name,
@@ -127,9 +124,12 @@ namespace CompillerServices.Backend.Writers
             WriteFunction(accessModifier, "void", name, arguments);
         }
 
-        public void WriteStatementEnd()
+        public void WriteStatementEnd(StatementType statementType = StatementType.SingleStatement)
         {
-            _sourceWriter.WriteLine(";");
+            if(statementType != StatementType.BlockStatement)
+            {
+                _sourceWriter.WriteLine(";");
+            }
         }
 
         public void WriteType(string type)
@@ -169,12 +169,12 @@ namespace CompillerServices.Backend.Writers
 
         public void WriteCallArgSeparator()
         {
-            _sourceWriter.Write($", ");
+            _sourceWriter.Write(", ");
         }
 
         public void WriteFunctionCallEnd()
         {
-            _sourceWriter.Write(")");
+            WriteBraceEnd();
         }
 
         public void WriteIfBegin()
@@ -192,6 +192,36 @@ namespace CompillerServices.Backend.Writers
         public void WriteElse()
         {
             _sourceWriter.WriteLine("else");
+        }
+
+        public void WriteWhileBegin()
+        {
+            _sourceWriter.Write("while ");
+            WriteBraceBegin();
+        }
+
+        public void WriteWhileEnd()
+        {
+            WriteBraceEnd();
+            WriteLine();
+        }
+
+        public void WriteDo()
+        {
+            _sourceWriter.WriteLine("do");
+        }
+
+        public void WriteDoWhileBegin()
+        {
+            _sourceWriter.Write("while ");
+            WriteBraceBegin();
+        }
+
+        public void WriteDoWhileEnd()
+        {
+            WriteBraceEnd();
+            WriteStatementEnd();
+            WriteLine();
         }
 
         public void WriteSum()

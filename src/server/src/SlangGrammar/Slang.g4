@@ -17,7 +17,7 @@ argList: Type Id (',' Type Id)* | /* нет аргументов */ ;
 
 statementBlock: BeginBlock statementSequence EndBlock;
 statementSequence: (statement)*;
-statement: declare | let | input | output | return | call | if;
+statement: declare | let | input | output | return | call | if | whileLoop | doWhileLoop;
 
 declare: Type Id ('=' mathExp | '=' boolOr)?;
 let: Id '=' mathExp | Id '=' boolOr | Id '=' let;
@@ -31,6 +31,8 @@ callArgList: ((callArg) (',' (callArg))*) | /* нет аргументов */ ;
 callArg: mathExp | boolOr;
 
 if: 'if' '(' boolOr ')' statementBlock #IfSingle | 'if' '(' boolOr ')' statementBlock 'else' statementBlock #IfElse;
+whileLoop: 'while' '(' boolOr ')' statementBlock;
+doWhileLoop: 'do' statementBlock 'while' '(' boolOr ')';
 
 mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpSub;
 mathTerm: mathFactor #MathTermEmpty | mathFactor '*' mathTerm #MathTermMul | mathFactor '/' mathTerm #MathTermDiv | mathFactor '%' mathTerm #MathTermMod;

@@ -99,10 +99,18 @@ namespace CompillerServices.Backend
         {
             object result =  base.VisitStatement(context);
 
-            if (context.@if() == null)
+            StatementType statementType;
+
+            if (context.@if() == null && context.whileLoop() == null && context.doWhileLoop() == null)
             {
-                _sourceWriter.WriteStatementEnd();
+                statementType = StatementType.SingleStatement;
             }
+            else
+            {
+                statementType = StatementType.BlockStatement;
+            }
+
+            _sourceWriter.WriteStatementEnd(statementType);
 
             return result;
         }
@@ -411,6 +419,28 @@ namespace CompillerServices.Backend
             Visit(context.statementBlock(0));
             _sourceWriter.WriteElse();
             Visit(context.statementBlock(1));
+
+            return null;
+        }
+
+        public override object VisitWhileLoop(SlangParser.WhileLoopContext context)
+        {
+            _sourceWriter.WriteWhileBegin();
+            Visit(context.boolOr());
+            _sourceWriter.WriteWhileEnd();
+            Visit(context.statementBlock());
+
+            return null;
+        }
+
+        public override object VisitDoWhileLoop(SlangParser.DoWhileLoopContext context)
+        {
+            _sourceWriter.WriteDo();
+            Visit(context.statementBlock());
+            _sourceWriter.WriteDoWhileBegin();
+            Visit(context.boolOr());
+            _sourceWriter.WriteDoWhileEnd();
+
 
             return null;
         }

@@ -21,7 +21,7 @@ namespace CompillerServices.Backend.Writers
 
         void WriteProcedure(string accessModifier, string name, IEnumerable<FunctionArgument> arguments);
 
-        void WriteStatementEnd();
+        void WriteStatementEnd(StatementType statementType);
 
         void WriteType(string type);
         void WriteIdentifier(string identifier);
@@ -39,6 +39,13 @@ namespace CompillerServices.Backend.Writers
         void WriteIfBegin();
         void WriteIfEnd();
         void WriteElse();
+
+        void WriteWhileBegin();
+        void WriteWhileEnd();
+
+        void WriteDo();
+        void WriteDoWhileBegin();
+        void WriteDoWhileEnd();
 
         void WriteSum();
         void WriteSubstraction();

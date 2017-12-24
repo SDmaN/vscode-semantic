@@ -32,11 +32,11 @@ namespace JsonRpc.DependencyInjection
 
             AddRpcHandlers(serviceCollection);
 
-            serviceCollection.AddSingleton<IHandlerFactory, ServiceProviderHandlerFactory>();
+            serviceCollection.TryAddSingleton<IHandlerFactory, ServiceProviderHandlerFactory>();
 
-            serviceCollection.AddScoped<IRequestCancellationManager, RequestCancellationManager>();
-            serviceCollection.AddScoped<IRpcService, RpcService>();
-            serviceCollection.AddSingleton<IClientResponseManager, ClientResponseManager>();
+            serviceCollection.TryAddScoped<IRequestCancellationManager, RequestCancellationManager>();
+            serviceCollection.TryAddScoped<IRpcService, RpcService>();
+            serviceCollection.TryAddSingleton<IClientResponseManager, ClientResponseManager>();
         }
     }
 }

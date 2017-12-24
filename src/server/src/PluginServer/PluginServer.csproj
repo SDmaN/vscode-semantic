@@ -7,6 +7,9 @@
       <DefineConstants>TRACE;DEBUG;NETCOREAPP2_0;</DefineConstants>
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -18,8 +21,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CompillerServices\CompillerServices.csproj" />
     <ProjectReference Include="..\LanguageServerProtocol\LanguageServerProtocol.csproj" />
+    <ProjectReference Include="..\SlangGrammar\SlangGrammar.csproj" />
   </ItemGroup>
 </Project>

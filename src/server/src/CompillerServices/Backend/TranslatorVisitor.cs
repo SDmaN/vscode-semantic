@@ -95,6 +95,18 @@ namespace CompillerServices.Backend
             return result;
         }
 
+        public override object VisitStatement(SlangParser.StatementContext context)
+        {
+            object result =  base.VisitStatement(context);
+
+            if (context.@if() == null)
+            {
+                _sourceWriter.WriteStatementEnd();
+            }
+
+            return result;
+        }
+
         public override object VisitDeclare(SlangParser.DeclareContext context)
         {
             ITerminalNode type = context.Type();
@@ -109,7 +121,6 @@ namespace CompillerServices.Backend
             }
 
             object result = base.VisitDeclare(context);
-            _sourceWriter.WriteStatementEnd();
 
             return result;
         }
@@ -121,11 +132,6 @@ namespace CompillerServices.Backend
             _sourceWriter.WriteAssign();
 
             object result = base.VisitLet(context);
-
-            if (context.let() == null)
-            {
-                _sourceWriter.WriteStatementEnd();
-            }
 
             return result;
         }
@@ -140,20 +146,14 @@ namespace CompillerServices.Backend
 
         public override object VisitOutput(SlangParser.OutputContext context)
         {
-            _sourceWriter.WriteOutputBegin();
-            object result = base.VisitOutput(context);
-            _sourceWriter.WriteOutputEnd();
-
-            return result;
+            _sourceWriter.WriteOutput();
+            return base.VisitOutput(context);
         }
 
         public override object VisitReturn(SlangParser.ReturnContext context)
         {
-            _sourceWriter.WriteReturnBegin();
-            object result = base.VisitReturn(context);
-            _sourceWriter.WriteReturnEnd();
-
-            return result;
+            _sourceWriter.WriteReturn();
+            return base.VisitReturn(context);
         }
 
         public override object VisitMathExpSum(SlangParser.MathExpSumContext context)
@@ -203,9 +203,9 @@ namespace CompillerServices.Backend
 
         public override object VisitMathFactorBrackets(SlangParser.MathFactorBracketsContext context)
         {
-            _sourceWriter.WriteBracketBegin();
+            _sourceWriter.WriteBraceBegin();
             object result = Visit(context.mathExp());
-            _sourceWriter.WriteBracketEnd();
+            _sourceWriter.WriteBraceEnd();
 
             return result;
         }
@@ -224,7 +224,11 @@ namespace CompillerServices.Backend
 
         public override object VisitMathAtom(SlangParser.MathAtomContext context)
         {
-            _sourceWriter.WriteRaw(context.GetChild(0).GetText());
+            if (context.call() == null)
+            {
+                _sourceWriter.WriteRaw(context.GetChild(0).GetText());
+            }
+
             return base.VisitMathAtom(context);
         }
 
@@ -326,9 +330,9 @@ namespace CompillerServices.Backend
 
         public override object VisitBoolAtomBrackets(SlangParser.BoolAtomBracketsContext context)
         {
-            _sourceWriter.WriteBracketBegin();
+            _sourceWriter.WriteBraceBegin();
             object result = base.VisitBoolAtomBrackets(context);
-            _sourceWriter.WriteBracketEnd();
+            _sourceWriter.WriteBraceEnd();
 
             return result;
         }
@@ -336,17 +340,79 @@ namespace CompillerServices.Backend
         public override object VisitBoolAtomBracketsNot(SlangParser.BoolAtomBracketsNotContext context)
         {
             _sourceWriter.WriteNot();
-            _sourceWriter.WriteBracketBegin();
+            _sourceWriter.WriteBraceBegin();
             object result = base.VisitBoolAtomBracketsNot(context);
-            _sourceWriter.WriteBracketEnd();
+            _sourceWriter.WriteBraceEnd();
 
             return result;
         }
 
         public override object VisitBoolAtom(SlangParser.BoolAtomContext context)
         {
-            _sourceWriter.WriteRaw(context.GetChild(0).GetText());
+            if (context.call() == null)
+            {
+                _sourceWriter.WriteRaw(context.GetChild(0).GetText());
+            }
+
             return base.VisitBoolAtom(context);
+        }
+
+        public override object VisitCall(SlangParser.CallContext context)
+        {
+            ITerminalNode id = context.Id();
+
+            _sourceWriter.WriteFunctionCallBegin(id.GetText());
+            object result = base.VisitCall(context);
+            _sourceWriter.WriteFunctionCallEnd();
+
+            return result;
+        }
+
+        public override object VisitCallArgList(SlangParser.CallArgListContext context)
+        {
+            SlangParser.CallArgContext[] args = context.callArg();
+
+            if (args.Length <= 0)
+            {
+                return null;
+            }
+
+            Visit(args[0]);
+
+            if (args.Length <= 1)
+            {
+                return null;
+            }
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                _sourceWriter.WriteCallArgSeparator();
+                Visit(args[i]);
+            }
+
+            return null;
+        }
+
+        public override object VisitIfSingle(SlangParser.IfSingleContext context)
+        {
+            _sourceWriter.WriteIfBegin();
+            Visit(context.boolOr());
+            _sourceWriter.WriteIfEnd();
+            Visit(context.statementBlock());
+
+            return null;
+        }
+
+        public override object VisitIfElse(SlangParser.IfElseContext context)
+        {
+            _sourceWriter.WriteIfBegin();
+            Visit(context.boolOr());
+            _sourceWriter.WriteIfEnd();
+            Visit(context.statementBlock(0));
+            _sourceWriter.WriteElse();
+            Visit(context.statementBlock(1));
+
+            return null;
         }
     }
 }

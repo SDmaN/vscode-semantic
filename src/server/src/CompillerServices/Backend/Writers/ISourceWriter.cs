@@ -28,11 +28,17 @@ namespace CompillerServices.Backend.Writers
         void WriteAssign();
 
         void WriteInput(string identifier);
-        void WriteOutputBegin();
-        void WriteOutputEnd();
+        void WriteOutput();
 
-        void WriteReturnBegin();
-        void WriteReturnEnd();
+        void WriteReturn();
+
+        void WriteFunctionCallBegin(string functionName);
+        void WriteCallArgSeparator();
+        void WriteFunctionCallEnd();
+
+        void WriteIfBegin();
+        void WriteIfEnd();
+        void WriteElse();
 
         void WriteSum();
         void WriteSubstraction();
@@ -40,8 +46,8 @@ namespace CompillerServices.Backend.Writers
         void WriteDivision();
         void WriteMod();
 
-        void WriteBracketBegin();
-        void WriteBracketEnd();
+        void WriteBraceBegin();
+        void WriteBraceEnd();
 
         void WritePlus();
         void WriteMinus();
@@ -57,6 +63,7 @@ namespace CompillerServices.Backend.Writers
         void WriteNot();
 
         void WriteRaw(string raw);
+        void WriteLine();
 
         Task FlushAsync();
     }

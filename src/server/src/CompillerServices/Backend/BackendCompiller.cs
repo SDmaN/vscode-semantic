@@ -18,7 +18,7 @@ namespace CompillerServices.Backend
             int charPositionInLine, string msg,
             RecognitionException e)
         {
-            throw new Exception(msg);
+            Console.WriteLine(msg);
         }
     }
 
@@ -80,7 +80,7 @@ namespace CompillerServices.Backend
 
                     SlangLexer lexer = _lexerFactory.Create(inputContent);
                     SlangParser parser = _parserFactory.Create(lexer);
-                    parser.AddErrorListener(new BaseErrorListener());
+                    parser.AddErrorListener(new ExceptionErrorListener());
 
                     TranslatorVisitor visitor = new TranslatorVisitor(sourceWriter);
 

@@ -1,4 +1,5 @@
-﻿using System.CodeDom.Compiler;
+﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -10,6 +11,12 @@ namespace CompillerServices.Backend.Writers
 {
     public class CppWriter : ISourceWriter
     {
+        #region Standard functions
+
+        private const string EntryFunctionName = "main";
+
+        #endregion
+
         #region Standard library modules
 
         private static readonly IDictionary<string, string> ModuleStandardIncludes;
@@ -106,18 +113,7 @@ namespace CompillerServices.Backend.Writers
             StringBuilder declarationBuilder = new StringBuilder();
             declarationBuilder.Append($"{returningType} {name}(");
 
-            IEnumerable<FunctionArgument> argumentsAsArray = arguments as FunctionArgument[] ?? arguments.ToArray();
-
-            if (arguments != null && argumentsAsArray.Any())
-            {
-                FunctionArgument firstArg = argumentsAsArray.First();
-                declarationBuilder.Append($"{firstArg.Type} {firstArg.Name}");
-
-                foreach (FunctionArgument arg in argumentsAsArray.Skip(1))
-                {
-                    declarationBuilder.Append($", {arg.Type} {arg.Name}");
-                }
-            }
+            AppendArguments(declarationBuilder, arguments);
 
             declarationBuilder.Append(")");
             string declaration = declarationBuilder.ToString();
@@ -128,10 +124,6 @@ namespace CompillerServices.Backend.Writers
 
         public void WriteProcedure(string accessModifier, string name, IEnumerable<FunctionArgument> arguments)
         {
-            if (name == "main")
-            {
-            }
-
             WriteFunction(accessModifier, "void", name, arguments);
         }
 
@@ -158,27 +150,48 @@ namespace CompillerServices.Backend.Writers
         public void WriteInput(string identifier)
         {
             _sourceWriter.Write($"std::cin >> {identifier}");
-            WriteStatementEnd();
         }
 
-        public void WriteOutputBegin()
+        public void WriteOutput()
         {
             _sourceWriter.Write("std::cout << ");
         }
 
-        public void WriteOutputEnd()
-        {
-            WriteStatementEnd();
-        }
-
-        public void WriteReturnBegin()
+        public void WriteReturn()
         {
             _sourceWriter.Write("return ");
         }
 
-        public void WriteReturnEnd()
+        public void WriteFunctionCallBegin(string functionName)
         {
-            WriteStatementEnd();
+            _sourceWriter.Write($"{functionName}(");
+        }
+
+        public void WriteCallArgSeparator()
+        {
+            _sourceWriter.Write($", ");
+        }
+
+        public void WriteFunctionCallEnd()
+        {
+            _sourceWriter.Write(")");
+        }
+
+        public void WriteIfBegin()
+        {
+            _sourceWriter.Write("if ");
+            WriteBraceBegin();
+        }
+
+        public void WriteIfEnd()
+        {
+            WriteBraceEnd();
+            WriteLine();
+        }
+
+        public void WriteElse()
+        {
+            _sourceWriter.WriteLine("else");
         }
 
         public void WriteSum()
@@ -206,12 +219,12 @@ namespace CompillerServices.Backend.Writers
             _sourceWriter.Write(" % ");
         }
 
-        public void WriteBracketBegin()
+        public void WriteBraceBegin()
         {
             _sourceWriter.Write("(");
         }
 
-        public void WriteBracketEnd()
+        public void WriteBraceEnd()
         {
             _sourceWriter.Write(")");
         }
@@ -276,6 +289,11 @@ namespace CompillerServices.Backend.Writers
             _sourceWriter.Write(raw);
         }
 
+        public void WriteLine()
+        {
+            _sourceWriter.WriteLine();
+        }
+
         public Task FlushAsync()
         {
             return Task.WhenAll(_headerWriter.FlushAsync(), _sourceWriter.FlushAsync());
@@ -291,10 +309,22 @@ namespace CompillerServices.Backend.Writers
             return IsStandard(module) ? ModuleStandardIncludes[module] : $"{module}.h";
         }
 
-        #region Standard functions
+        private static void AppendArguments(StringBuilder builder, IEnumerable<FunctionArgument> arguments)
+        {
+            IEnumerable<FunctionArgument> argumentsAsArray = arguments as FunctionArgument[] ?? arguments.ToArray();
 
-        private const string EntryFunctionName = "main";
+            if (arguments == null || !argumentsAsArray.Any())
+            {
+                return;
+            }
 
-        #endregion
+            FunctionArgument firstArg = argumentsAsArray.First();
+            builder.Append($"{firstArg.Type} {firstArg.Name}");
+
+            foreach (FunctionArgument arg in argumentsAsArray.Skip(1))
+            {
+                builder.Append($", {arg.Type} {arg.Name}");
+            }
+        }
     }
 }

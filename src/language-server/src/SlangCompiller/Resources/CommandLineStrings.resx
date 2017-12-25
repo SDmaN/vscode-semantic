@@ -135,4 +135,10 @@
   <data name="Translate_OutputDirectory_Description" xml:space="preserve">
     <value>Directory where output C++ code will be stored.</value>
   </data>
+  <data name="UnknownCommand" xml:space="preserve">
+    <value>Unknown command or option.</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>Welcome to Semantic Language to C++ translator and compiller!</value>
+  </data>
 </root>

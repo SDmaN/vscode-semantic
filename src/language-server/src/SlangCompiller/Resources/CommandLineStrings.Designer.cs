@@ -22,14 +22,14 @@ namespace SlangCompiller.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class CommandLine {
+    internal class CommandLineStrings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal CommandLine() {
+        internal CommandLineStrings() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace SlangCompiller.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SlangCompiller.Resources.CommandLine", typeof(CommandLine).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SlangCompiller.Resources.CommandLineStrings", typeof(CommandLineStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -111,6 +111,24 @@ namespace SlangCompiller.Resources {
         internal static string Translate_OutputDirectory_Description {
             get {
                 return ResourceManager.GetString("Translate_OutputDirectory_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown command or option..
+        /// </summary>
+        internal static string UnknownCommand {
+            get {
+                return ResourceManager.GetString("UnknownCommand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Welcome to Semantic Language to C++ translator and compiller!.
+        /// </summary>
+        internal static string Welcome {
+            get {
+                return ResourceManager.GetString("Welcome", resourceCulture);
             }
         }
     }

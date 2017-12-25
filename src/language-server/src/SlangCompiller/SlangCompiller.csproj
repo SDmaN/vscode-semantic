@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -14,17 +15,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\CommandLine.Designer.cs">
+    <Compile Update="Resources\CommandLineStrings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>CommandLine.resx</DependentUpon>
+      <DependentUpon>CommandLineStrings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Resources\CommandLine.resx">
+    <EmbeddedResource Update="Resources\CommandLineStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>CommandLine.Designer.cs</LastGenOutput>
+      <LastGenOutput>CommandLineStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

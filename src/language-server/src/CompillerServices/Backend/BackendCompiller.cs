@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,9 +45,29 @@ namespace CompillerServices.Backend
         public async Task Compile(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
             RelativePathGetter relativePathGetter)
         {
+            if (!inputDirectory.Exists)
+            {
+                await _outputWriter.WriteError(string.Format(Strings.CouldNotFindDirectory, inputDirectory.FullName));
+                return;
+            }
+
             if (!outputDirectory.Exists)
             {
                 outputDirectory.Create();
+            }
+            else
+            {
+                await ClearDirectory(outputDirectory);
+            }
+
+            try
+            {
+                await _entryPointWriter.WriteEntryPoint(inputDirectory, outputDirectory);
+            }
+            catch (Exception e)
+            {
+                await _outputWriter.WriteError(e.Message);
+                return;
             }
 
             IEnumerable<FileInfo> inputFiles = inputDirectory.GetFiles(SlangFileMask, SearchOption.TopDirectoryOnly);
@@ -58,8 +79,6 @@ namespace CompillerServices.Backend
 
                 await Compile(inputFile, outputPath);
             }
-
-            await _entryPointWriter.WriteEntryPoint(inputDirectory, outputDirectory);
         }
 
         public async Task Compile(FileInfo inputFile, string outputPath)
@@ -68,11 +87,7 @@ namespace CompillerServices.Backend
 
             DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
 
-            if (outputDirectory.Exists)
-            {
-                await ClearDirectory(outputDirectory);
-            }
-            else
+            if (!outputDirectory.Exists)
             {
                 outputDirectory.Create();
             }

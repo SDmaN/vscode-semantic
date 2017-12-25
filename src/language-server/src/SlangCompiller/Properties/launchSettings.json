@@ -2,7 +2,7 @@
   "profiles": {
     "SlangCompiller": {
       "commandName": "Project",
-      "commandLineArgs": "translate -h"
+      "commandLineArgs": "tr C:\\Users\\sdman\\Desktop\\semlang C:\\Users\\sdman\\Desktop\\semlang\\out"
     }
   }
 }

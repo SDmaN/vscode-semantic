@@ -6,6 +6,7 @@ using CompillerServices.Backend.Writers;
 using CompillerServices.Output;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SlangGrammar.Factories;
 
 namespace CompillerServices.DependencyInjection
 {
@@ -18,6 +19,8 @@ namespace CompillerServices.DependencyInjection
                 throw new ArgumentNullException(nameof(serviceCollection));
             }
 
+            serviceCollection.TryAddTransient<ILexerFactory, LexerFactory>();
+            serviceCollection.TryAddTransient<IParserFactory, ParserFactory>();
             serviceCollection.TryAddTransient<ISourceWriterFactory, CppFileWriterFactory>();
             serviceCollection.TryAddTransient<IBackendCompiller, BackendCompiller>();
             serviceCollection.TryAddTransient<IProjectFileManager, ProjectFileManager>();

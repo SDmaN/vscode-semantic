@@ -21,6 +21,11 @@ namespace CompillerServices.Output
             _outputWriter?.Dispose();
         }
 
+        public async Task WriteError(string errorMessage)
+        {
+            await WriteLineAsync($"[err]: {errorMessage}");
+        }
+
         public virtual async Task WriteFileTranslating(FileInfo source)
         {
             await WriteLineAsync($"[tr]: {source.Name}");

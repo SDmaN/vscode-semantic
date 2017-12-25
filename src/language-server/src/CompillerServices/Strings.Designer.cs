@@ -22,7 +22,7 @@ namespace CompillerServices {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Strings {
+    internal class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace CompillerServices {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CompillerServices.Strings", typeof(Strings).Assembly);
@@ -51,12 +51,21 @@ namespace CompillerServices {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find directory {0}..
+        /// </summary>
+        internal static string CouldNotFindDirectory {
+            get {
+                return ResourceManager.GetString("CouldNotFindDirectory", resourceCulture);
             }
         }
         
@@ -70,7 +79,7 @@ namespace CompillerServices {
         ///    return 0;
         ///}.
         /// </summary>
-        public static string MainContent {
+        internal static string MainContent {
             get {
                 return ResourceManager.GetString("MainContent", resourceCulture);
             }
@@ -79,16 +88,16 @@ namespace CompillerServices {
         /// <summary>
         ///   Looks up a localized string similar to Main module is not specified in project file..
         /// </summary>
-        public static string MainModuleNotSpecified {
+        internal static string MainModuleNotSpecified {
             get {
                 return ResourceManager.GetString("MainModuleNotSpecified", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project file does not exists in directory {0}..
+        ///   Looks up a localized string similar to Project file does not exists in directory {0}.
         /// </summary>
-        public static string ProjectFileNotFound {
+        internal static string ProjectFileNotFound {
             get {
                 return ResourceManager.GetString("ProjectFileNotFound", resourceCulture);
             }
@@ -97,7 +106,7 @@ namespace CompillerServices {
         /// <summary>
         ///   Looks up a localized string similar to Project file parsing error occurred..
         /// </summary>
-        public static string ProjectFileParsingException {
+        internal static string ProjectFileParsingException {
             get {
                 return ResourceManager.GetString("ProjectFileParsingException", resourceCulture);
             }
@@ -106,7 +115,7 @@ namespace CompillerServices {
         /// <summary>
         ///   Looks up a localized string similar to The directory must contain only one project file..
         /// </summary>
-        public static string TooManyProjectFiles {
+        internal static string TooManyProjectFiles {
             get {
                 return ResourceManager.GetString("TooManyProjectFiles", resourceCulture);
             }

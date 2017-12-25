@@ -29,10 +29,6 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Strings.ru.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>

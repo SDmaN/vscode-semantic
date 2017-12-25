@@ -3,6 +3,7 @@ using CompillerServices.Backend;
 using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.ProjectFile;
 using CompillerServices.Backend.Writers;
+using CompillerServices.Output;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -21,6 +22,7 @@ namespace CompillerServices.DependencyInjection
             serviceCollection.TryAddTransient<IBackendCompiller, BackendCompiller>();
             serviceCollection.TryAddTransient<IProjectFileManager, ProjectFileManager>();
             serviceCollection.TryAddTransient<IEntryPointWriter, EntryPointWriter>();
+            serviceCollection.TryAddTransient<IOutputWriter, ConsoleOutputWriter>();
 
             return serviceCollection;
         }

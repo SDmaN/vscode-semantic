@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Antlr4.Runtime;
 using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.Writers;
+using CompillerServices.Output;
 using SlangGrammar;
 using SlangGrammar.Factories;
 using RelativePathGetter = System.Func<System.IO.DirectoryInfo, System.IO.DirectoryInfo, string>;
@@ -18,7 +18,7 @@ namespace CompillerServices.Backend
             int charPositionInLine, string msg,
             RecognitionException e)
         {
-            Console.WriteLine(msg);
+            throw e;
         }
     }
 
@@ -26,18 +26,19 @@ namespace CompillerServices.Backend
     {
         private const string SlangFileMask = "*" + Constants.SlangExtension;
         private readonly IEntryPointWriter _entryPointWriter;
-
         private readonly ILexerFactory _lexerFactory;
+        private readonly IOutputWriter _outputWriter;
         private readonly IParserFactory _parserFactory;
         private readonly ISourceWriterFactory _sourceWriterFactory;
 
         public BackendCompiller(ILexerFactory lexerFactory, IParserFactory parserFactory,
-            ISourceWriterFactory sourceWriterFactory, IEntryPointWriter entryPointWriter)
+            ISourceWriterFactory sourceWriterFactory, IEntryPointWriter entryPointWriter, IOutputWriter outputWriter)
         {
             _lexerFactory = lexerFactory;
             _parserFactory = parserFactory;
             _sourceWriterFactory = sourceWriterFactory;
             _entryPointWriter = entryPointWriter;
+            _outputWriter = outputWriter;
         }
 
         public async Task Compile(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
@@ -63,6 +64,8 @@ namespace CompillerServices.Backend
 
         public async Task Compile(FileInfo inputFile, string outputPath)
         {
+            await _outputWriter.WriteFileTranslating(inputFile);
+
             DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
 
             if (outputDirectory.Exists)
@@ -92,8 +95,10 @@ namespace CompillerServices.Backend
             }
         }
 
-        private static Task ClearDirectory(DirectoryInfo directory)
+        private async Task ClearDirectory(DirectoryInfo directory)
         {
+            await _outputWriter.WriteDirectoryClean(directory);
+
             foreach (FileInfo file in directory.GetFiles().AsParallel())
             {
                 file.Delete();
@@ -103,8 +108,6 @@ namespace CompillerServices.Backend
             {
                 subDirectory.Delete(true);
             }
-
-            return Task.CompletedTask;
         }
     }
 }

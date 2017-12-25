@@ -4,7 +4,7 @@ import * as path from 'path';
 
 const isDebug = true;
 
-export function startLanguageServer(context: vscode.ExtensionContext) {
+export function activateLanguageServer(context: vscode.ExtensionContext) {
     let serverModule;
 
     if(isDebug) {

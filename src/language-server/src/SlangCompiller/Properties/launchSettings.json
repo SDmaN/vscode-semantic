@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SlangCompiller": {
+      "commandName": "Project",
+      "commandLineArgs": "translate -h"
+    }
+  }
+}

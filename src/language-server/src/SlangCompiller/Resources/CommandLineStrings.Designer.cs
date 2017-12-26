@@ -79,6 +79,15 @@ namespace SlangCompiller.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Path not specified: {0}..
+        /// </summary>
+        internal static string PathNotSet {
+            get {
+                return ResourceManager.GetString("PathNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show version..
         /// </summary>
         internal static string ShowVersion {

@@ -123,6 +123,9 @@
   <data name="HelpDescription" xml:space="preserve">
     <value>Show help.</value>
   </data>
+  <data name="PathNotSet" xml:space="preserve">
+    <value>Path not specified: {0}.</value>
+  </data>
   <data name="ShowVersion" xml:space="preserve">
     <value>Show version.</value>
   </data>

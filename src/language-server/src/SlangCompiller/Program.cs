@@ -2,7 +2,8 @@
 using System.IO;
 using CompillerServices.Backend;
 using CompillerServices.DependencyInjection;
-using Microsoft.Extensions.CommandLineUtils;
+using CompillerServices.Output;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using SlangCompiller.Resources;
 
@@ -42,14 +43,21 @@ namespace SlangCompiller
                 Description = CommandLineStrings.ApplicationDescription
             };
 
-            application.HelpOption("-h|--help").Description = CommandLineStrings.HelpDescription;
+            CommandOption help = application.HelpOption("-h|--help");
+            help.Description = CommandLineStrings.HelpDescription;
 
             application.Command("tr", TranslateCommand);
 
             application.OnExecute(() =>
             {
+                if (help.HasValue())
+                {
+                    return 0;
+                }
+
                 Console.WriteLine(CommandLineStrings.Welcome);
                 application.ShowHint();
+
                 return 0;
             });
 
@@ -76,12 +84,31 @@ namespace SlangCompiller
 
             c.OnExecute(async () =>
             {
+                if (help.HasValue())
+                {
+                    return 0;
+                }
+
                 string inputPath = inputPathCommand.Value;
                 string outputPath = outputPathCommand.Value;
 
-                if (string.IsNullOrWhiteSpace(inputPath) || string.IsNullOrWhiteSpace(outputPath))
+                bool isInputEmpty = string.IsNullOrEmpty(inputPath);
+                bool isOutputEmpty = string.IsNullOrWhiteSpace(outputPath);
+
+                IOutputWriter outputWriter = ServiceProvider.GetService<IOutputWriter>();
+
+                if (isInputEmpty)
                 {
-                    c.ShowHelp();
+                    await outputWriter.WriteError(string.Format(CommandLineStrings.PathNotSet, "<inputPath>"));
+                }
+
+                if (isOutputEmpty)
+                {
+                    await outputWriter.WriteError(string.Format(CommandLineStrings.PathNotSet, "<outputPath>"));
+                }
+
+                if (isOutputEmpty || isInputEmpty)
+                {
                     return 0;
                 }
 

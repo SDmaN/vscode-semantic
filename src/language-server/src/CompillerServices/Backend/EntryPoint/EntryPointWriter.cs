@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using CompillerServices.Backend.ProjectFile;
+using CompillerServices.Resources;
 
 namespace CompillerServices.Backend.EntryPoint
 {

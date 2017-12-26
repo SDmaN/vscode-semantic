@@ -7,6 +7,7 @@ using Antlr4.Runtime;
 using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.Writers;
 using CompillerServices.Output;
+using CompillerServices.Resources;
 using SlangGrammar;
 using SlangGrammar.Factories;
 using RelativePathGetter = System.Func<System.IO.DirectoryInfo, System.IO.DirectoryInfo, string>;

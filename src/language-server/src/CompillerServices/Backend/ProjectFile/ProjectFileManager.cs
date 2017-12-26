@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using CompillerServices.Exceptions;
+using CompillerServices.Resources;
 using Newtonsoft.Json;
 
 namespace CompillerServices.Backend.ProjectFile

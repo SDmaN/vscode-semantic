@@ -11,16 +11,26 @@ moduleImports: ('import' Id)*;
 module: 'module' Id moduleBlock;
 moduleBlock: BeginBlock (func | proc)* EndBlock;
 
-func: AccessModifier 'fun' Type Id '(' argList ')' statementBlock;
+arrayOrSimpleType: (arrayType | Type);
+
+func: AccessModifier 'fun' arrayOrSimpleType Id '(' argList ')' statementBlock;
 proc: AccessModifier 'proc' Id '(' argList ')' statementBlock;
-argList: Type Id (',' Type Id)* | /* нет аргументов */ ;
+argList: arrayOrSimpleType Id (',' arrayOrSimpleType Id)* | /* нет аргументов */ ;
 
 statementBlock: BeginBlock statementSequence EndBlock;
 statementSequence: (statement)*;
-statement: declare | let | input | output | return | call | if | whileLoop | doWhileLoop;
+statement: declare | arrayDeclare | assign | input | output | return | call | if | whileLoop | doWhileLoop;
 
-declare: Type Id ('=' mathExp | '=' boolOr)?;
-let: Id '=' mathExp | Id '=' boolOr | Id '=' let;
+declare: arrayOrSimpleType Id ('=' mathExp | '=' boolOr | '=' arrayDeclare)?;
+
+arrayType: Type ArrayTypeBrackets (ArrayTypeBrackets)*;
+arrayDeclare: NewKeyword Type '[' mathExp ']' ('[' mathExp ']')*;
+arrayElement: Id '[' mathExp ']' ('[' mathExp ']')*;
+
+assign: singleAssign | arrayAssign;
+singleAssign: Id '=' mathExp | Id '=' boolOr | Id '=' assign;
+arrayAssign: arrayElement '=' mathExp | arrayElement '=' boolOr | arrayElement '=' assign;
+
 return: 'return' (mathExp | boolOr)?;
 
 input: 'input' Id;
@@ -37,14 +47,14 @@ doWhileLoop: 'do' statementBlock 'while' '(' boolOr ')';
 mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpSub;
 mathTerm: mathFactor #MathTermEmpty | mathFactor '*' mathTerm #MathTermMul | mathFactor '/' mathTerm #MathTermDiv | mathFactor '%' mathTerm #MathTermMod;
 mathFactor : mathAtom #MathFactorEmpty | '(' mathExp ')' #MathFactorBrackets | '+' mathFactor #MathFactorUnaryPlus | '-' mathFactor #MathFactorUnaryMinus;
-mathAtom: call | IntValue | RealValue | Id;
+mathAtom: call | arrayElement | IntValue | RealValue | Id;
 
 boolOr: boolAnd #BoolOrEmpty | boolAnd '||' boolOr #LogicOr;
 boolAnd: boolEquality #BoolAndEmpty | boolEquality '&&' boolAnd #LogicAnd;
 boolEquality: boolInequality #BoolEqualityEmpty | boolInequality '==' boolEquality #BoolEqual | mathExp '==' mathExp #MathEqual | boolInequality '!=' boolEquality #BoolNotEqual | mathExp '!=' mathExp #MathNotEqual;
 boolInequality: boolFactor #BoolInequalityEmpty | mathExp '>' mathExp #Bigger | mathExp '<' mathExp #Lesser | mathExp '>=' mathExp #BiggerOrEqual | mathExp '<=' mathExp #LesserOrEqual;
 boolFactor: boolAtom #BoolAtomEmpty | '!' boolAtom #Not | '(' boolOr ')' #BoolAtomBrackets | '!' '(' boolOr ')' #BoolAtomBracketsNot;
-boolAtom: call | BoolValue | Id;
+boolAtom: call | arrayElement | BoolValue | Id;
 
 /*
  * Lexer Rules
@@ -55,8 +65,12 @@ EndBlock: 'end';
 
 Type: Int | Real | Bool;
 Int: 'int';
-Real: 'float';
+Real: 'real';
 Bool: 'bool';
+
+ArrayTypeBrackets: '[' ']';
+
+NewKeyword: 'new';
 
 AccessModifier: PublicModifier | InternalModifier;
 

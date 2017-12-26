@@ -69,6 +69,13 @@ namespace CompillerServices.Backend.Writers
         void WriteLesserOrEqual();
         void WriteNot();
 
+        string GetArrayType(string elementType, int dimentionsCount);
+        void WriteArrayDimention(string type, int index, int dimentionsCount);
+        void WriteArrayEnd(int dimentionsCount);
+
+        void WriteArrayElementBegin();
+        void WriteArrayElementEnd();
+
         void WriteRaw(string raw);
         void WriteLine();
 

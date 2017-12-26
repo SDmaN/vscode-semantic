@@ -1,5 +1,4 @@
-﻿using System;
-using System.CodeDom.Compiler;
+﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -11,13 +10,15 @@ namespace CompillerServices.Backend.Writers
 {
     public class CppWriter : ISourceWriter
     {
-        #region Standard functions
-
-        #endregion
-
         #region Standard library modules
 
         private static readonly IDictionary<string, string> ModuleStandardIncludes;
+
+        #endregion
+
+        #region Standard types
+
+        private static readonly IDictionary<string, string> StandardTypes;
 
         #endregion
 
@@ -26,12 +27,17 @@ namespace CompillerServices.Backend.Writers
 
         static CppWriter()
         {
-            Dictionary<string, string> moduleIncludes = new Dictionary<string, string>
+            ModuleStandardIncludes = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>
             {
                 { "Math", "cmath" }
-            };
+            });
 
-            ModuleStandardIncludes = new ReadOnlyDictionary<string, string>(moduleIncludes);
+            StandardTypes = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>
+            {
+                { "int", "int" },
+                { "real", "float" },
+                { "string", "std::string" }
+            });
         }
 
         public CppWriter(TextWriter headerWriter, TextWriter sourceWriter)
@@ -49,6 +55,8 @@ namespace CompillerServices.Backend.Writers
         public void WriteImportBegin()
         {
             _sourceWriter.WriteLine("#include <iostream>");
+            _sourceWriter.WriteLine("#include <vector>");
+            _sourceWriter.WriteLine("#include <string>");
         }
 
         public void WriteImport(string importingModule)
@@ -108,7 +116,7 @@ namespace CompillerServices.Backend.Writers
             IEnumerable<FunctionArgument> arguments)
         {
             StringBuilder declarationBuilder = new StringBuilder();
-            declarationBuilder.Append($"{returningType} {name}(");
+            declarationBuilder.Append($"{TranslateType(returningType)} {name}(");
 
             AppendArguments(declarationBuilder, arguments);
 
@@ -126,7 +134,7 @@ namespace CompillerServices.Backend.Writers
 
         public void WriteStatementEnd(StatementType statementType = StatementType.SingleStatement)
         {
-            if(statementType != StatementType.BlockStatement)
+            if (statementType != StatementType.BlockStatement)
             {
                 _sourceWriter.WriteLine(";");
             }
@@ -134,7 +142,7 @@ namespace CompillerServices.Backend.Writers
 
         public void WriteType(string type)
         {
-            _sourceWriter.Write($"{type} ");
+            _sourceWriter.Write($"{TranslateType(type)} ");
         }
 
         public void WriteIdentifier(string identifier)
@@ -314,6 +322,40 @@ namespace CompillerServices.Backend.Writers
             _sourceWriter.Write("!");
         }
 
+        public string GetArrayType(string elementType, int dimentionsCount)
+        {
+            return GetVectorForDimention(TranslateType(elementType), dimentionsCount);
+        }
+
+        public void WriteArrayDimention(string type, int index, int dimentionsCount)
+        {
+            if (index > 0)
+            {
+                _sourceWriter.Write(", ");
+            }
+
+            _sourceWriter.Write(GetVectorForDimention(TranslateType(type), dimentionsCount - index));
+            WriteBraceBegin();
+        }
+
+        public void WriteArrayEnd(int dimentionsCount)
+        {
+            for (int i = 0; i < dimentionsCount; i++)
+            {
+                WriteBraceEnd();
+            }
+        }
+
+        public void WriteArrayElementBegin()
+        {
+            _sourceWriter.Write("[");
+        }
+
+        public void WriteArrayElementEnd()
+        {
+            _sourceWriter.Write("]");
+        }
+
         public void WriteRaw(string raw)
         {
             _sourceWriter.Write(raw);
@@ -327,6 +369,25 @@ namespace CompillerServices.Backend.Writers
         public Task FlushAsync()
         {
             return Task.WhenAll(_headerWriter.FlushAsync(), _sourceWriter.FlushAsync());
+        }
+
+        private static string GetVectorForDimention(string type, int dimention)
+        {
+            StringBuilder vectorBuilder = new StringBuilder();
+
+            for (int i = 0; i < dimention; i++)
+            {
+                vectorBuilder.Append("std::vector<");
+            }
+
+            vectorBuilder.Append(type);
+
+            for (int i = 0; i < dimention; i++)
+            {
+                vectorBuilder.Append(">");
+            }
+
+            return vectorBuilder.ToString();
         }
 
         private static bool IsStandard(string module)
@@ -349,12 +410,26 @@ namespace CompillerServices.Backend.Writers
             }
 
             FunctionArgument firstArg = argumentsAsArray.First();
-            builder.Append($"{firstArg.Type} {firstArg.Name}");
+            builder.Append($"{TranslateType(firstArg.Type)} {firstArg.Name}");
 
             foreach (FunctionArgument arg in argumentsAsArray.Skip(1))
             {
-                builder.Append($", {arg.Type} {arg.Name}");
+                builder.Append($", {TranslateType(arg.Type)} {arg.Name}");
             }
         }
+
+        private static string TranslateType(string type)
+        {
+            if (StandardTypes.TryGetValue(type, out string cppType))
+            {
+                return cppType;
+            }
+
+            return type;
+        }
+
+        #region Standard functions
+
+        #endregion
     }
 }

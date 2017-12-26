@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using CompillerServices.Backend.Writers;
 using SlangGrammar;
@@ -47,41 +48,47 @@ namespace CompillerServices.Backend
 
         public override object VisitFunc(SlangParser.FuncContext context)
         {
-            ITerminalNode modifier = context.AccessModifier();
-            ITerminalNode type = context.Type();
-            ITerminalNode name = context.Id();
+            string modifier = context.AccessModifier().GetText();
+            string type = GetRuleTypeString(context.arrayOrSimpleType());
+            string name = context.Id().GetText();
 
-            ITerminalNode[] argTypes = context.argList().Type();
+            SlangParser.ArrayOrSimpleTypeContext[] argTypes = context.argList().arrayOrSimpleType();
             ITerminalNode[] argNames = context.argList().Id();
 
-            IList<FunctionArgument> arguments = new List<FunctionArgument>(argNames.Length);
+            IList<FunctionArgument> arguments = new List<FunctionArgument>(argTypes.Length);
 
-            for (int i = 0; i < argNames.Length; i++)
+            for (int i = 0; i < argTypes.Length; i++)
             {
-                arguments.Add(new FunctionArgument(argTypes[i].GetText(), argNames[i].GetText()));
+                string argType = GetRuleTypeString(argTypes[i]);
+                string argName = argNames[i].GetText();
+
+                arguments.Add(new FunctionArgument(argType, argName));
             }
 
-            _sourceWriter.WriteFunction(modifier.GetText(), type.GetText(), name.GetText(), arguments);
+            _sourceWriter.WriteFunction(modifier, type, name, arguments);
 
             return Visit(context.statementBlock());
         }
 
         public override object VisitProc(SlangParser.ProcContext context)
         {
-            ITerminalNode modifier = context.AccessModifier();
-            ITerminalNode name = context.Id();
+            string modifier = context.AccessModifier().GetText();
+            string name = context.Id().GetText();
 
-            ITerminalNode[] argTypes = context.argList().Type();
+            SlangParser.ArrayOrSimpleTypeContext[] argTypes = context.argList().arrayOrSimpleType();
             ITerminalNode[] argNames = context.argList().Id();
 
-            IList<FunctionArgument> arguments = new List<FunctionArgument>(argNames.Length);
+            IList<FunctionArgument> arguments = new List<FunctionArgument>(argTypes.Length);
 
-            for (int i = 0; i < argNames.Length; i++)
+            for (int i = 0; i < argTypes.Length; i++)
             {
-                arguments.Add(new FunctionArgument(argTypes[i].GetText(), argNames[i].GetText()));
+                string argType = GetRuleTypeString(argTypes[i]);
+                string argName = argNames[i].GetText();
+
+                arguments.Add(new FunctionArgument(argType, argName));
             }
 
-            _sourceWriter.WriteProcedure(modifier.GetText(), name.GetText(), arguments);
+            _sourceWriter.WriteProcedure(modifier, name, arguments);
 
             return Visit(context.statementBlock());
         }
@@ -97,7 +104,7 @@ namespace CompillerServices.Backend
 
         public override object VisitStatement(SlangParser.StatementContext context)
         {
-            object result =  base.VisitStatement(context);
+            object result = base.VisitStatement(context);
 
             StatementType statementType;
 
@@ -117,31 +124,85 @@ namespace CompillerServices.Backend
 
         public override object VisitDeclare(SlangParser.DeclareContext context)
         {
-            ITerminalNode type = context.Type();
-            ITerminalNode id = context.Id();
+            string type = GetRuleTypeString(context.arrayOrSimpleType());
 
-            _sourceWriter.WriteType(type.GetText());
+            _sourceWriter.WriteType(type);
+
+            ITerminalNode id = context.Id();
             _sourceWriter.WriteIdentifier(id.GetText());
 
-            if (context.mathExp() != null || context.boolOr() != null)
-            {
-                _sourceWriter.WriteAssign();
-            }
+            TryVisitDeclareRightPart(context.mathExp());
+            TryVisitDeclareRightPart(context.boolOr());
+            TryVisitDeclareRightPart(context.arrayDeclare());
 
-            object result = base.VisitDeclare(context);
-
-            return result;
+            return null;
         }
 
-        public override object VisitLet(SlangParser.LetContext context)
+        private void TryVisitDeclareRightPart(IParseTree context)
+        {
+            if (context == null)
+            {
+                return;
+            }
+
+            _sourceWriter.WriteAssign();
+            Visit(context);
+        }
+
+        public override object VisitArrayType(SlangParser.ArrayTypeContext context)
+        {
+            ITerminalNode type = context.Type();
+            return _sourceWriter.GetArrayType(type.GetText(), context.ArrayTypeBrackets().Length);
+        }
+
+        public override object VisitArrayDeclare(SlangParser.ArrayDeclareContext context)
+        {
+            ITerminalNode type = context.Type();
+
+            for (int i = 0; i < context.mathExp().Length; i++)
+            {
+                _sourceWriter.WriteArrayDimention(type.GetText(), i, context.mathExp().Length);
+                Visit(context.mathExp(i));
+            }
+
+            _sourceWriter.WriteArrayEnd(context.mathExp().Length);
+
+            return null;
+        }
+
+        public override object VisitSingleAssign(SlangParser.SingleAssignContext context)
         {
             ITerminalNode id = context.Id();
             _sourceWriter.WriteIdentifier(id.GetText());
             _sourceWriter.WriteAssign();
 
-            object result = base.VisitLet(context);
+            return base.VisitSingleAssign(context);
+        }
 
-            return result;
+        public override object VisitArrayAssign(SlangParser.ArrayAssignContext context)
+        {
+            Visit(context.arrayElement());
+            _sourceWriter.WriteAssign();
+
+            ParserRuleContext rightContext = context.GetRuleContext<ParserRuleContext>(1);
+            Visit(rightContext);
+
+            return null;
+        }
+
+        public override object VisitArrayElement(SlangParser.ArrayElementContext context)
+        {
+            ITerminalNode id = context.Id();
+            _sourceWriter.WriteIdentifier(id.GetText());
+
+            foreach (SlangParser.MathExpContext m in context.mathExp())
+            {
+                _sourceWriter.WriteArrayElementBegin();
+                Visit(m);
+                _sourceWriter.WriteArrayElementEnd();
+            }
+
+            return null;
         }
 
         public override object VisitInput(SlangParser.InputContext context)
@@ -232,7 +293,7 @@ namespace CompillerServices.Backend
 
         public override object VisitMathAtom(SlangParser.MathAtomContext context)
         {
-            if (context.call() == null)
+            if (context.call() == null && context.arrayElement() == null)
             {
                 _sourceWriter.WriteRaw(context.GetChild(0).GetText());
             }
@@ -357,7 +418,7 @@ namespace CompillerServices.Backend
 
         public override object VisitBoolAtom(SlangParser.BoolAtomContext context)
         {
-            if (context.call() == null)
+            if (context.call() == null && context.arrayElement() == null)
             {
                 _sourceWriter.WriteRaw(context.GetChild(0).GetText());
             }
@@ -441,8 +502,12 @@ namespace CompillerServices.Backend
             Visit(context.boolOr());
             _sourceWriter.WriteDoWhileEnd();
 
-
             return null;
+        }
+
+        private string GetRuleTypeString(SlangParser.ArrayOrSimpleTypeContext context)
+        {
+            return context.arrayType() != null ? (string) Visit(context.arrayType()) : context.Type().ToString();
         }
     }
 }

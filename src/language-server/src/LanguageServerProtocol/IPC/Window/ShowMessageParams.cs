@@ -6,7 +6,7 @@ namespace LanguageServerProtocol.IPC.Window
     {
         [JsonProperty("type")]
         public MessageType Type { get; set; }
-        
+
         [JsonProperty("message")]
         public string Message { get; set; }
     }

@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace CompillerServices.Backend.Writers
+﻿namespace CompillerServices.Backend.Writers
 {
     public interface ISourceWriterFactory
     {

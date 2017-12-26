@@ -107,6 +107,7 @@ namespace JsonRpc
                             {
                                 responseToken = JToken.FromObject(responseObject);
                             }
+
                             break;
 
                         default:

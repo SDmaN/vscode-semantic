@@ -7,10 +7,8 @@ namespace LanguageServerProtocol.Handlers.TextDocument
     [JsonConverter(typeof(StringEnumConverter))]
     public enum MarkupKind
     {
-        [EnumMember(Value = "plaintext")]
-        PlainText,
+        [EnumMember(Value = "plaintext")] PlainText,
 
-        [EnumMember(Value = "markdown")]
-        Markdown
+        [EnumMember(Value = "markdown")] Markdown
     }
 }

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using CompillerServices.Backend;
-using CompillerServices.Backend.Writers;
 using CompillerServices.DependencyInjection;
 using JsonRpc;
 using JsonRpc.DependencyInjection;
@@ -54,7 +53,7 @@ namespace PluginServer
 
             IServiceProvider provider = serviceCollection.BuildServiceProvider();
 
-            var b = provider.GetService<IBackendCompiller>();
+            IBackendCompiller b = provider.GetService<IBackendCompiller>();
             await b.Compile(new DirectoryInfo("C:/Users/sdman/Desktop/semlang/"),
                 new DirectoryInfo("C:/Users/sdman/Desktop/semlang/out/"),
                 (p, r) => Path.GetRelativePath(p.FullName, r.FullName));

@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Antlr4.Runtime;
-using Antlr4.Runtime.Atn;
-using Antlr4.Runtime.Dfa;
-using Antlr4.Runtime.Sharpen;
+using Antlr4.Runtime.Misc;
 using LanguageServerProtocol.Handlers.TextDocument;
 using LanguageServerProtocol.Handlers.TextDocument.Completion;
 using SlangGrammar;
@@ -81,7 +79,7 @@ namespace PluginServer.LanguageServices
                 int charPositionInLine, string msg,
                 RecognitionException e)
             {
-                var a = recognizer.Atn.GetExpectedTokens(e.OffendingState, e.Context);
+                IntervalSet a = recognizer.Atn.GetExpectedTokens(e.OffendingState, e.Context);
             }
         }
     }

@@ -15,7 +15,8 @@ arrayOrSimpleType: (arrayType | Type);
 
 func: AccessModifier 'fun' arrayOrSimpleType Id '(' argList ')' statementBlock;
 proc: AccessModifier 'proc' Id '(' argList ')' statementBlock;
-argList: arrayOrSimpleType Id (',' arrayOrSimpleType Id)* | /* нет аргументов */ ;
+argList: argPassModifier arrayOrSimpleType Id (',' argPassModifier arrayOrSimpleType Id)* | /* нет аргументов */ ;
+argPassModifier : (ArgPassModifier)?;
 
 statementBlock: BeginBlock statementSequence EndBlock;
 statementSequence: (statement)*;
@@ -73,6 +74,7 @@ ArrayTypeBrackets: '[' ']';
 NewKeyword: 'new';
 
 AccessModifier: PublicModifier | InternalModifier;
+ArgPassModifier: 'ref';
 
 PublicModifier: 'public';
 InternalModifier: 'internal';
@@ -80,9 +82,13 @@ InternalModifier: 'internal';
 Id: [_a-zA-Z][_a-zA-Z0-9]*;
 
 IntValue: Digit+;
-RealValue: [0-9]*'.'?[0-9]+([eE][-+]?[0-9]+)?;
-BoolValue: 'true' | 'false';
+RealValue: Digit*'.'?Digit+([eE][-+]?Digit+)?;
 fragment Digit: [0-9];
+
+BoolValue: 'true' | 'false';
+
+fragment Symbol: [a-zA-Z];
+fragment Escape: [\t\r\n];
 
 Comment: ('//' ~[\r\n]* | '/*' .*? '*/') -> skip;
 Ws: [ \t\r\n] -> skip;

@@ -51,19 +51,7 @@ namespace CompillerServices.Backend
             string modifier = context.AccessModifier().GetText();
             string type = GetRuleTypeString(context.arrayOrSimpleType());
             string name = context.Id().GetText();
-
-            SlangParser.ArrayOrSimpleTypeContext[] argTypes = context.argList().arrayOrSimpleType();
-            ITerminalNode[] argNames = context.argList().Id();
-
-            IList<FunctionArgument> arguments = new List<FunctionArgument>(argTypes.Length);
-
-            for (int i = 0; i < argTypes.Length; i++)
-            {
-                string argType = GetRuleTypeString(argTypes[i]);
-                string argName = argNames[i].GetText();
-
-                arguments.Add(new FunctionArgument(argType, argName));
-            }
+            IEnumerable<FunctionArgument> arguments = CreateArguments(context.argList());
 
             _sourceWriter.WriteFunction(modifier, type, name, arguments);
 
@@ -74,23 +62,31 @@ namespace CompillerServices.Backend
         {
             string modifier = context.AccessModifier().GetText();
             string name = context.Id().GetText();
+            IEnumerable<FunctionArgument> arguments = CreateArguments(context.argList());
 
-            SlangParser.ArrayOrSimpleTypeContext[] argTypes = context.argList().arrayOrSimpleType();
-            ITerminalNode[] argNames = context.argList().Id();
+            _sourceWriter.WriteProcedure(modifier, name, arguments);
+
+            return Visit(context.statementBlock());
+        }
+
+        private IEnumerable<FunctionArgument> CreateArguments(SlangParser.ArgListContext context)
+        {
+            SlangParser.ArrayOrSimpleTypeContext[] argTypes = context.arrayOrSimpleType();
+            ITerminalNode[] argNames = context.Id();
+            SlangParser.ArgPassModifierContext[] passModifiers = context.argPassModifier();
 
             IList<FunctionArgument> arguments = new List<FunctionArgument>(argTypes.Length);
 
             for (int i = 0; i < argTypes.Length; i++)
             {
+                string modifier = passModifiers[i].ArgPassModifier()?.GetText();
                 string argType = GetRuleTypeString(argTypes[i]);
                 string argName = argNames[i].GetText();
 
-                arguments.Add(new FunctionArgument(argType, argName));
+                arguments.Add(new FunctionArgument(modifier, argType, argName));
             }
 
-            _sourceWriter.WriteProcedure(modifier, name, arguments);
-
-            return Visit(context.statementBlock());
+            return arguments;
         }
 
         public override object VisitStatementBlock(SlangParser.StatementBlockContext context)

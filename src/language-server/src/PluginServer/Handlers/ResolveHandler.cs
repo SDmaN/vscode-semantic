@@ -8,7 +8,7 @@ namespace PluginServer.Handlers
     public class ResolveHandler : DefaultResolveHandler
     {
         public override Task<IRpcHandleResult<CompletionItem>> Handle(CompletionItem item)
-        {   
+        {
             return Task.FromResult(Ok(item));
         }
     }

@@ -410,11 +410,13 @@ namespace CompillerServices.Backend.Writers
             }
 
             FunctionArgument firstArg = argumentsAsArray.First();
-            builder.Append($"{TranslateType(firstArg.Type)} {firstArg.Name}");
+            string reference = firstArg.PassModifier == "ref" ? "&" : string.Empty;
+            builder.Append($"{TranslateType(firstArg.Type)} {reference}{firstArg.Name}");
 
             foreach (FunctionArgument arg in argumentsAsArray.Skip(1))
             {
-                builder.Append($", {TranslateType(arg.Type)} {arg.Name}");
+                reference = arg.PassModifier == "ref" ? "&" : string.Empty;
+                builder.Append($", {TranslateType(arg.Type)} {reference}{arg.Name}");
             }
         }
 

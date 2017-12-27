@@ -6,8 +6,9 @@
 
     public class ProcedureNameTableRow : SubprogramNameTableRow
     {
-        public ProcedureNameTableRow(string accessModifier, string name, ModuleNameTableRow parent)
-            : base(accessModifier, name, parent)
+        public ProcedureNameTableRow(int line, int column, string accessModifier, string name,
+            ModuleNameTableRow parent)
+            : base(line, column, accessModifier, name, parent)
         {
         }
     }

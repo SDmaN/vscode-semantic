@@ -113,7 +113,7 @@ namespace CompillerServices.Backend.Writers
         }
 
         public void WriteFunction(string accessModifier, string returningType, string name,
-            IEnumerable<FunctionArgument> arguments)
+            IEnumerable<SubprogramArgument> arguments)
         {
             StringBuilder declarationBuilder = new StringBuilder();
             declarationBuilder.Append($"{TranslateType(returningType)} {name}(");
@@ -127,7 +127,7 @@ namespace CompillerServices.Backend.Writers
             _sourceWriter.WriteLine(declaration);
         }
 
-        public void WriteProcedure(string accessModifier, string name, IEnumerable<FunctionArgument> arguments)
+        public void WriteProcedure(string accessModifier, string name, IEnumerable<SubprogramArgument> arguments)
         {
             WriteFunction(accessModifier, "void", name, arguments);
         }
@@ -401,20 +401,20 @@ namespace CompillerServices.Backend.Writers
             return IsStandard(module) ? ModuleStandardIncludes[module] : $"{module}.h";
         }
 
-        private static void AppendArguments(StringBuilder builder, IEnumerable<FunctionArgument> arguments)
+        private static void AppendArguments(StringBuilder builder, IEnumerable<SubprogramArgument> arguments)
         {
-            IEnumerable<FunctionArgument> argumentsAsArray = arguments as FunctionArgument[] ?? arguments.ToArray();
+            IEnumerable<SubprogramArgument> argumentsAsArray = arguments as SubprogramArgument[] ?? arguments.ToArray();
 
             if (arguments == null || !argumentsAsArray.Any())
             {
                 return;
             }
 
-            FunctionArgument firstArg = argumentsAsArray.First();
+            SubprogramArgument firstArg = argumentsAsArray.First();
             string reference = firstArg.PassModifier == "ref" ? "&" : string.Empty;
             builder.Append($"{TranslateType(firstArg.Type)} {reference}{firstArg.Name}");
 
-            foreach (FunctionArgument arg in argumentsAsArray.Skip(1))
+            foreach (SubprogramArgument arg in argumentsAsArray.Skip(1))
             {
                 reference = arg.PassModifier == "ref" ? "&" : string.Empty;
                 builder.Append($", {TranslateType(arg.Type)} {reference}{arg.Name}");

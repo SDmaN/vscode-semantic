@@ -120,6 +120,9 @@
   <data name="CouldNotFindDirectory" xml:space="preserve">
     <value>Could not find directory {0}.</value>
   </data>
+  <data name="ImportingCurrentModuleError" xml:space="preserve">
+    <value>The module can't import itself.</value>
+  </data>
   <data name="MainContent" xml:space="preserve">
     <value>#include "###.h"
 using namespace ###;

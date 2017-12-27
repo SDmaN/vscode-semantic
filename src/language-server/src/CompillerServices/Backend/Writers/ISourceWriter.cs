@@ -17,9 +17,9 @@ namespace CompillerServices.Backend.Writers
         void WriteBlockEnd();
 
         void WriteFunction(string accessModifier, string returningType, string name,
-            IEnumerable<FunctionArgument> arguments);
+            IEnumerable<SubprogramArgument> arguments);
 
-        void WriteProcedure(string accessModifier, string name, IEnumerable<FunctionArgument> arguments);
+        void WriteProcedure(string accessModifier, string name, IEnumerable<SubprogramArgument> arguments);
 
         void WriteStatementEnd(StatementType statementType);
 

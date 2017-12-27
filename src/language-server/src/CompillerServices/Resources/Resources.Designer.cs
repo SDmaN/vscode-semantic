@@ -70,6 +70,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The module can&apos;t import itself..
+        /// </summary>
+        internal static string ImportingCurrentModuleError {
+            get {
+                return ResourceManager.GetString("ImportingCurrentModuleError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to #include &quot;###.h&quot;
         ///using namespace ###;
         ///

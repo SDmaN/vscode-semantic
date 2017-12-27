@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Antlr4.Runtime;
+using CompillerServices.Exceptions;
 using CompillerServices.Frontend.NameTables;
 using CompillerServices.IO;
 using SlangGrammar;
@@ -33,7 +34,7 @@ namespace CompillerServices.Frontend
                 SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
                 SlangParser parser = _parserFactory.Create(lexer);
                 parser.RemoveErrorListeners();
-                parser.AddErrorListener(new ExceptionErrorListener());
+                parser.AddErrorListener(new ExceptionErrorListener(slangModule));
 
                 await FirstStep(parser, slangModule);
             }
@@ -43,7 +44,7 @@ namespace CompillerServices.Frontend
                 SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
                 SlangParser parser = _parserFactory.Create(lexer);
                 parser.RemoveErrorListeners();
-                parser.AddErrorListener(new ExceptionErrorListener());
+                parser.AddErrorListener(new ExceptionErrorListener(slangModule));
 
                 await SecondStep(parser, slangModule);
             }
@@ -76,16 +77,17 @@ namespace CompillerServices.Frontend
 
     internal class ExceptionErrorListener : BaseErrorListener
     {
-        public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line,
-            int charPositionInLine, string msg,
-            RecognitionException e)
-        {
-            if (e != null)
-            {
-                throw e;
-            }
+        private readonly SlangModule _module;
 
-            throw new InvalidOperationException(msg);
+        public ExceptionErrorListener(SlangModule module)
+        {
+            _module = module;
+        }
+
+        public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line,
+            int charPositionInLine, string msg, RecognitionException e)
+        {
+            throw new CompillerException(msg, _module.ModuleName, line, charPositionInLine);
         }
     }
 }

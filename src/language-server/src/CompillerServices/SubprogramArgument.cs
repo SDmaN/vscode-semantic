@@ -1,15 +1,15 @@
-﻿namespace CompillerServices.Backend.Writers
+﻿namespace CompillerServices
 {
-    public class FunctionArgument
+    public class SubprogramArgument
     {
-        public FunctionArgument(string passModifier, string type, string name)
+        public SubprogramArgument(string passModifier, string type, string name)
         {
             PassModifier = passModifier;
             Type = type;
             Name = name;
         }
 
-        public FunctionArgument(string type, string name)
+        public SubprogramArgument(string type, string name)
             : this(null, type, name)
         {
         }

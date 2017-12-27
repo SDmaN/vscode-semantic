@@ -4,9 +4,11 @@
     {
     }
 
-    public class ArgumentNameTableRow
+    public class ArgumentNameTableRow : NameTableRow
     {
-        public ArgumentNameTableRow(string passModifier, string type, string name, SubprogramNameTableRow parent)
+        public ArgumentNameTableRow(int line, int column, string passModifier, string type, string name,
+            SubprogramNameTableRow parent)
+            : base(line, column)
         {
             PassModifier = passModifier;
             Type = type;

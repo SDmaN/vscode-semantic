@@ -2,9 +2,11 @@
 
 namespace CompillerServices.Frontend.NameTables
 {
-    public class SubprogramNameTableRow
+    public class SubprogramNameTableRow : NameTableRow
     {
-        public SubprogramNameTableRow(string accessModifier, string name, ModuleNameTableRow parent)
+        public SubprogramNameTableRow(int line, int column, string accessModifier, string name,
+            ModuleNameTableRow parent)
+            : base(line, column)
         {
             AccessModifier = accessModifier;
             Name = name;

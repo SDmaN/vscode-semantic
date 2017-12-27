@@ -53,7 +53,7 @@ namespace CompillerServices.Backend
             string modifier = context.ModuleAccessModifier().GetText();
             string type = GetRuleTypeString(context.arrayOrSimpleType());
             string name = context.Id().GetText();
-            IEnumerable<FunctionArgument> arguments = CreateArguments(context.argList());
+            IEnumerable<SubprogramArgument> arguments = CreateArguments(context.argList());
 
             _sourceWriter.WriteFunction(modifier, type, name, arguments);
 
@@ -64,28 +64,28 @@ namespace CompillerServices.Backend
         {
             string modifier = context.ModuleAccessModifier().GetText();
             string name = context.Id().GetText();
-            IEnumerable<FunctionArgument> arguments = CreateArguments(context.argList());
+            IEnumerable<SubprogramArgument> arguments = CreateArguments(context.argList());
 
             _sourceWriter.WriteProcedure(modifier, name, arguments);
 
             return Visit(context.statementBlock());
         }
 
-        private IEnumerable<FunctionArgument> CreateArguments(SlangParser.ArgListContext context)
+        private IEnumerable<SubprogramArgument> CreateArguments(SlangParser.ArgListContext context)
         {
             SlangParser.ArrayOrSimpleTypeContext[] argTypes = context.arrayOrSimpleType();
             ITerminalNode[] argNames = context.Id();
-            SlangParser.ArgPassModifierContext[] passModifiers = context.argPassModifier();
+            var passModifiers = context.ArgPassModifier();
 
-            IList<FunctionArgument> arguments = new List<FunctionArgument>(argTypes.Length);
+            IList<SubprogramArgument> arguments = new List<SubprogramArgument>(argTypes.Length);
 
             for (int i = 0; i < argTypes.Length; i++)
             {
-                string modifier = passModifiers[i].ArgPassModifier()?.GetText();
+                string modifier = passModifiers[i].GetText();
                 string argType = GetRuleTypeString(argTypes[i]);
                 string argName = argNames[i].GetText();
 
-                arguments.Add(new FunctionArgument(modifier, argType, argName));
+                arguments.Add(new SubprogramArgument(modifier, argType, argName));
             }
 
             return arguments;

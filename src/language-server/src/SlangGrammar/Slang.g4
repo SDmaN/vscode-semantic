@@ -15,8 +15,7 @@ arrayOrSimpleType: (arrayType | Type);
 
 func: ModuleAccessModifier 'fun' arrayOrSimpleType Id '(' argList ')' statementBlock;
 proc: ModuleAccessModifier 'proc' Id '(' argList ')' statementBlock;
-argList: argPassModifier arrayOrSimpleType Id (',' argPassModifier arrayOrSimpleType Id)* | /* нет аргументов */ ;
-argPassModifier : ArgPassModifier;
+argList: ArgPassModifier arrayOrSimpleType Id (',' ArgPassModifier arrayOrSimpleType Id)* | /* нет аргументов */ ;
 
 statementBlock: BeginBlock statementSequence EndBlock;
 statementSequence: (statement)*;
@@ -80,8 +79,6 @@ ClassMemberAccessModifier: PublicModifier  | PrivateModifier;
 fragment PublicModifier: 'public';
 fragment InternalModifier: 'internal';
 fragment PrivateModifier: 'private';
-
-Heritable: 'heritable';
 
 Id: [_a-zA-Z][_a-zA-Z0-9]*;
 

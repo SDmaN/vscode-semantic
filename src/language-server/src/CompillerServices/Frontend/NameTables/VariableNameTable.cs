@@ -4,9 +4,10 @@
     {
     }
 
-    public class VariableNameTableRow
+    public class VariableNameTableRow : NameTableRow
     {
-        public VariableNameTableRow(string type, string name, SubprogramNameTableRow parent)
+        public VariableNameTableRow(int line, int column, string type, string name, SubprogramNameTableRow parent)
+            : base(line, column)
         {
             Type = type;
             Name = name;

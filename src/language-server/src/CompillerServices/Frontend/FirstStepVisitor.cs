@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using CompillerServices.Exceptions;
 using CompillerServices.Frontend.NameTables;
@@ -39,7 +40,8 @@ namespace CompillerServices.Frontend
                     id.Symbol.Column);
             }
 
-            _moduleRow = new ModuleNameTableRow(moduleName);
+            IToken symbol = id.Symbol;
+            _moduleRow = new ModuleNameTableRow(symbol.Line, symbol.Column, moduleName);
             _nameTableContainer.ModuleNameTable.Add(_moduleRow);
 
             base.VisitModule(context);
@@ -61,8 +63,10 @@ namespace CompillerServices.Frontend
             string modifier = context.ModuleAccessModifier().GetText();
             string type = GetRuleTypeString(context.arrayOrSimpleType());
             string name = context.Id().GetText();
+            IToken nameSymbol = context.Id().Symbol;
 
-            FunctionNameTableRow functionRow = new FunctionNameTableRow(modifier, type, name, _moduleRow);
+            FunctionNameTableRow functionRow =
+                new FunctionNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier, type, name, _moduleRow);
             _nameTableContainer.FunctionNameTable.Add(functionRow);
             _moduleRow.Functions.Add(functionRow);
 
@@ -78,8 +82,10 @@ namespace CompillerServices.Frontend
         {
             string modifier = context.ModuleAccessModifier().GetText();
             string name = context.Id().GetText();
+            IToken nameSymbol = context.Id().Symbol;
 
-            ProcedureNameTableRow procedureRow = new ProcedureNameTableRow(modifier, name, _moduleRow);
+            ProcedureNameTableRow procedureRow =
+                new ProcedureNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier, name, _moduleRow);
             _nameTableContainer.ProcedureNameTable.Add(procedureRow);
             _moduleRow.Procedures.Add(procedureRow);
 
@@ -93,17 +99,20 @@ namespace CompillerServices.Frontend
 
         public override object VisitArgList(SlangParser.ArgListContext context)
         {
-            SlangParser.ArgPassModifierContext[] modifiers = context.argPassModifier();
+            ITerminalNode[] modifiers = context.ArgPassModifier();
             SlangParser.ArrayOrSimpleTypeContext[] types = context.arrayOrSimpleType();
             ITerminalNode[] names = context.Id();
 
             for (int i = 0; i < names.Length; i++)
             {
-                string modifier = modifiers[i].ArgPassModifier().GetText();
+                string modifier = modifiers[i].GetText();
                 string type = GetRuleTypeString(types[i]);
                 string name = names[i].GetText();
 
-                ArgumentNameTableRow argument = new ArgumentNameTableRow(modifier, type, name, _currentSubprogram);
+                IToken nameSymbol = names[i].Symbol;
+
+                ArgumentNameTableRow argument = new ArgumentNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier,
+                    type, name, _currentSubprogram);
                 _nameTableContainer.ArgumentNameTable.TryAdd(argument);
                 _currentSubprogram.Arguments.Add(argument);
             }
@@ -115,8 +124,11 @@ namespace CompillerServices.Frontend
         {
             string type = GetRuleTypeString(context.arrayOrSimpleType());
             string name = context.Id().GetText();
+            IToken nameSymbol = context.Id().Symbol;
 
-            VariableNameTableRow variable = new VariableNameTableRow(type, name, _currentSubprogram);
+            VariableNameTableRow variable =
+                new VariableNameTableRow(nameSymbol.Line, nameSymbol.Column, type, name, _currentSubprogram);
+
             _nameTableContainer.VariableNameTable.TryAdd(variable);
             _currentSubprogram.Variables.Add(variable);
 

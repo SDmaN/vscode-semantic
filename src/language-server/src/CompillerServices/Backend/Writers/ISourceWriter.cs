@@ -32,7 +32,7 @@ namespace CompillerServices.Backend.Writers
 
         void WriteReturn();
 
-        void WriteFunctionCallBegin(string functionName);
+        void WriteFunctionCallBegin(string functionName, string moduleName = null);
         void WriteCallArgSeparator();
         void WriteFunctionCallEnd();
 

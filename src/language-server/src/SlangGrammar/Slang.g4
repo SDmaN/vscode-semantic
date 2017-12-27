@@ -13,10 +13,10 @@ moduleBlock: BeginBlock (func | proc)* EndBlock;
 
 arrayOrSimpleType: (arrayType | Type);
 
-func: AccessModifier 'fun' arrayOrSimpleType Id '(' argList ')' statementBlock;
-proc: AccessModifier 'proc' Id '(' argList ')' statementBlock;
+func: ModuleAccessModifier 'fun' arrayOrSimpleType Id '(' argList ')' statementBlock;
+proc: ModuleAccessModifier 'proc' Id '(' argList ')' statementBlock;
 argList: argPassModifier arrayOrSimpleType Id (',' argPassModifier arrayOrSimpleType Id)* | /* нет аргументов */ ;
-argPassModifier : (ArgPassModifier)?;
+argPassModifier : ArgPassModifier;
 
 statementBlock: BeginBlock statementSequence EndBlock;
 statementSequence: (statement)*;
@@ -37,7 +37,7 @@ return: 'return' (mathExp | boolOr)?;
 input: 'input' Id;
 output: 'output' (mathExp | boolOr);
 
-call: 'call' Id '(' callArgList ')'; // Вызов процедуры/функции
+call: 'call' (Id '::')? Id '(' callArgList ')'; // Вызов процедуры/функции
 callArgList: ((callArg) (',' (callArg))*) | /* нет аргументов */ ;
 callArg: mathExp | boolOr;
 
@@ -73,11 +73,15 @@ ArrayTypeBrackets: '[' ']';
 
 NewKeyword: 'new';
 
-AccessModifier: PublicModifier | InternalModifier;
-ArgPassModifier: 'ref';
+ArgPassModifier: 'val' | 'ref';
+ModuleAccessModifier: PublicModifier | InternalModifier;
+ClassMemberAccessModifier: PublicModifier  | PrivateModifier;
 
-PublicModifier: 'public';
-InternalModifier: 'internal';
+fragment PublicModifier: 'public';
+fragment InternalModifier: 'internal';
+fragment PrivateModifier: 'private';
+
+Heritable: 'heritable';
 
 Id: [_a-zA-Z][_a-zA-Z0-9]*;
 

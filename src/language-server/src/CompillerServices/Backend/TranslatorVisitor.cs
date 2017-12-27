@@ -10,6 +10,7 @@ namespace CompillerServices.Backend
     internal class TranslatorVisitor : SlangBaseVisitor<object>, IDisposable
     {
         private readonly ISourceWriter _sourceWriter;
+        private string _currentModule;
 
         public TranslatorVisitor(ISourceWriter sourceWriter)
         {
@@ -37,7 +38,8 @@ namespace CompillerServices.Backend
 
         public override object VisitModule(SlangParser.ModuleContext context)
         {
-            _sourceWriter.WriteModuleBegin(context.Id().GetText());
+            _currentModule = context.Id().GetText();
+            _sourceWriter.WriteModuleBegin(_currentModule);
 
             object result = base.VisitModule(context);
 
@@ -48,7 +50,7 @@ namespace CompillerServices.Backend
 
         public override object VisitFunc(SlangParser.FuncContext context)
         {
-            string modifier = context.AccessModifier().GetText();
+            string modifier = context.ModuleAccessModifier().GetText();
             string type = GetRuleTypeString(context.arrayOrSimpleType());
             string name = context.Id().GetText();
             IEnumerable<FunctionArgument> arguments = CreateArguments(context.argList());
@@ -60,7 +62,7 @@ namespace CompillerServices.Backend
 
         public override object VisitProc(SlangParser.ProcContext context)
         {
-            string modifier = context.AccessModifier().GetText();
+            string modifier = context.ModuleAccessModifier().GetText();
             string name = context.Id().GetText();
             IEnumerable<FunctionArgument> arguments = CreateArguments(context.argList());
 
@@ -424,9 +426,22 @@ namespace CompillerServices.Backend
 
         public override object VisitCall(SlangParser.CallContext context)
         {
-            ITerminalNode id = context.Id();
+            ITerminalNode[] ids = context.Id();
 
-            _sourceWriter.WriteFunctionCallBegin(id.GetText());
+            ITerminalNode moduleName = null;
+            ITerminalNode functionName; 
+
+            if (ids.Length == 2)
+            {
+                moduleName = ids[0];
+                functionName = ids[1];
+            }
+            else
+            {
+                functionName = ids[0];
+            }
+
+            _sourceWriter.WriteFunctionCallBegin(functionName.GetText(), moduleName?.GetText());
             object result = base.VisitCall(context);
             _sourceWriter.WriteFunctionCallEnd();
 

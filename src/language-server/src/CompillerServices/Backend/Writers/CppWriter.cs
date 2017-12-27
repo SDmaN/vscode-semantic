@@ -170,9 +170,10 @@ namespace CompillerServices.Backend.Writers
             _sourceWriter.Write("return ");
         }
 
-        public void WriteFunctionCallBegin(string functionName)
+        public void WriteFunctionCallBegin(string functionName, string moduleName = null)
         {
-            _sourceWriter.Write($"{functionName}(");
+            string modulePrefix = (moduleName != null) ? $"{moduleName}::" : string.Empty;
+            _sourceWriter.Write($"{modulePrefix}{functionName}(");
         }
 
         public void WriteCallArgSeparator()

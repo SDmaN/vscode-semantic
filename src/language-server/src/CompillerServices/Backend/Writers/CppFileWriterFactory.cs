@@ -31,7 +31,7 @@ namespace CompillerServices.Backend.Writers
                 outputDirectory.Create();
             }
 
-            string nameWithoutExtension = Path.GetFileNameWithoutExtension(moduleFile.Name);
+            string nameWithoutExtension = moduleFile.GetShortNameWithoutExtension();
 
             string headerFullName =
                 Path.Combine(outputDirectory.FullName, $"{nameWithoutExtension}{CppHeaderExtension}");

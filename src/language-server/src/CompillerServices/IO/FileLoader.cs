@@ -43,7 +43,7 @@ namespace CompillerServices.IO
 
         private static async Task<SlangModule> LoadFileContent(FileInfo file, string mainModuleName)
         {
-            string moduleName = Path.GetFileNameWithoutExtension(file.Name);
+            string moduleName = file.GetShortNameWithoutExtension();
             string content;
 
             using (TextReader fileReader = file.OpenText())

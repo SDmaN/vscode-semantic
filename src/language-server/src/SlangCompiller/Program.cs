@@ -149,7 +149,12 @@ namespace SlangCompiller
             }
             catch (ModuleAndFileMatchException e)
             {
-                await outputWriter.WriteError(e.Message, e.Line, e.Column);
+                await outputWriter.WriteError(e);
+                return 1;
+            }
+            catch (CompillerException e)
+            {
+                await outputWriter.WriteError(e);
                 return 1;
             }
             catch (Exception e)

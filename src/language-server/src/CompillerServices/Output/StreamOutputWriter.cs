@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using CompillerServices.Exceptions;
 
 namespace CompillerServices.Output
 {
@@ -26,9 +27,10 @@ namespace CompillerServices.Output
             await WriteLineAsync($"[err]: {errorMessage}");
         }
 
-        public async Task WriteError(string errorMessage, int line, int symbol)
+        public async Task WriteError(ErrorCheckException exception)
         {
-            await WriteLineAsync($"[err|{line}:{symbol}] {errorMessage}");
+            await WriteLineAsync(
+                $"[err|{exception.ModuleName}|{exception.Line}:{exception.Column}]: {exception.Message}");
         }
 
         public virtual async Task WriteFileTranslating(FileInfo source)

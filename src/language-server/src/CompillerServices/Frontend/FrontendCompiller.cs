@@ -30,7 +30,22 @@ namespace CompillerServices.Frontend
 
             foreach (SlangModule slangModule in sources)
             {
-                await FirstStep(slangModule);
+                SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
+                SlangParser parser = _parserFactory.Create(lexer);
+                parser.RemoveErrorListeners();
+                parser.AddErrorListener(new ExceptionErrorListener());
+
+                await FirstStep(parser, slangModule);
+            }
+
+            foreach (SlangModule slangModule in sources)
+            {
+                SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
+                SlangParser parser = _parserFactory.Create(lexer);
+                parser.RemoveErrorListeners();
+                parser.AddErrorListener(new ExceptionErrorListener());
+
+                await SecondStep(parser, slangModule);
             }
         }
 
@@ -46,14 +61,15 @@ namespace CompillerServices.Frontend
                 mainModuleFileName));
         }
 
-        private async Task FirstStep(SlangModule slangModule)
+        private async Task FirstStep(SlangParser parser, SlangModule slangModule)
         {
-            SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
-            SlangParser parser = _parserFactory.Create(lexer);
-            parser.RemoveErrorListeners();
-            parser.AddErrorListener(new ExceptionErrorListener());
-
             FirstStepVisitor visitor = new FirstStepVisitor(_nameTableContainer, slangModule);
+            await Task.Run(() => visitor.Visit(parser.start()));
+        }
+
+        private async Task SecondStep(SlangParser parser, SlangModule slangModule)
+        {
+            SecondStepVisitor visitor = new SecondStepVisitor(_nameTableContainer, slangModule);
             await Task.Run(() => visitor.Visit(parser.start()));
         }
     }

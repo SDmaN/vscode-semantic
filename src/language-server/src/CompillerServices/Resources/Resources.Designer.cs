@@ -113,6 +113,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Module {0} is not declared..
+        /// </summary>
+        internal static string ModuleIsNotDeclared {
+            get {
+                return ResourceManager.GetString("ModuleIsNotDeclared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project file does not exists in directory {0}.
         /// </summary>
         internal static string ProjectFileNotFound {

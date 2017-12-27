@@ -5,9 +5,9 @@ namespace CompillerServices.Frontend.NameTables
 {
     public class ModuleNameTable : NameTable<ModuleNameTableRow>
     {
-        public ModuleNameTableRow GetModule(string name)
+        public bool Contains(string moduleName)
         {
-            return this.FirstOrDefault(x => x.ModuleName == name);
+            return this.Any(x => x.ModuleName == moduleName);
         }
     }
 

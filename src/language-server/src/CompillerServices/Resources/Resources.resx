@@ -139,6 +139,9 @@ int main(int argc, char* argv[])
   <data name="ModuleDoesNotMatchFile" xml:space="preserve">
     <value>Module name {0} does not match file {1}.</value>
   </data>
+  <data name="ModuleIsNotDeclared" xml:space="preserve">
+    <value>Module {0} is not declared.</value>
+  </data>
   <data name="ProjectFileNotFound" xml:space="preserve">
     <value>Project file does not exists in directory {0}</value>
   </data>

@@ -10,6 +10,8 @@ namespace CompillerServices.Backend.Writers
 {
     public class CppWriter : ISourceWriter
     {
+        private readonly string _headerFileName;
+
         #region Standard library modules
 
         private static readonly IDictionary<string, string> ModuleStandardIncludes;
@@ -40,8 +42,9 @@ namespace CompillerServices.Backend.Writers
             });
         }
 
-        public CppWriter(TextWriter headerWriter, TextWriter sourceWriter)
+        public CppWriter(string headerFileName, TextWriter headerWriter, TextWriter sourceWriter)
         {
+            _headerFileName = headerFileName.Replace('.', '_').ToUpper();
             _headerWriter = new IndentedTextWriter(headerWriter);
             _sourceWriter = new IndentedTextWriter(sourceWriter);
         }
@@ -50,6 +53,19 @@ namespace CompillerServices.Backend.Writers
         {
             _headerWriter?.Dispose();
             _sourceWriter?.Dispose();
+        }
+
+        public void WriteStart()
+        {
+            _headerWriter.WriteLine($"#ifndef {_headerFileName}");
+            _headerWriter.WriteLine($"#define {_headerFileName}");
+            _headerWriter.WriteLine();
+        }
+
+        public void WriteEnd()
+        {
+            _headerWriter.WriteLine();
+            _headerWriter.WriteLine("#endif");
         }
 
         public void WriteImportBegin()
@@ -64,8 +80,8 @@ namespace CompillerServices.Backend.Writers
             bool isStandard = IsStandard(importingModule);
 
             string includeName = ModuleToInclude(importingModule);
-            _headerWriter.WriteLine($"#include <{includeName}>");
-            _sourceWriter.WriteLine($"#include <{includeName}>");
+            _headerWriter.WriteLine($"#include \"{includeName}\"");
+            _sourceWriter.WriteLine($"#include \"{includeName}\"");
 
             if (isStandard)
             {

@@ -22,6 +22,15 @@ namespace CompillerServices.Backend
             _sourceWriter?.Dispose();
         }
 
+        public override object VisitStart(SlangParser.StartContext context)
+        {
+            _sourceWriter.WriteStart();
+            object result = base.VisitStart(context);
+            _sourceWriter.WriteEnd();
+
+            return result;
+        }
+
         public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
         {
             _sourceWriter.WriteImportBegin();
@@ -75,7 +84,7 @@ namespace CompillerServices.Backend
         {
             SlangParser.ArrayOrSimpleTypeContext[] argTypes = context.arrayOrSimpleType();
             ITerminalNode[] argNames = context.Id();
-            var passModifiers = context.ArgPassModifier();
+            ITerminalNode[] passModifiers = context.ArgPassModifier();
 
             IList<SubprogramArgument> arguments = new List<SubprogramArgument>(argTypes.Length);
 

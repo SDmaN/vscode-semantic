@@ -2,23 +2,6 @@
 
 namespace CompillerServices.Backend.Writers
 {
-    public class CppTextWriterFactory : ISourceWriterFactory
-    {
-        private readonly TextWriter _headerWriter;
-        private readonly TextWriter _sourceWriter;
-
-        public CppTextWriterFactory(TextWriter headerWriter, TextWriter sourceWriter)
-        {
-            _headerWriter = headerWriter;
-            _sourceWriter = sourceWriter;
-        }
-
-        public ISourceWriter Create(FileInfo moduleFile, DirectoryInfo outputDirectory)
-        {
-            return new CppWriter(_headerWriter, _sourceWriter);
-        }
-    }
-
     public class CppFileWriterFactory : ISourceWriterFactory
     {
         private const string CppSourceExtension = ".cpp";
@@ -41,7 +24,7 @@ namespace CompillerServices.Backend.Writers
             FileStream headerFileStream = File.Open(headerFullName, FileMode.Create, FileAccess.Write);
             FileStream sourceFileStream = File.Open(sourceFullName, FileMode.Create, FileAccess.Write);
 
-            return new CppWriter(new StreamWriter(headerFileStream), new StreamWriter(sourceFileStream));
+            return new CppWriter(moduleFile.GetShortNameWithoutExtension() + CppHeaderExtension, new StreamWriter(headerFileStream), new StreamWriter(sourceFileStream));
         }
     }
 }

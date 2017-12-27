@@ -6,6 +6,9 @@ namespace CompillerServices.Backend.Writers
 {
     public interface ISourceWriter : IDisposable
     {
+        void WriteStart();
+        void WriteEnd();
+
         void WriteImportBegin();
         void WriteImport(string importingModule);
         void WriteImportEnd();

@@ -23,6 +23,8 @@ namespace CompillerServices.Frontend
 
         public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
         {
+            ICollection<string> alreadyImported = new HashSet<string>();
+
             foreach (ITerminalNode module in context.Id())
             {
                 string moduleName = module.GetText();
@@ -33,11 +35,19 @@ namespace CompillerServices.Frontend
                         _slangModule.ModuleName, module.Symbol.Line, module.Symbol.Column);
                 }
 
+                if (alreadyImported.Contains(moduleName))
+                {
+                    throw new CompillerException(string.Format(Resources.Resources.ModuleAlreadyImported, moduleName),
+                        _slangModule.ModuleName, module.Symbol.Line, module.Symbol.Column);
+                }
+
                 if (moduleName == _moduleRow.ModuleName)
                 {
                     throw new CompillerException(Resources.Resources.ImportingCurrentModuleError,
                         _slangModule.ModuleName, module.Symbol.Line, module.Symbol.Column);
                 }
+
+                alreadyImported.Add(moduleName);
             }
 
             return base.VisitModuleImports(context);

@@ -113,6 +113,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Module {0} already imported..
+        /// </summary>
+        internal static string ModuleAlreadyImported {
+            get {
+                return ResourceManager.GetString("ModuleAlreadyImported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Module name {0} does not match file {1}..
         /// </summary>
         internal static string ModuleDoesNotMatchFile {

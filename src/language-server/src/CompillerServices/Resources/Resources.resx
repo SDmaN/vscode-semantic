@@ -139,6 +139,9 @@ int main(int argc, char* argv[])
   <data name="MainModuleNotSpecified" xml:space="preserve">
     <value>Main module is not specified in project file.</value>
   </data>
+  <data name="ModuleAlreadyImported" xml:space="preserve">
+    <value>Module {0} already imported.</value>
+  </data>
   <data name="ModuleDoesNotMatchFile" xml:space="preserve">
     <value>Module name {0} does not match file {1}.</value>
   </data>

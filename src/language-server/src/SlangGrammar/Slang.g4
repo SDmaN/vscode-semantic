@@ -72,7 +72,10 @@ ArrayTypeBrackets: '[' ']';
 
 NewKeyword: 'new';
 
-ArgPassModifier: 'val' | 'ref';
+ArgPassModifier: ValPassModifier | RefPassModifier;
+fragment ValPassModifier: 'val';
+fragment RefPassModifier: 'ref';
+
 ModuleAccessModifier: PublicModifier | InternalModifier;
 ClassMemberAccessModifier: PublicModifier  | PrivateModifier;
 

@@ -19,6 +19,7 @@ namespace CompillerServices.Frontend.NameTables
         }
 
         public string ModuleName { get; }
+        public ICollection<string> ImportingModules { get; } = new List<string>();
         public ICollection<FunctionNameTableRow> Functions { get; } = new List<FunctionNameTableRow>();
         public ICollection<ProcedureNameTableRow> Procedures { get; } = new List<ProcedureNameTableRow>();
     }

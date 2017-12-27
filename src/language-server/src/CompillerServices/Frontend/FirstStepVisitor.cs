@@ -46,6 +46,16 @@ namespace CompillerServices.Frontend
             return null;
         }
 
+        public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
+        {
+            foreach (ITerminalNode module in context.Id())
+            {
+                _moduleRow.ImportingModules.Add(module.GetText());
+            }
+
+            return null;
+        }
+
         public override object VisitFunc(SlangParser.FuncContext context)
         {
             string modifier = context.ModuleAccessModifier().GetText();

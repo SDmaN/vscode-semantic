@@ -24,11 +24,6 @@ namespace CompillerServices.Frontend
         }
     }
 
-    public interface IFrontendCompiller
-    {
-        Task CheckForErrors(DirectoryInfo inputDirectory);
-    }
-
     public class FrontendCompiller : IFrontendCompiller
     {
         private readonly ILexerFactory _lexerFactory;

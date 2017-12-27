@@ -39,7 +39,7 @@ namespace CompillerServices.Frontend
 
             if (!moduleName.Equals(_moduleFileShortName, StringComparison.InvariantCultureIgnoreCase))
             {
-                throw new ModuleAndFileMatchException(_moduleFile, moduleName);
+                throw new ModuleAndFileMatchException(_moduleFile, moduleName, id.Symbol.Line, id.Symbol.Column);
             }
 
             _moduleRow = new ModuleNameTableRow(moduleName);

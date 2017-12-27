@@ -2,6 +2,7 @@
 using System.IO;
 using CompillerServices.Backend;
 using CompillerServices.DependencyInjection;
+using CompillerServices.Exceptions;
 using CompillerServices.Frontend;
 using CompillerServices.Output;
 using McMaster.Extensions.CommandLineUtils;
@@ -33,9 +34,6 @@ namespace SlangCompiller
 
         public static void Main(string[] args)
         {
-            var checker = ServiceProvider.GetService<IFrontendCompiller>();
-            checker.CheckForErrors(new DirectoryInfo("C:\\Users\\sdman\\Desktop\\semlang")).Wait();
-
             InitializeCli(args);
         }
 
@@ -116,10 +114,32 @@ namespace SlangCompiller
                     return 0;
                 }
 
-                IBackendCompiller compiller = ServiceProvider.GetService<IBackendCompiller>();
+                DirectoryInfo inputDirectory = new DirectoryInfo(inputPath);
+                DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
 
-                await compiller.Compile(new DirectoryInfo(inputPath), new DirectoryInfo(outputPath),
-                    (p, r) => Path.GetRelativePath(p.FullName, r.FullName));
+                try
+                {
+                    IFrontendCompiller frontendCompiller = ServiceProvider.GetService<IFrontendCompiller>();
+                    await frontendCompiller.CheckForErrors(inputDirectory);
+
+                    IBackendCompiller compiller = ServiceProvider.GetService<IBackendCompiller>();
+                    await compiller.Compile(inputDirectory, outputDirectory,
+                        (p, r) => Path.GetRelativePath(p.FullName, r.FullName));
+                }
+                catch (FileNotFoundException e)
+                {
+                    await outputWriter.WriteError(e.Message);
+                    return 1;
+                }
+                catch (ModuleAndFileMatchException e)
+                {
+                    await outputWriter.WriteError(e.Message, e.Line, e.Column);
+                    return 1;
+                }
+                catch (Exception e)
+                {
+                    await outputWriter.WriteError($"Unknown error: {e.Message}");
+                }
 
                 return 0;
             });

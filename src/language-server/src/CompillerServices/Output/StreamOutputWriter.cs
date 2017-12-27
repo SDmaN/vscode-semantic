@@ -26,6 +26,11 @@ namespace CompillerServices.Output
             await WriteLineAsync($"[err]: {errorMessage}");
         }
 
+        public async Task WriteError(string errorMessage, int line, int symbol)
+        {
+            await WriteLineAsync($"[err|{line}:{symbol}] {errorMessage}");
+        }
+
         public virtual async Task WriteFileTranslating(FileInfo source)
         {
             await WriteLineAsync($"[tr]: {source.Name}");

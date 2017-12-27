@@ -22,14 +22,14 @@ namespace CompillerServices.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    internal class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Strings() {
+        internal Resources() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace CompillerServices.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CompillerServices.Resources.Strings", typeof(Strings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CompillerServices.Resources.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -86,11 +86,29 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Main module file {0} not found..
+        /// </summary>
+        internal static string MainModuleFileNotFound {
+            get {
+                return ResourceManager.GetString("MainModuleFileNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Main module is not specified in project file..
         /// </summary>
         internal static string MainModuleNotSpecified {
             get {
                 return ResourceManager.GetString("MainModuleNotSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Module name {0} does not match file {1}..
+        /// </summary>
+        internal static string ModuleDoesNotMatchFile {
+            get {
+                return ResourceManager.GetString("ModuleDoesNotMatchFile", resourceCulture);
             }
         }
         

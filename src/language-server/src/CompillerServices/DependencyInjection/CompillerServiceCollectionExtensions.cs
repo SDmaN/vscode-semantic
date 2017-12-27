@@ -1,9 +1,11 @@
 ﻿using System;
 using CompillerServices.Backend;
 using CompillerServices.Backend.EntryPoint;
-using CompillerServices.Backend.ProjectFile;
 using CompillerServices.Backend.Writers;
+using CompillerServices.Frontend;
+using CompillerServices.Frontend.NameTables;
 using CompillerServices.Output;
+using CompillerServices.ProjectFile;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SlangGrammar.Factories;
@@ -26,6 +28,9 @@ namespace CompillerServices.DependencyInjection
             serviceCollection.TryAddTransient<IProjectFileManager, ProjectFileManager>();
             serviceCollection.TryAddTransient<IEntryPointWriter, EntryPointWriter>();
             serviceCollection.TryAddTransient<IOutputWriter, ConsoleOutputWriter>();
+
+            serviceCollection.TryAddTransient<IFrontendCompiller, FrontendCompiller>();
+            serviceCollection.TryAddTransient<INameTableContainer, NameTableContainer>();
 
             return serviceCollection;
         }

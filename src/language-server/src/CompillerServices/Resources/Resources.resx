@@ -130,8 +130,14 @@ int main(int argc, char* argv[])
     return 0;
 }</value>
   </data>
+  <data name="MainModuleFileNotFound" xml:space="preserve">
+    <value>Main module file {0} not found.</value>
+  </data>
   <data name="MainModuleNotSpecified" xml:space="preserve">
     <value>Main module is not specified in project file.</value>
+  </data>
+  <data name="ModuleDoesNotMatchFile" xml:space="preserve">
+    <value>Module name {0} does not match file {1}.</value>
   </data>
   <data name="ProjectFileNotFound" xml:space="preserve">
     <value>Project file does not exists in directory {0}</value>

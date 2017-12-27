@@ -2,6 +2,7 @@
 using System.IO;
 using CompillerServices.Backend;
 using CompillerServices.DependencyInjection;
+using CompillerServices.Frontend;
 using CompillerServices.Output;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +33,9 @@ namespace SlangCompiller
 
         public static void Main(string[] args)
         {
+            var checker = ServiceProvider.GetService<IFrontendCompiller>();
+            checker.CheckForErrors(new DirectoryInfo("C:\\Users\\sdman\\Desktop\\semlang")).Wait();
+
             InitializeCli(args);
         }
 

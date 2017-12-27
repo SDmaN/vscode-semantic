@@ -1,4 +1,4 @@
-﻿namespace CompillerServices.Backend.ProjectFile
+﻿namespace CompillerServices.ProjectFile
 {
     internal class ProjectFileStructure
     {

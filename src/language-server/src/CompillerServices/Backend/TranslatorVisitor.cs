@@ -429,7 +429,7 @@ namespace CompillerServices.Backend
             ITerminalNode[] ids = context.Id();
 
             ITerminalNode moduleName = null;
-            ITerminalNode functionName; 
+            ITerminalNode functionName;
 
             if (ids.Length == 2)
             {

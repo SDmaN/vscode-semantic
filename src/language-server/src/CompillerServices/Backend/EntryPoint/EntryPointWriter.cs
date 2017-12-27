@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using CompillerServices.Backend.ProjectFile;
-using CompillerServices.Resources;
+using CompillerServices.ProjectFile;
 
 namespace CompillerServices.Backend.EntryPoint
 {
@@ -24,7 +23,7 @@ namespace CompillerServices.Backend.EntryPoint
             using (FileStream entryFile = File.OpenWrite(Path.Combine(outputDirectory.FullName, mainFileName)))
             {
                 TextWriter writer = new StreamWriter(entryFile);
-                await writer.WriteAsync(Strings.MainContent.Replace("###", mainModule));
+                await writer.WriteAsync(Resources.Resources.MainContent.Replace("###", mainModule));
                 await writer.FlushAsync();
             }
         }

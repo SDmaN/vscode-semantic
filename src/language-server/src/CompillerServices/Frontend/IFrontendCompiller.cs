@@ -1,10 +1,10 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using CompillerServices.IO;
 
 namespace CompillerServices.Frontend
 {
     public interface IFrontendCompiller
     {
-        Task CheckForErrors(DirectoryInfo inputDirectory);
+        Task CheckForErrors(SourceContainer sources);
     }
 }

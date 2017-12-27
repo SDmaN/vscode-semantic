@@ -141,6 +141,9 @@
   <data name="UnknownCommand" xml:space="preserve">
     <value>Unknown command or option.</value>
   </data>
+  <data name="UnknownError" xml:space="preserve">
+    <value>Unknown error occurred: {0}</value>
+  </data>
   <data name="Welcome" xml:space="preserve">
     <value>Welcome to Semantic Language to C++ translator and compiller!</value>
   </data>

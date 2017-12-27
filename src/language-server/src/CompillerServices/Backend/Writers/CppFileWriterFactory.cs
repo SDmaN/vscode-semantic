@@ -13,7 +13,7 @@ namespace CompillerServices.Backend.Writers
             _sourceWriter = sourceWriter;
         }
 
-        public ISourceWriter Create(string inputModuleFileName = null, string outputPath = null)
+        public ISourceWriter Create(FileInfo moduleFile, DirectoryInfo outputDirectory)
         {
             return new CppWriter(_headerWriter, _sourceWriter);
         }
@@ -24,12 +24,19 @@ namespace CompillerServices.Backend.Writers
         private const string CppSourceExtension = ".cpp";
         private const string CppHeaderExtension = ".h";
 
-        public ISourceWriter Create(string inputModuleFileName, string outputPath)
+        public ISourceWriter Create(FileInfo moduleFile, DirectoryInfo outputDirectory)
         {
-            string nameWithoutExtension = Path.GetFileNameWithoutExtension(inputModuleFileName);
+            if (!outputDirectory.Exists)
+            {
+                outputDirectory.Create();
+            }
 
-            string headerFullName = Path.Combine(outputPath, $"{nameWithoutExtension}{CppHeaderExtension}");
-            string sourceFullName = Path.Combine(outputPath, $"{nameWithoutExtension}{CppSourceExtension}");
+            string nameWithoutExtension = Path.GetFileNameWithoutExtension(moduleFile.Name);
+
+            string headerFullName =
+                Path.Combine(outputDirectory.FullName, $"{nameWithoutExtension}{CppHeaderExtension}");
+            string sourceFullName =
+                Path.Combine(outputDirectory.FullName, $"{nameWithoutExtension}{CppSourceExtension}");
 
             FileStream headerFileStream = File.Open(headerFullName, FileMode.Create, FileAccess.Write);
             FileStream sourceFileStream = File.Open(sourceFullName, FileMode.Create, FileAccess.Write);

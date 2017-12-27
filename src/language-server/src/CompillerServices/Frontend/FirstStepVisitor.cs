@@ -1,27 +1,23 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 using Antlr4.Runtime.Tree;
 using CompillerServices.Exceptions;
 using CompillerServices.Frontend.NameTables;
+using CompillerServices.IO;
 using SlangGrammar;
 
 namespace CompillerServices.Frontend
 {
     internal class FirstStepVisitor : SlangBaseVisitor<object>
     {
-        private readonly FileInfo _moduleFile;
-        private readonly string _moduleFileShortName;
         private readonly INameTableContainer _nameTableContainer;
+        private readonly SlangModule _slangModule;
         private SubprogramNameTableRow _currentSubprogram;
-
         private ModuleNameTableRow _moduleRow;
 
-        public FirstStepVisitor(FileInfo moduleFile, INameTableContainer nameTableContainer)
+        public FirstStepVisitor(INameTableContainer nameTableContainer, SlangModule slangModule)
         {
-            _moduleFile = moduleFile;
             _nameTableContainer = nameTableContainer;
-            _moduleFileShortName = Path.GetFileNameWithoutExtension(moduleFile.Name);
+            _slangModule = slangModule;
         }
 
         public override object VisitStart(SlangParser.StartContext context)
@@ -37,9 +33,10 @@ namespace CompillerServices.Frontend
             ITerminalNode id = context.Id();
             string moduleName = id.GetText();
 
-            if (!moduleName.Equals(_moduleFileShortName, StringComparison.InvariantCultureIgnoreCase))
+            if (moduleName != _slangModule.ModuleName)
             {
-                throw new ModuleAndFileMatchException(_moduleFile, moduleName, id.Symbol.Line, id.Symbol.Column);
+                throw new ModuleAndFileMatchException(_slangModule.ModuleFile, moduleName, id.Symbol.Line,
+                    id.Symbol.Column);
             }
 
             _moduleRow = new ModuleNameTableRow(moduleName);

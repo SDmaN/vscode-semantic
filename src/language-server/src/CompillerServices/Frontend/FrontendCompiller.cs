@@ -1,18 +1,67 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Antlr4.Runtime;
 using CompillerServices.Frontend.NameTables;
-using CompillerServices.ProjectFile;
+using CompillerServices.IO;
 using SlangGrammar;
 using SlangGrammar.Factories;
 
 namespace CompillerServices.Frontend
 {
+    public class FrontendCompiller : IFrontendCompiller
+    {
+        private readonly ILexerFactory _lexerFactory;
+        private readonly INameTableContainer _nameTableContainer;
+        private readonly IParserFactory _parserFactory;
+
+        public FrontendCompiller(INameTableContainer nameTableContainer, ILexerFactory lexerFactory,
+            IParserFactory parserFactory)
+        {
+            _nameTableContainer = nameTableContainer;
+            _lexerFactory = lexerFactory;
+            _parserFactory = parserFactory;
+        }
+
+        public async Task CheckForErrors(SourceContainer sources)
+        {
+            CheckMainModuleExists(sources);
+            await _nameTableContainer.Clear();
+
+            foreach (SlangModule slangModule in sources)
+            {
+                await FirstStep(slangModule);
+            }
+        }
+
+        private static void CheckMainModuleExists(SourceContainer sourceContainer)
+        {
+            if (sourceContainer.ContainsMainModule)
+            {
+                return;
+            }
+
+            string mainModuleFileName = $"{sourceContainer.MainModuleName}{Constants.SlangExtension}";
+            throw new FileNotFoundException(string.Format(Resources.Resources.MainModuleFileNotFound,
+                mainModuleFileName));
+        }
+
+        private async Task FirstStep(SlangModule slangModule)
+        {
+            SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
+            SlangParser parser = _parserFactory.Create(lexer);
+            parser.RemoveErrorListeners();
+            parser.AddErrorListener(new ExceptionErrorListener());
+
+            FirstStepVisitor visitor = new FirstStepVisitor(_nameTableContainer, slangModule);
+            await Task.Run(() => visitor.Visit(parser.start()));
+        }
+    }
+
     internal class ExceptionErrorListener : BaseErrorListener
     {
-        public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg,
+        public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line,
+            int charPositionInLine, string msg,
             RecognitionException e)
         {
             if (e != null)
@@ -21,59 +70,6 @@ namespace CompillerServices.Frontend
             }
 
             throw new InvalidOperationException(msg);
-        }
-    }
-
-    public class FrontendCompiller : IFrontendCompiller
-    {
-        private readonly ILexerFactory _lexerFactory;
-        private readonly INameTableContainer _nameTableContainer;
-        private readonly IParserFactory _parserFactory;
-        private readonly IProjectFileManager _projectFileManager;
-
-        public FrontendCompiller(INameTableContainer nameTableContainer, ILexerFactory lexerFactory,
-            IParserFactory parserFactory, IProjectFileManager projectFileManager)
-        {
-            _nameTableContainer = nameTableContainer;
-            _lexerFactory = lexerFactory;
-            _parserFactory = parserFactory;
-            _projectFileManager = projectFileManager;
-        }
-
-        public async Task CheckForErrors(DirectoryInfo inputDirectory)
-        {
-            if (!inputDirectory.Exists)
-            {
-                throw new DirectoryNotFoundException(string.Format(Resources.Resources.CouldNotFindDirectory,
-                    inputDirectory.FullName));
-            }
-
-            await _nameTableContainer.Clear();
-            _projectFileManager.GetMainModuleFile(inputDirectory);
-
-            IEnumerable<FileInfo> inputFiles =
-                inputDirectory.GetFiles(Constants.SlangFileMask, SearchOption.TopDirectoryOnly);
-
-            foreach (FileInfo inputFile in inputFiles)
-            {
-                await FirstStep(inputFile);
-            }
-        }
-
-        private async Task FirstStep(FileInfo file)
-        {
-            using (TextReader reader = file.OpenText())
-            {
-                string inputContent = await reader.ReadToEndAsync();
-
-                SlangLexer lexer = _lexerFactory.Create(inputContent);
-                SlangParser parser = _parserFactory.Create(lexer);
-                parser.RemoveErrorListeners();
-                parser.AddErrorListener(new ExceptionErrorListener());
-
-                FirstStepVisitor visitor = new FirstStepVisitor(file, _nameTableContainer);
-                visitor.Visit(parser.start());
-            }
         }
     }
 }

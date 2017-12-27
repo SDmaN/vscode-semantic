@@ -53,11 +53,6 @@ namespace PluginServer
 
             IServiceProvider provider = serviceCollection.BuildServiceProvider();
 
-            IBackendCompiller b = provider.GetService<IBackendCompiller>();
-            await b.Compile(new DirectoryInfo("C:/Users/sdman/Desktop/semlang/"),
-                new DirectoryInfo("C:/Users/sdman/Desktop/semlang/out/"),
-                (p, r) => Path.GetRelativePath(p.FullName, r.FullName));
-
             return;
 
             IRpcService service = provider.GetService<IRpcService>();

@@ -133,6 +133,15 @@ namespace SlangCompiller.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unknown error occurred: {0}.
+        /// </summary>
+        internal static string UnknownError {
+            get {
+                return ResourceManager.GetString("UnknownError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Welcome to Semantic Language to C++ translator and compiller!.
         /// </summary>
         internal static string Welcome {

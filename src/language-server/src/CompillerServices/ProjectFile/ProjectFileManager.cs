@@ -48,22 +48,5 @@ namespace CompillerServices.ProjectFile
                 throw new ProjectFileException(Resources.Resources.ProjectFileParsingException, e);
             }
         }
-
-        public FileInfo GetMainModuleFile(DirectoryInfo projectDirectory)
-        {
-            string mainModuleName = GetMainModule(projectDirectory);
-            string mainModuleFileName = $"{mainModuleName}{Constants.SlangExtension}";
-
-            FileInfo moduleFile = projectDirectory.EnumerateFiles(mainModuleFileName)
-                .FirstOrDefault();
-
-            if (moduleFile == null)
-            {
-                throw new FileNotFoundException(string.Format(Resources.Resources.MainModuleFileNotFound,
-                    mainModuleFileName));
-            }
-
-            return moduleFile;
-        }
     }
 }

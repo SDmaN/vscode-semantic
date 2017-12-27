@@ -1,14 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using CompillerServices.IO;
 
 namespace CompillerServices.Backend
 {
     public interface IBackendCompiller
     {
-        Task Compile(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
-            Func<DirectoryInfo, DirectoryInfo, string> relativePathGetter);
-
-        Task Compile(FileInfo inputFile, string outputPath);
+        Task Compile(SourceContainer sources, DirectoryInfo outputDirectory);
+        Task Compile(SlangModule slangModule, DirectoryInfo outputDirectory);
     }
 }

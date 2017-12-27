@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using CompillerServices.Backend;
 using CompillerServices.DependencyInjection;
 using CompillerServices.Exceptions;
 using CompillerServices.Frontend;
+using CompillerServices.IO;
 using CompillerServices.Output;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -117,32 +119,46 @@ namespace SlangCompiller
                 DirectoryInfo inputDirectory = new DirectoryInfo(inputPath);
                 DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
 
-                try
-                {
-                    IFrontendCompiller frontendCompiller = ServiceProvider.GetService<IFrontendCompiller>();
-                    await frontendCompiller.CheckForErrors(inputDirectory);
-
-                    IBackendCompiller compiller = ServiceProvider.GetService<IBackendCompiller>();
-                    await compiller.Compile(inputDirectory, outputDirectory,
-                        (p, r) => Path.GetRelativePath(p.FullName, r.FullName));
-                }
-                catch (FileNotFoundException e)
-                {
-                    await outputWriter.WriteError(e.Message);
-                    return 1;
-                }
-                catch (ModuleAndFileMatchException e)
-                {
-                    await outputWriter.WriteError(e.Message, e.Line, e.Column);
-                    return 1;
-                }
-                catch (Exception e)
-                {
-                    await outputWriter.WriteError($"Unknown error: {e.Message}");
-                }
-
-                return 0;
+                return await Translate(outputWriter, inputDirectory, outputDirectory);
             });
+        }
+
+        private static async Task<int> Translate(IOutputWriter outputWriter, DirectoryInfo inputDirectory,
+            DirectoryInfo outputDirectory)
+        {
+            try
+            {
+                IFileLoader fileLoader = ServiceProvider.GetService<IFileLoader>();
+                SourceContainer sources = await fileLoader.LoadSources(inputDirectory);
+
+                IFrontendCompiller frontendCompiller = ServiceProvider.GetService<IFrontendCompiller>();
+                await frontendCompiller.CheckForErrors(sources);
+
+                IBackendCompiller compiller = ServiceProvider.GetService<IBackendCompiller>();
+                await compiller.Compile(sources, outputDirectory);
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                await outputWriter.WriteError(e.Message);
+                return 1;
+            }
+            catch (FileNotFoundException e)
+            {
+                await outputWriter.WriteError(e.Message);
+                return 1;
+            }
+            catch (ModuleAndFileMatchException e)
+            {
+                await outputWriter.WriteError(e.Message, e.Line, e.Column);
+                return 1;
+            }
+            catch (Exception e)
+            {
+                await outputWriter.WriteError(string.Format(CommandLineStrings.UnknownError, e.Message));
+                return 1;
+            }
+
+            return 0;
         }
     }
 }

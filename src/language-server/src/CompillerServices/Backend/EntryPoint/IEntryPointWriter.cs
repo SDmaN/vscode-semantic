@@ -5,6 +5,6 @@ namespace CompillerServices.Backend.EntryPoint
 {
     public interface IEntryPointWriter
     {
-        Task WriteEntryPoint(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory);
+        Task WriteEntryPoint(string mainModuleName, DirectoryInfo outputDirectory);
     }
 }

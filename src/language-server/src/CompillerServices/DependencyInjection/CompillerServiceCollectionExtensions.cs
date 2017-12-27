@@ -4,6 +4,7 @@ using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.Writers;
 using CompillerServices.Frontend;
 using CompillerServices.Frontend.NameTables;
+using CompillerServices.IO;
 using CompillerServices.Output;
 using CompillerServices.ProjectFile;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,8 @@ namespace CompillerServices.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(serviceCollection));
             }
+
+            serviceCollection.TryAddTransient<IFileLoader, FileLoader>();
 
             serviceCollection.TryAddTransient<ILexerFactory, LexerFactory>();
             serviceCollection.TryAddTransient<IParserFactory, ParserFactory>();

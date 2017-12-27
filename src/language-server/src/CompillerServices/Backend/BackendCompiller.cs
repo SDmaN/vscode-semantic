@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.Writers;
+using CompillerServices.IO;
 using CompillerServices.Output;
 using SlangGrammar;
 using SlangGrammar.Factories;
@@ -30,16 +31,8 @@ namespace CompillerServices.Backend
             _outputWriter = outputWriter;
         }
 
-        public async Task Compile(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory,
-            RelativePathGetter relativePathGetter)
+        public async Task Compile(SourceContainer sources, DirectoryInfo outputDirectory)
         {
-            if (!inputDirectory.Exists)
-            {
-                await _outputWriter.WriteError(string.Format(Resources.Resources.CouldNotFindDirectory,
-                    inputDirectory.FullName));
-                return;
-            }
-
             if (!outputDirectory.Exists)
             {
                 outputDirectory.Create();
@@ -49,53 +42,32 @@ namespace CompillerServices.Backend
                 await ClearDirectory(outputDirectory);
             }
 
-            try
+            foreach (SlangModule slangModule in sources)
             {
-                await _entryPointWriter.WriteEntryPoint(inputDirectory, outputDirectory);
-            }
-            catch (Exception e)
-            {
-                await _outputWriter.WriteError(e.Message);
-                return;
+                await Compile(slangModule, outputDirectory);
             }
 
-            IEnumerable<FileInfo> inputFiles =
-                inputDirectory.GetFiles(Constants.SlangFileMask, SearchOption.TopDirectoryOnly);
-
-            foreach (FileInfo inputFile in inputFiles)
-            {
-                string relativePath = relativePathGetter(inputDirectory, inputFile.Directory);
-                string outputPath = Path.Combine(outputDirectory.FullName, relativePath);
-
-                await Compile(inputFile, outputPath);
-            }
+            await _entryPointWriter.WriteEntryPoint(sources.MainModuleName, outputDirectory);
         }
 
-        public async Task Compile(FileInfo inputFile, string outputPath)
+        public async Task Compile(SlangModule slangModule, DirectoryInfo outputDirectory)
         {
-            await _outputWriter.WriteFileTranslating(inputFile);
-
-            DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
+            await _outputWriter.WriteFileTranslating(slangModule.ModuleFile);
 
             if (!outputDirectory.Exists)
             {
                 outputDirectory.Create();
             }
 
-            using (TextReader reader = inputFile.OpenText())
+            using (ISourceWriter sourceWriter = _sourceWriterFactory.Create(slangModule.ModuleFile, outputDirectory))
             {
-                using (ISourceWriter sourceWriter = _sourceWriterFactory.Create(inputFile.Name, outputPath))
-                {
-                    string inputContent = await reader.ReadToEndAsync();
+                SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
+                SlangParser parser = _parserFactory.Create(lexer);
 
-                    SlangLexer lexer = _lexerFactory.Create(inputContent);
-                    SlangParser parser = _parserFactory.Create(lexer);
+                TranslatorVisitor visitor = new TranslatorVisitor(sourceWriter);
 
-                    TranslatorVisitor visitor = new TranslatorVisitor(sourceWriter);
-
-                    visitor.Visit(parser.start());
-                    await sourceWriter.FlushAsync();
-                }
+                await Task.Run(() => visitor.Visit(parser.start()));
+                await sourceWriter.FlushAsync();
             }
         }
 

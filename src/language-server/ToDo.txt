@@ -9,3 +9,11 @@
 поиск (слева, справа)
 substr
 concat
+
+Математика:
+abs
+pow
+log
+ln
+exp
+sqrt

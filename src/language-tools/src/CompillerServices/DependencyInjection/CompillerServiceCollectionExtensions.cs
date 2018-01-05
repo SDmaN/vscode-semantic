@@ -27,9 +27,7 @@ namespace CompillerServices.DependencyInjection
 
             serviceCollection.TryAddTransient<ILexerFactory, LexerFactory>();
             serviceCollection.TryAddTransient<IParserFactory, ParserFactory>();
-            serviceCollection.TryAddTransient<ISourceWriterFactory, CppFileWriterFactory>();
             serviceCollection.TryAddTransient<ITranslatorFactory, CppTranslatorFactory>();
-
 
             serviceCollection.TryAddTransient<IBackendCompiller, BackendCompiller>();
             serviceCollection.TryAddTransient<IProjectFileManager, ProjectFileManager>();

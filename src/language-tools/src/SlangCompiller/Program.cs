@@ -13,7 +13,7 @@ using SlangCompiller.Resources;
 
 namespace SlangCompiller
 {
-    internal class Program
+    internal static class Program
     {
         private static IServiceProvider _serviceProvider;
 

@@ -10,6 +10,15 @@ namespace CompillerServices.Backend.Translators
 {
     public class CppVisitorTranslator : SlangBaseVisitor<object>, ITranslator
     {
+        #region Standard library modules
+
+        private static readonly IDictionary<string, string> ModuleStandardIncludes = new Dictionary<string, string>
+        {
+            { "Math", "cmath" }
+        };
+
+        #endregion
+
         #region Standard types
 
         private static readonly IDictionary<string, string> StandardTypes = new Dictionary<string, string>

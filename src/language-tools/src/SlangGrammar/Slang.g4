@@ -45,6 +45,7 @@ arrayDeclareType: Array (arrayDeclareDimention)+ scalarType;
 arrayDeclareDimention: ArrayLeftBracket mathExp ArrayRightBracket;
 
 arrayElement: Id (arrayDeclareDimention)+;
+arrayLength: Id '.' 'length' RoutineLeftBracket IntValue RoutineRightBracket;
 
 assign: singleAssign | arrayAssign;
 singleAssign: Id Assign mathExp | Id Assign boolOr | Id Assign assign;
@@ -66,7 +67,7 @@ doWhileLoop: 'repeat' statementSequence 'while' '(' boolOr ')';
 mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpSub;
 mathTerm: mathFactor #MathTermEmpty | mathFactor '*' mathTerm #MathTermMul | mathFactor '/' mathTerm #MathTermDiv | mathFactor '%' mathTerm #MathTermMod;
 mathFactor : mathAtom #MathFactorEmpty | '(' mathExp ')' #MathFactorBrackets | '+' mathFactor #MathFactorUnaryPlus | '-' mathFactor #MathFactorUnaryMinus;
-mathAtom: call | arrayElement | IntValue | RealValue | Id;
+mathAtom: call | arrayLength | arrayElement | IntValue | RealValue | Id;
 
 boolOr: boolAnd #BoolOrEmpty | boolAnd '||' boolOr #LogicOr;
 boolAnd: boolEquality #BoolAndEmpty | boolEquality '&&' boolAnd #LogicAnd;

@@ -1,4 +1,5 @@
-﻿using System.CodeDom.Compiler;
+﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -437,6 +438,23 @@ namespace CompillerServices.Backend.Translators
             return null;
         }
 
+        public override object VisitArrayLength(SlangParser.ArrayLengthContext context)
+        {
+            string id = context.Id().GetText();
+            int dimentionIndex = int.Parse(context.IntValue().GetText());
+
+            Write($"{id}");
+
+            for (int i = 0; i < dimentionIndex; i++)
+            {
+                Write("[0]");
+            }
+
+            Write(".size()");
+
+            return null;
+        }
+
         public override object VisitReturn(SlangParser.ReturnContext context)
         {
             Write("return ");
@@ -642,9 +660,17 @@ namespace CompillerServices.Backend.Translators
 
         public override object VisitMathAtom(SlangParser.MathAtomContext context)
         {
-            if (context.call() == null && context.arrayElement() == null)
+            var id = context.Id();
+            var i = context.IntValue();
+            var r = context.RealValue();
+            var c = context.call();
+            var ae = context.arrayElement();
+            var al = context.arrayLength();
+
+            if (context.call() == null && context.arrayElement() == null && context.arrayLength() == null)
             {
                 Write(context.GetChild(0).GetText());
+                return null;
             }
 
             base.VisitMathAtom(context);

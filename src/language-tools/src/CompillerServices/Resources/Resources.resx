@@ -124,13 +124,21 @@
     <value>The module can't import itself.</value>
   </data>
   <data name="MainContent" xml:space="preserve">
-    <value>#include "###.h"
+    <value>#include &lt;iostream&gt;
+#include &lt;stdexcept&gt;
+#include "###.h"
 using namespace ###;
 
 int main(int argc, char* argv[])
 {
-    start_###();
-    return 0;
+    try
+    {
+        start_###();
+    }
+    catch(std::logic_error &amp;e)
+    {
+        std::cout &lt;&lt; std::endl &lt;&lt; "Error: " &lt;&lt; e.what() &lt;&lt; std::endl;
+    }
 }</value>
   </data>
   <data name="MainModuleFileNotFound" xml:space="preserve">

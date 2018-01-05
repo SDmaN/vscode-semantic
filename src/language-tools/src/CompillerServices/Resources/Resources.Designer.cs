@@ -79,13 +79,21 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to #include &quot;###.h&quot;
+        ///   Looks up a localized string similar to #include &lt;iostream&gt;
+        ///#include &lt;stdexcept&gt;
+        ///#include &quot;###.h&quot;
         ///using namespace ###;
         ///
         ///int main(int argc, char* argv[])
         ///{
-        ///    start_###();
-        ///    return 0;
+        ///    try
+        ///    {
+        ///        start_###();
+        ///    }
+        ///    catch(std::logic_error &amp;e)
+        ///    {
+        ///        std::cout &lt;&lt; std::endl &lt;&lt; &quot;Error: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+        ///    }
         ///}.
         /// </summary>
         internal static string MainContent {

@@ -1,6 +1,7 @@
 ﻿using System;
 using CompillerServices.Backend;
 using CompillerServices.Backend.EntryPoint;
+using CompillerServices.Backend.TranslatorFactories;
 using CompillerServices.Backend.Writers;
 using CompillerServices.Frontend;
 using CompillerServices.Frontend.NameTables;
@@ -27,6 +28,9 @@ namespace CompillerServices.DependencyInjection
             serviceCollection.TryAddTransient<ILexerFactory, LexerFactory>();
             serviceCollection.TryAddTransient<IParserFactory, ParserFactory>();
             serviceCollection.TryAddTransient<ISourceWriterFactory, CppFileWriterFactory>();
+            serviceCollection.TryAddTransient<ITranslatorFactory, CppTranslatorFactory>();
+
+
             serviceCollection.TryAddTransient<IBackendCompiller, BackendCompiller>();
             serviceCollection.TryAddTransient<IProjectFileManager, ProjectFileManager>();
             serviceCollection.TryAddTransient<IEntryPointWriter, EntryPointWriter>();

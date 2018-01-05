@@ -4,45 +4,64 @@
  * Parser Rules
  */
 
-start: moduleImports module;
+/* Типы */
+type: scalarType | arrayType;
+scalarType: simpleType | routineType;
 
-moduleImports: ('import' Id)*;
+simpleType: SimpleType;
 
-module: 'module' Id moduleBlock;
-moduleBlock: BeginBlock (func | proc)* EndBlock;
+routineType: funcType | procType;
+funcType: Func routineArgList ':' type;
+procType: Proc routineArgList;
+routineArgList: RoutineLeftBracket (routineArg (',' routineArg)* | /* Нет аргументов */ ) RoutineRightBracket;
+routineArg: ArgPassModifier type;
 
-arrayOrSimpleType: (arrayType | Type);
+arrayType: Array (arrayDimention)+ scalarType;
+arrayDimention: ArrayLeftBracket ArrayRightBracket;
 
-func: ModuleAccessModifier 'fun' arrayOrSimpleType Id '(' argList ')' statementBlock;
-proc: ModuleAccessModifier 'proc' Id '(' argList ')' statementBlock;
-argList: ArgPassModifier arrayOrSimpleType Id (',' ArgPassModifier arrayOrSimpleType Id)* | /* нет аргументов */ ;
+/* Модуль */
+start: moduleImports module; /* СТАРТОВЫЙ НЕТЕРМИНАЛ */
 
-statementBlock: BeginBlock statementSequence EndBlock;
+moduleImports: (Import Id)*;
+
+module: Module Id moduleDeclare moduleEntry;
+
+moduleDeclare: (funcDeclare | procDeclare)*;
+
+funcDeclare: AccessModifier Func routineDeclareArgList ':' type Id statementSequence End;
+procDeclare: AccessModifier Proc routineDeclareArgList Id statementSequence End;
+routineDeclareArgList: RoutineLeftBracket (routineDeclareArg (',' routineDeclareArg)* | /* нет аргументов */ )  RoutineRightBracket;
+routineDeclareArg: ArgPassModifier type Id;
+
+moduleEntry: Start statementSequence End;
+
 statementSequence: (statement)*;
-statement: declare | arrayDeclare | assign | input | output | return | call | if | whileLoop | doWhileLoop;
+statement: declare | assign | input | output | return | call | if | whileLoop | doWhileLoop;
 
-declare: arrayOrSimpleType Id ('=' mathExp | '=' boolOr | '=' arrayDeclare)?;
+declare: simpleDeclare | arrayDeclare;
+simpleDeclare: scalarType Id (Assign mathExp | Assign boolOr)?;
+arrayDeclare: arrayDeclareType Id;
+arrayDeclareType: Array (arrayDeclareDimention)+ scalarType;
+arrayDeclareDimention: ArrayLeftBracket mathExp ArrayRightBracket;
 
-arrayType: Type ArrayTypeBrackets (ArrayTypeBrackets)*;
-arrayDeclare: NewKeyword Type '[' mathExp ']' ('[' mathExp ']')*;
-arrayElement: Id '[' mathExp ']' ('[' mathExp ']')*;
+arrayElement: Id (arrayDeclareDimention)+;
 
 assign: singleAssign | arrayAssign;
-singleAssign: Id '=' mathExp | Id '=' boolOr | Id '=' assign;
-arrayAssign: arrayElement '=' mathExp | arrayElement '=' boolOr | arrayElement '=' assign;
+singleAssign: Id Assign mathExp | Id Assign boolOr | Id Assign assign;
+arrayAssign: arrayElement Assign mathExp | arrayElement Assign boolOr | arrayElement Assign assign;
 
 return: 'return' (mathExp | boolOr)?;
 
 input: 'input' Id;
 output: 'output' (mathExp | boolOr);
 
-call: 'call' (Id '::')? Id '(' callArgList ')'; // Вызов процедуры/функции
-callArgList: ((callArg) (',' (callArg))*) | /* нет аргументов */ ;
+call: 'call' (Id '::')? Id RoutineLeftBracket callArgList RoutineRightBracket; // Вызов процедуры/функции
+callArgList: (callArg (',' callArg)*) | /* нет аргументов */ ;
 callArg: mathExp | boolOr;
 
-if: 'if' '(' boolOr ')' statementBlock #IfSingle | 'if' '(' boolOr ')' statementBlock 'else' statementBlock #IfElse;
-whileLoop: 'while' '(' boolOr ')' statementBlock;
-doWhileLoop: 'do' statementBlock 'while' '(' boolOr ')';
+if: 'if' '(' boolOr ')' 'then' statementSequence End #IfSingle | 'if' '(' boolOr ')' 'then' statementSequence 'else' statementSequence End #IfElse;
+whileLoop: 'while' '(' boolOr ')' 'repeat' statementSequence End;
+doWhileLoop: 'repeat' statementSequence 'while' '(' boolOr ')';
 
 mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpSub;
 mathTerm: mathFactor #MathTermEmpty | mathFactor '*' mathTerm #MathTermMul | mathFactor '/' mathTerm #MathTermDiv | mathFactor '%' mathTerm #MathTermMod;
@@ -60,28 +79,35 @@ boolAtom: call | arrayElement | BoolValue | Id;
  * Lexer Rules
  */
 
-BeginBlock: 'begin';
-EndBlock: 'end';
+SimpleType: Int | Real | Bool;
+fragment Int: 'int';
+fragment Real: 'real';
+fragment Bool: 'bool';
 
-Type: Int | Real | Bool;
-Int: 'int';
-Real: 'real';
-Bool: 'bool';
+Array: 'array';
+ArrayLeftBracket: '[';
+ArrayRightBracket: ']';
 
-ArrayTypeBrackets: '[' ']';
+Func: 'fun';
+Proc: 'proc';
+RoutineLeftBracket: '(';
+RoutineRightBracket: ')';
 
-NewKeyword: 'new';
+Import: 'import';
+Module: 'module';
+
+Start: 'start';
+End: 'end';
 
 ArgPassModifier: ValPassModifier | RefPassModifier;
 fragment ValPassModifier: 'val';
 fragment RefPassModifier: 'ref';
 
-ModuleAccessModifier: PublicModifier | InternalModifier;
-ClassMemberAccessModifier: PublicModifier  | PrivateModifier;
-
+AccessModifier: PublicModifier | PrivateModifier;
 fragment PublicModifier: 'public';
-fragment InternalModifier: 'internal';
 fragment PrivateModifier: 'private';
+
+Assign: '=';
 
 Id: [_a-zA-Z][_a-zA-Z0-9]*;
 

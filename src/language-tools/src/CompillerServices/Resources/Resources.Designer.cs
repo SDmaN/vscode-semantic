@@ -84,7 +84,7 @@ namespace CompillerServices.Resources {
         ///
         ///int main(int argc, char* argv[])
         ///{
-        ///    start();
+        ///    start_###();
         ///    return 0;
         ///}.
         /// </summary>

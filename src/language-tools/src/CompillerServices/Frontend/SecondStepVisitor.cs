@@ -10,7 +10,7 @@ namespace CompillerServices.Frontend
 {
     internal class SecondStepVisitor : SlangBaseVisitor<object>
     {
-        private readonly INameTableContainer _nameTableContainer;
+        /*private readonly INameTableContainer _nameTableContainer;
         private readonly SlangModule _slangModule;
         private readonly ModuleNameTableRow _moduleRow;
 
@@ -90,6 +90,6 @@ namespace CompillerServices.Frontend
         private string GetRuleTypeString(SlangParser.ArrayOrSimpleTypeContext context)
         {
             return context.arrayType() != null ? (string) Visit(context.arrayType()) : context.Type().ToString();
-        }
+        }*/
     }
 }

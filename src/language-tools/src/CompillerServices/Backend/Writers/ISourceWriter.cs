@@ -9,12 +9,28 @@ namespace CompillerServices.Backend.Writers
         void WriteStart();
         void WriteEnd();
 
+        /* Типы */
+        void WriteSimpleType(string type);
+        
+        void WriteFunctionTypeBegin();
+        void WriteFunctionTypeEnd();
+
+        void WriteProcedureTypeBegin();
+        void WriteProcedureTypeEnd();
+
+        void WriteRoutineArgListBegin();
+        void WriteRoutineArgDelimeter();
+        void WriteRoutineArgListEnd();
+
         void WriteImportBegin();
         void WriteImport(string importingModule);
         void WriteImportEnd();
 
         void WriteModuleBegin(string moduleName);
         void WriteModuleEnd();
+
+        void WriteFunctionDeclareBegin(string accessModifier, string name);
+        void WriteFunctionDeclareEnd(string accessModifier, string name);
 
         void WriteBlockBegin();
         void WriteBlockEnd();
@@ -26,7 +42,6 @@ namespace CompillerServices.Backend.Writers
 
         void WriteStatementEnd(StatementType statementType);
 
-        void WriteType(string type);
         void WriteIdentifier(string identifier);
         void WriteAssign();
 

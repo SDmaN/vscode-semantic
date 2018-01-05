@@ -21,7 +21,7 @@ namespace CompillerServices.Frontend
             _slangModule = slangModule;
         }
 
-        public override object VisitStart(SlangParser.StartContext context)
+        /*public override object VisitStart(SlangParser.StartContext context)
         {
             Visit(context.module());
             Visit(context.moduleImports());
@@ -152,6 +152,6 @@ namespace CompillerServices.Frontend
         private string GetRuleTypeString(SlangParser.ArrayOrSimpleTypeContext context)
         {
             return context.arrayType() != null ? (string) Visit(context.arrayType()) : context.Type().ToString();
-        }
+        }*/
     }
 }

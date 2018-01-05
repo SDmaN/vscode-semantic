@@ -14,33 +14,29 @@ namespace CompillerServices.Backend.Writers
 
         #region Standard library modules
 
-        private static readonly IDictionary<string, string> ModuleStandardIncludes;
+        private static readonly IDictionary<string, string> ModuleStandardIncludes = new Dictionary<string, string>
+        {
+            { "Math", "cmath" }
+        };
 
         #endregion
 
         #region Standard types
 
-        private static readonly IDictionary<string, string> StandardTypes;
+        private static readonly IDictionary<string, string> StandardTypes = new Dictionary<string, string>
+        {
+            { "bool", "bool" },
+            { "int", "int" },
+            { "real", "float" }
+        };
 
         #endregion
 
         private readonly IndentedTextWriter _headerWriter;
         private readonly IndentedTextWriter _sourceWriter;
 
-        static CppWriter()
-        {
-            ModuleStandardIncludes = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>
-            {
-                { "Math", "cmath" }
-            });
-
-            StandardTypes = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>
-            {
-                { "int", "int" },
-                { "real", "float" },
-                { "string", "std::string" }
-            });
-        }
+        private bool _shouldWriteHeader;
+        private string _functionName;
 
         public CppWriter(string headerFileName, TextWriter headerWriter, TextWriter sourceWriter)
         {
@@ -66,6 +62,46 @@ namespace CompillerServices.Backend.Writers
         {
             _headerWriter.WriteLine();
             _headerWriter.WriteLine("#endif");
+        }
+
+        public void WriteSimpleType(string type)
+        {
+            WriteWithHeader($"{TranslateType(type)} ");
+        }
+
+        public void WriteFunctionTypeBegin()
+        {
+            WriteWithHeader("std::function<");
+        }
+
+        public void WriteFunctionTypeEnd()
+        {
+            WriteWithHeader(">");
+        }
+
+        public void WriteProcedureTypeBegin()
+        {
+            WriteFunctionTypeBegin();
+        }
+
+        public void WriteProcedureTypeEnd()
+        {
+            WriteFunctionTypeEnd();
+        }
+
+        public void WriteRoutineArgListBegin()
+        {
+            WriteWithHeader("(");
+        }
+
+        public void WriteRoutineArgDelimeter()
+        {
+            WriteWithHeader(", ");
+        }
+
+        public void WriteRoutineArgListEnd()
+        {
+            WriteWithHeader(")");
         }
 
         public void WriteImportBegin()
@@ -116,6 +152,17 @@ namespace CompillerServices.Backend.Writers
             _sourceWriter.WriteLine("}");
         }
 
+        public void WriteFunctionDeclareBegin(string accessModifier, string name)
+        {
+            _shouldWriteHeader = true;
+            _functionName = name;
+        }
+
+        public void WriteFunctionDeclareEnd(string accessModifier, string name)
+        {
+            _shouldWriteHeader = false;
+        }
+
         public void WriteBlockBegin()
         {
             _sourceWriter.WriteLine("{");
@@ -154,11 +201,6 @@ namespace CompillerServices.Backend.Writers
             {
                 _sourceWriter.WriteLine(";");
             }
-        }
-
-        public void WriteType(string type)
-        {
-            _sourceWriter.Write($"{TranslateType(type)} ");
         }
 
         public void WriteIdentifier(string identifier)
@@ -439,16 +481,17 @@ namespace CompillerServices.Backend.Writers
 
         private static string TranslateType(string type)
         {
-            if (StandardTypes.TryGetValue(type, out string cppType))
-            {
-                return cppType;
-            }
-
-            return type;
+            return StandardTypes.TryGetValue(type, out string cppType) ? cppType : type;
         }
 
-        #region Standard functions
+        private void WriteWithHeader(string text)
+        {
+            if (_shouldWriteHeader)
+            {
+                _headerWriter.Write(text);
+            }
 
-        #endregion
+            _sourceWriter.Write(text);
+        }
     }
 }

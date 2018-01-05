@@ -33,7 +33,6 @@ namespace CompillerServices.Frontend
             {
                 SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
                 SlangParser parser = _parserFactory.Create(lexer);
-                parser.RemoveErrorListeners();
                 parser.AddErrorListener(new ExceptionErrorListener(slangModule));
 
                 await FirstStep(parser, slangModule);
@@ -43,7 +42,6 @@ namespace CompillerServices.Frontend
             {
                 SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
                 SlangParser parser = _parserFactory.Create(lexer);
-                parser.RemoveErrorListeners();
                 parser.AddErrorListener(new ExceptionErrorListener(slangModule));
 
                 await SecondStep(parser, slangModule);
@@ -70,8 +68,8 @@ namespace CompillerServices.Frontend
 
         private async Task SecondStep(SlangParser parser, SlangModule slangModule)
         {
-            SecondStepVisitor visitor = new SecondStepVisitor(_nameTableContainer, slangModule);
-            await Task.Run(() => visitor.Visit(parser.start()));
+            /*SecondStepVisitor visitor = new SecondStepVisitor(_nameTableContainer, slangModule);
+            await Task.Run(() => visitor.Visit(parser.start()));*/
         }
     }
 

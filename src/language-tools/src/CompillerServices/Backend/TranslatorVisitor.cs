@@ -9,7 +9,7 @@ namespace CompillerServices.Backend
 {
     internal class TranslatorVisitor : SlangBaseVisitor<object>, IDisposable
     {
-        private readonly ISourceWriter _sourceWriter;
+        /*private readonly ISourceWriter _sourceWriter;
         private string _currentModule;
 
         public TranslatorVisitor(ISourceWriter sourceWriter)
@@ -55,6 +55,74 @@ namespace CompillerServices.Backend
             _sourceWriter.WriteModuleEnd();
 
             return result;
+        }
+
+        public override object VisitFuncDeclare(SlangParser.FuncDeclareContext context)
+        {
+            string modifier = context.AccessModifier().GetText();
+            string name = context.Id().GetText();
+
+            _sourceWriter.WriteFunctionDeclareBegin(modifier, name);
+
+            Visit(context.type());
+            Visit(context.routineDeclareArgList());
+
+            _sourceWriter.WriteFunctionDeclareEnd(modifier, name);
+            
+            return null;
+        }
+
+        public override object VisitSimpleType(SlangParser.SimpleTypeContext context)
+        {
+            _sourceWriter.WriteSimpleType(context.SimpleType().GetText());
+            return base.VisitSimpleType(context);
+        }
+
+        public override object VisitFuncType(SlangParser.FuncTypeContext context)
+        {
+            _sourceWriter.WriteFunctionTypeBegin();
+            Visit(context.routineArgList());
+            Visit(context.type());
+            _sourceWriter.WriteFunctionTypeEnd();
+
+            return null;
+        }
+
+        public override object VisitProcType(SlangParser.ProcTypeContext context)
+        {
+            _sourceWriter.WriteProcedureTypeBegin();
+            Visit(context.routineArgList());
+            _sourceWriter.WriteProcedureTypeEnd();
+
+            return null;
+        }
+
+        public override object VisitRoutineArgList(SlangParser.RoutineArgListContext context)
+        {
+            _sourceWriter.WriteRoutineArgListBegin();
+
+            bool isFirst = true;
+
+            foreach (SlangParser.RoutineArgContext arg in context.routineArg())
+            {
+                Visit(arg);
+
+                if (!isFirst)
+                {
+                    _sourceWriter.WriteRoutineArgDelimeter();
+                }
+
+                isFirst = false;
+            }
+
+            _sourceWriter.WriteRoutineArgListEnd();
+
+            return null;
+        }
+
+        public override object VisitRoutineArg(SlangParser.RoutineArgContext context)
+        {
+            return base.VisitRoutineArg(context);
         }
 
         public override object VisitFunc(SlangParser.FuncContext context)
@@ -133,7 +201,7 @@ namespace CompillerServices.Backend
         {
             string type = GetRuleTypeString(context.arrayOrSimpleType());
 
-            _sourceWriter.WriteType(type);
+            _sourceWriter.WriteSimpleType(type);
 
             ITerminalNode id = context.Id();
             _sourceWriter.WriteIdentifier(id.GetText());
@@ -528,6 +596,9 @@ namespace CompillerServices.Backend
         private string GetRuleTypeString(SlangParser.ArrayOrSimpleTypeContext context)
         {
             return context.arrayType() != null ? (string) Visit(context.arrayType()) : context.Type().ToString();
+        }*/
+        public void Dispose()
+        {
         }
     }
 }

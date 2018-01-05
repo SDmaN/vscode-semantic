@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CompillerServices.Backend.EntryPoint;
-using CompillerServices.Backend.Writers;
+using CompillerServices.Backend.TranslatorFactories;
+using CompillerServices.Backend.Translators;
 using CompillerServices.IO;
 using CompillerServices.Output;
 using SlangGrammar;
 using SlangGrammar.Factories;
-using RelativePathGetter = System.Func<System.IO.DirectoryInfo, System.IO.DirectoryInfo, string>;
 
 namespace CompillerServices.Backend
 {
@@ -19,14 +17,13 @@ namespace CompillerServices.Backend
         private readonly ILexerFactory _lexerFactory;
         private readonly IOutputWriter _outputWriter;
         private readonly IParserFactory _parserFactory;
-        private readonly ISourceWriterFactory _sourceWriterFactory;
+        private readonly ITranslatorFactory _translatorFactory;
 
-        public BackendCompiller(ILexerFactory lexerFactory, IParserFactory parserFactory,
-            ISourceWriterFactory sourceWriterFactory, IEntryPointWriter entryPointWriter, IOutputWriter outputWriter)
+        public BackendCompiller(ILexerFactory lexerFactory, IParserFactory parserFactory, ITranslatorFactory translatorFactory, IEntryPointWriter entryPointWriter, IOutputWriter outputWriter)
         {
             _lexerFactory = lexerFactory;
             _parserFactory = parserFactory;
-            _sourceWriterFactory = sourceWriterFactory;
+            _translatorFactory = translatorFactory;
             _entryPointWriter = entryPointWriter;
             _outputWriter = outputWriter;
         }
@@ -59,15 +56,12 @@ namespace CompillerServices.Backend
                 outputDirectory.Create();
             }
 
-            using (ISourceWriter sourceWriter = _sourceWriterFactory.Create(slangModule.ModuleFile, outputDirectory))
+            using (ITranslator translator = _translatorFactory.Create(slangModule.ModuleFile, outputDirectory))
             {
                 SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
                 SlangParser parser = _parserFactory.Create(lexer);
 
-                TranslatorVisitor visitor = new TranslatorVisitor(sourceWriter);
-
-                await Task.Run(() => visitor.Visit(parser.start()));
-                await sourceWriter.FlushAsync();
+                await translator.Translate(parser);
             }
         }
 

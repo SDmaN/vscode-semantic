@@ -38,3 +38,6 @@ end Main.
 10) ln
 11) exp
 12) sqrt
+
+Массивы:
+Сделать .length(n)

@@ -8,5 +8,6 @@ namespace CompillerServices.Backend
     {
         Task Compile(SourceContainer sources, DirectoryInfo outputDirectory);
         Task Compile(SlangModule slangModule, DirectoryInfo outputDirectory);
+        Task Build(SourceContainer sources, DirectoryInfo outputDirectory);
     }
 }

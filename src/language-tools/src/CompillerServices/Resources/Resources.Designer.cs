@@ -61,6 +61,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Compiler directory {0} not exists..
+        /// </summary>
+        internal static string CompillerDirectoryNotFound {
+            get {
+                return ResourceManager.GetString("CompillerDirectoryNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find directory {0}..
         /// </summary>
         internal static string CouldNotFindDirectory {

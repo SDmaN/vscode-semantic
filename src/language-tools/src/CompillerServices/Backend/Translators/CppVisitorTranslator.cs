@@ -78,6 +78,8 @@ namespace CompillerServices.Backend.Translators
 
         public void Dispose()
         {
+            _headerWriter?.InnerWriter?.Dispose();
+            _sourceWriter?.InnerWriter?.Dispose();
             _headerWriter?.Dispose();
             _sourceWriter?.Dispose();
         }

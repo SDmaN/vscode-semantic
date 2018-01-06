@@ -1,8 +1,30 @@
-﻿namespace CompillerServices
+﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
+
+namespace CompillerServices
 {
     internal static class Constants
     {
         public const string SlangExtension = ".slang";
         public const string SlangFileMask = "*" + SlangExtension;
+
+        public static readonly string CppCompillerPath;
+
+        public static readonly IEnumerable<string> WindowsNeededLibraries = new List<string>
+        {
+            "libgcc_s_dw2-1.dll",
+            "libstdc++-6.dll",
+            "libwinpthread-1.dll"
+        };
+
+        public const string CppCompillerName = "g++";
+
+        static Constants()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                CppCompillerPath = "./mingw/mingw32/bin";
+            }
+        }
     }
 }

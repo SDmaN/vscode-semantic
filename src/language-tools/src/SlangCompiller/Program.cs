@@ -135,7 +135,9 @@ namespace SlangCompiller
                 await frontendCompiller.CheckForErrors(sources);
 
                 IBackendCompiller compiller = ServiceProvider.GetService<IBackendCompiller>();
-                await compiller.Compile(sources, outputDirectory);
+                await compiller.Build(sources, outputDirectory);
+
+                //await compiller.Compile(sources, outputDirectory);
             }
             catch (DirectoryNotFoundException e)
             {

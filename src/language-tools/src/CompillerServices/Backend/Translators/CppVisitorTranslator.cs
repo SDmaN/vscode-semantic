@@ -13,7 +13,7 @@ namespace CompillerServices.Backend.Translators
     {
         #region Standard library modules
 
-        private static readonly IDictionary<string, string> ModuleStandardIncludes = new Dictionary<string, string>
+        private static readonly IDictionary<string, string> SystemModules = new Dictionary<string, string>
         {
             { "Math", "cmath" }
         };
@@ -22,11 +22,20 @@ namespace CompillerServices.Backend.Translators
 
         #region Standard types
 
-        private static readonly IDictionary<string, string> StandardTypes = new Dictionary<string, string>
+        private static readonly IDictionary<string, string> SystemTypes = new Dictionary<string, string>
         {
             { "bool", "bool" },
             { "int", "int" },
             { "real", "float" }
+        };
+
+        #endregion
+
+        #region System functions
+
+        private static readonly IDictionary<string, string> SystemFunctions = new Dictionary<string, string>
+        {
+            { "Abs", "abs" }
         };
 
         #endregion
@@ -168,8 +177,7 @@ namespace CompillerServices.Backend.Translators
 
             foreach (ITerminalNode module in context.Id())
             {
-                WriteLine($"#include \"{module.GetText()}.h\"");
-                WriteLine($"using namespace {module.GetText()};");
+                WriteModule(module);
             }
 
             WriteLine();
@@ -484,12 +492,12 @@ namespace CompillerServices.Backend.Translators
         {
             ITerminalNode[] ids = context.Id();
 
-            ITerminalNode moduleName = null;
+            ITerminalNode module = null;
             ITerminalNode functionName;
 
             if (ids.Length == 2)
             {
-                moduleName = ids[0];
+                module = ids[0];
                 functionName = ids[1];
             }
             else
@@ -497,9 +505,9 @@ namespace CompillerServices.Backend.Translators
                 functionName = ids[0];
             }
 
-            if (moduleName != null)
+            if (module != null)
             {
-                Write($"{moduleName.GetText()}::");
+                Write($"{module.GetText()}::");
             }
 
             Write($"{functionName.GetText()}(");
@@ -829,9 +837,24 @@ namespace CompillerServices.Backend.Translators
             _sourceWriter.WriteLine(text);
         }
 
+        private void WriteModule(IParseTree module)
+        {
+            string moduleName = module.GetText();
+
+            if (SystemModules.TryGetValue(moduleName, out moduleName))
+            {
+                WriteLine($"#include <{moduleName}>");
+            }
+            else
+            {
+                WriteLine($"#include \"{moduleName}.h\"");
+                WriteLine($"using namespace {moduleName};");
+            }
+        }
+
         private static string TranslateType(string slangType)
         {
-            return StandardTypes.TryGetValue(slangType, out string cppType) ? cppType : slangType;
+            return SystemTypes.TryGetValue(slangType, out string cppType) ? cppType : slangType;
         }
 
         private void WriteVectorBegin(int dimention)

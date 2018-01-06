@@ -2,7 +2,6 @@
 using CompillerServices.Backend;
 using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.TranslatorFactories;
-using CompillerServices.Backend.Writers;
 using CompillerServices.Frontend;
 using CompillerServices.Frontend.NameTables;
 using CompillerServices.IO;

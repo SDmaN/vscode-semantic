@@ -1,31 +1,3 @@
-Модуль:
-1) Секция задания функций/процедур/классов,
-import Abc
-
-module Main
-proc () name
-
-
-end name
-public fun (val int a, val int b): int sum
-    return a + b
-end sum;
-
-start
-    internal proc start()
-    begin
-        int[][] a = new int[5][7]
-        a[0][0] = call sum(2, 5 + 3 * 4)
-    end
-
-    
-end Main.
-
-2) Секция главной программы модуля - генерировать "void start()" в C++
-
-Тела:
-3) Начинаются со "start", заканчиваются "end"
-
 Строки:
 4) поиск (слева, справа)
 5) substr
@@ -38,6 +10,3 @@ end Main.
 10) ln
 11) exp
 12) sqrt
-
-Массивы:
-Сделать .length(n)

@@ -36,7 +36,9 @@ routineDeclareArg: ArgPassModifier type Id;
 moduleEntry: Start statementSequence End;
 
 statementSequence: (statement)*;
-statement: declare | assign | input | output | return | call | if | whileLoop | doWhileLoop;
+statement: singleStatement | multiStatement;
+singleStatement: declare | assign | input | output | return | call;
+multiStatement: if | whileLoop | doWhileLoop;
 
 declare: simpleDeclare | arrayDeclare;
 simpleDeclare: scalarType Id (Assign mathExp | Assign boolOr)?;

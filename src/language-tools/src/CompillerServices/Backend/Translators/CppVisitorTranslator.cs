@@ -1,14 +1,28 @@
-﻿using System;
-using System.CodeDom.Compiler;
+﻿using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Antlr4.Runtime.Tree;
+using CompillerServices.Exceptions;
 using SlangGrammar;
 
 namespace CompillerServices.Backend.Translators
 {
+    internal class SystemFunction
+    {
+        public SystemFunction(string moduleName, string slangFunction, string cppFunction)
+        {
+            ModuleName = moduleName;
+            SlangFunction = slangFunction;
+            CppFunction = cppFunction;
+        }
+
+        public string ModuleName { get; }
+        public string SlangFunction { get; }
+        public string CppFunction { get; }
+    }
+
     public class CppVisitorTranslator : SlangBaseVisitor<object>, ITranslator
     {
         #region Standard library modules
@@ -25,8 +39,8 @@ namespace CompillerServices.Backend.Translators
         private static readonly IDictionary<string, string> SystemTypes = new Dictionary<string, string>
         {
             { "bool", "bool" },
-            { "int", "int" },
-            { "real", "float" }
+            { "int", "int64_t" },
+            { "real", "double" }
         };
 
         #endregion
@@ -35,7 +49,13 @@ namespace CompillerServices.Backend.Translators
 
         private static readonly IDictionary<string, string> SystemFunctions = new Dictionary<string, string>
         {
-            { "Abs", "abs" }
+            { "Abs", "abs" },
+            { "FAbs", "fabs" },
+            { "Pow", "pow" },
+            { "Log", "log10" },
+            { "Ln", "log" },
+            { "Exp", "exp" },
+            { "Sqrt", "sqrt" }
         };
 
         #endregion
@@ -82,6 +102,29 @@ namespace CompillerServices.Backend.Translators
 
             _headerWriter.WriteLine();
             _headerWriter.WriteLine("#endif");
+
+            return null;
+        }
+
+        #endregion
+
+        #region Imports
+
+        public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
+        {
+            ToggleOnlyHeader();
+
+            WriteLine("#include <iostream>");
+            WriteLine("#include <vector>");
+            WriteLine("#include <functional>");
+
+            foreach (ITerminalNode module in context.Id())
+            {
+                WriteModule(module);
+            }
+
+            WriteLine();
+            ToggleOnlyHeader();
 
             return null;
         }
@@ -159,29 +202,6 @@ namespace CompillerServices.Backend.Translators
             WriteVectorBegin(context.arrayDimention().Length);
             Visit(context.scalarType());
             WriteVectorEnd(context.arrayDimention().Length);
-
-            return null;
-        }
-
-        #endregion
-
-        #region Imports
-
-        public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
-        {
-            ToggleOnlyHeader();
-
-            WriteLine("#include <iostream>");
-            WriteLine("#include <vector>");
-            WriteLine("#include <functional>");
-
-            foreach (ITerminalNode module in context.Id())
-            {
-                WriteModule(module);
-            }
-
-            WriteLine();
-            ToggleOnlyHeader();
 
             return null;
         }
@@ -331,6 +351,14 @@ namespace CompillerServices.Backend.Translators
             return null;
         }
 
+        public override object VisitSingleStatement(SlangParser.SingleStatementContext context)
+        {
+            base.VisitSingleStatement(context);
+            WriteLine(";");
+
+            return null;
+        }
+
         public override object VisitSimpleDeclare(SlangParser.SimpleDeclareContext context)
         {
             Visit(context.scalarType());
@@ -349,8 +377,6 @@ namespace CompillerServices.Backend.Translators
                 Write(" = ");
                 Visit(context.boolOr());
             }
-
-            WriteLine(";");
 
             return null;
         }
@@ -394,8 +420,6 @@ namespace CompillerServices.Backend.Translators
                 Write(")");
             }
 
-            WriteLine(";");
-
             return null;
         }
 
@@ -408,10 +432,10 @@ namespace CompillerServices.Backend.Translators
 
             base.VisitSingleAssign(context);
 
-            if (context.assign() == null)
+            /*if (context.assign() == null)
             {
                 WriteLine(";");
-            }
+            }*/
 
             return null;
         }
@@ -423,10 +447,10 @@ namespace CompillerServices.Backend.Translators
 
             Visit(context.GetChild(2));
 
-            if (context.assign() == null)
+            /*if (context.assign() == null)
             {
                 WriteLine(";");
-            }
+            }*/
 
             return null;
         }
@@ -467,14 +491,14 @@ namespace CompillerServices.Backend.Translators
         {
             Write("return ");
             base.VisitReturn(context);
-            WriteLine(";");
+            
             return null;
         }
 
         public override object VisitInput(SlangParser.InputContext context)
         {
             ITerminalNode id = context.Id();
-            WriteLine($"std::cin >> {id.GetText()};");
+            Write($"std::cin >> {id.GetText()}");
 
             return null;
         }
@@ -483,7 +507,7 @@ namespace CompillerServices.Backend.Translators
         {
             Write("std::cout << ");
             base.VisitOutput(context);
-            WriteLine(" << std::endl;");
+            Write(" << std::endl");
 
             return null;
         }
@@ -493,26 +517,23 @@ namespace CompillerServices.Backend.Translators
             ITerminalNode[] ids = context.Id();
 
             ITerminalNode module = null;
-            ITerminalNode functionName;
+            ITerminalNode function;
 
             if (ids.Length == 2)
             {
                 module = ids[0];
-                functionName = ids[1];
+                function = ids[1];
             }
             else
             {
-                functionName = ids[0];
+                function = ids[0];
             }
 
-            if (module != null)
-            {
-                Write($"{module.GetText()}::");
-            }
+            string translated = TranslateCall(module, function);
 
-            Write($"{functionName.GetText()}(");
+            Write($"{translated}(");
             base.VisitCall(context);
-            WriteLine(");");
+            Write(")");
 
             return null;
         }
@@ -668,12 +689,12 @@ namespace CompillerServices.Backend.Translators
 
         public override object VisitMathAtom(SlangParser.MathAtomContext context)
         {
-            var id = context.Id();
-            var i = context.IntValue();
-            var r = context.RealValue();
-            var c = context.call();
-            var ae = context.arrayElement();
-            var al = context.arrayLength();
+            ITerminalNode id = context.Id();
+            ITerminalNode i = context.IntValue();
+            ITerminalNode r = context.RealValue();
+            SlangParser.CallContext c = context.call();
+            SlangParser.ArrayElementContext ae = context.arrayElement();
+            SlangParser.ArrayLengthContext al = context.arrayLength();
 
             if (context.call() == null && context.arrayElement() == null && context.arrayLength() == null)
             {
@@ -850,6 +871,32 @@ namespace CompillerServices.Backend.Translators
                 WriteLine($"#include \"{moduleName}.h\"");
                 WriteLine($"using namespace {moduleName};");
             }
+        }
+
+        private string TranslateCall(IParseTree module, ITerminalNode function)
+        {
+            if (module == null)
+            {
+                return $"{function.GetText()}";
+            }
+
+            string moduleName = module.GetText();
+
+            if (!SystemModules.ContainsKey(module.GetText()))
+            {
+                return $"{moduleName}::{function}";
+            }
+
+            string functionName = function.GetText();
+
+            if (SystemFunctions.TryGetValue(function.GetText(), out string cppFunctionName))
+            {
+                return cppFunctionName;
+            }
+
+            throw new CompillerException(string.Format(Resources.Resources.UnknownSystemFunction, functionName),
+                _moduleName, function.Symbol.Line, function.Symbol.Column);
+
         }
 
         private static string TranslateType(string slangType)

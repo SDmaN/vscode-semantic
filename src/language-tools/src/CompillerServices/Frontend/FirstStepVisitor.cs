@@ -1,8 +1,4 @@
-﻿using System.Text;
-using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
-using CompillerServices.Exceptions;
-using CompillerServices.Frontend.NameTables;
+﻿using CompillerServices.Frontend.NameTables;
 using CompillerServices.IO;
 using SlangGrammar;
 

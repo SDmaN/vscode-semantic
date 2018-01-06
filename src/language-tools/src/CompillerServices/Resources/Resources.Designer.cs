@@ -93,7 +93,10 @@ namespace CompillerServices.Resources {
         ///    catch(std::logic_error &amp;e)
         ///    {
         ///        std::cout &lt;&lt; std::endl &lt;&lt; &quot;Error: &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+        ///        return 1;
         ///    }
+        ///
+        ///    return 0;
         ///}.
         /// </summary>
         internal static string MainContent {
@@ -171,6 +174,15 @@ namespace CompillerServices.Resources {
         internal static string TooManyProjectFiles {
             get {
                 return ResourceManager.GetString("TooManyProjectFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown system routine {0}..
+        /// </summary>
+        internal static string UnknownSystemFunction {
+            get {
+                return ResourceManager.GetString("UnknownSystemFunction", resourceCulture);
             }
         }
     }

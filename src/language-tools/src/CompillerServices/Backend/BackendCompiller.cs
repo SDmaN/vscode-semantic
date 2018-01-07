@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -35,7 +34,7 @@ namespace CompillerServices.Backend
             _outputWriter = outputWriter;
         }
 
-        public async Task Compile(SourceContainer sources, DirectoryInfo outputDirectory)
+        public async Task Translate(SourceContainer sources, DirectoryInfo outputDirectory)
         {
             if (!outputDirectory.Exists)
             {
@@ -48,13 +47,13 @@ namespace CompillerServices.Backend
 
             foreach (SlangModule slangModule in sources)
             {
-                await Compile(slangModule, outputDirectory);
+                await Translate(slangModule, outputDirectory);
             }
 
             await _entryPointWriter.WriteEntryPoint(sources.MainModuleName, outputDirectory);
         }
 
-        public async Task Compile(SlangModule slangModule, DirectoryInfo outputDirectory)
+        public async Task Translate(SlangModule slangModule, DirectoryInfo outputDirectory)
         {
             await _outputWriter.WriteFileTranslating(slangModule.ModuleFile);
 
@@ -74,8 +73,6 @@ namespace CompillerServices.Backend
 
         public async Task Build(SourceContainer sources, DirectoryInfo outputDirectory)
         {
-            await Compile(sources, outputDirectory);
-            DirectoryInfo binDirectory = outputDirectory.CreateSubdirectory(CppOutput);
             DirectoryInfo gccDirectory = new DirectoryInfo(Constants.CppCompillerPath);
 
             if (!gccDirectory.Exists)
@@ -84,9 +81,14 @@ namespace CompillerServices.Backend
                     gccDirectory.FullName));
             }
 
+            await Translate(sources, outputDirectory);
+            DirectoryInfo binDirectory = outputDirectory.CreateSubdirectory(CppOutput);
+
+            await _outputWriter.WriteBuilding(outputDirectory.FullName);
+
             string gccFileName = Path.Combine(gccDirectory.FullName, Constants.CppCompillerName);
             string gccArgs =
-                $"-o {Path.Combine(outputDirectory.FullName, CppOutput, sources.MainModuleName)} {Path.Combine(outputDirectory.FullName, "*cpp")}";
+                $"-o {Path.Combine(outputDirectory.FullName, CppOutput, sources.ProjectFile.GetShortNameWithoutExtension())} {Path.Combine(outputDirectory.FullName, "*cpp")}";
             ProcessStartInfo processStartInfo = new ProcessStartInfo(gccFileName, gccArgs)
             {
                 WorkingDirectory = gccDirectory.FullName

@@ -10,5 +10,6 @@ namespace CompillerServices.Output
         Task WriteError(ErrorCheckException exception);
         Task WriteFileTranslating(FileInfo source);
         Task WriteDirectoryClean(DirectoryInfo cleainingDirectoryInfo);
+        Task WriteBuilding(string message);
     }
 }

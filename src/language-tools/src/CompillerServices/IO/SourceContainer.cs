@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 
 namespace CompillerServices.IO
 {
@@ -14,6 +15,7 @@ namespace CompillerServices.IO
 
         public bool ContainsMainModule { get; private set; }
         public string MainModuleName { get; internal set; }
+        public FileInfo ProjectFile { get; internal set; }
 
         public IEnumerator<SlangModule> GetEnumerator()
         {

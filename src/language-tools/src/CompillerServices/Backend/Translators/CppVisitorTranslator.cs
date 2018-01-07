@@ -449,11 +449,6 @@ namespace CompillerServices.Backend.Translators
 
             Visit(context.GetChild(2));
 
-            /*if (context.assign() == null)
-            {
-                WriteLine(";");
-            }*/
-
             return null;
         }
 
@@ -864,9 +859,9 @@ namespace CompillerServices.Backend.Translators
         {
             string moduleName = module.GetText();
 
-            if (SystemModules.TryGetValue(moduleName, out moduleName))
+            if (SystemModules.TryGetValue(moduleName, out string cppName))
             {
-                WriteLine($"#include <{moduleName}>");
+                WriteLine($"#include <{cppName}>");
             }
             else
             {

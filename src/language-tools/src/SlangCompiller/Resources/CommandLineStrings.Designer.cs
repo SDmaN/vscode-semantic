@@ -70,6 +70,15 @@ namespace SlangCompiller.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Translates Semantic Language code to C++ code and builds an executable..
+        /// </summary>
+        internal static string Build_Description {
+            get {
+                return ResourceManager.GetString("Build_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Show help..
         /// </summary>
         internal static string HelpDescription {

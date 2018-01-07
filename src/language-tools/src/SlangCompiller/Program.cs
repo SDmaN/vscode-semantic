@@ -51,6 +51,7 @@ namespace SlangCompiller
             help.Description = CommandLineStrings.HelpDescription;
 
             application.Command("tr", TranslateCommand);
+            application.Command("b", BuildCommand);
 
             application.OnExecute(() =>
             {
@@ -119,12 +120,63 @@ namespace SlangCompiller
                 DirectoryInfo inputDirectory = new DirectoryInfo(inputPath);
                 DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
 
-                return await Translate(outputWriter, inputDirectory, outputDirectory);
+                return await ProcessSources(outputWriter, inputDirectory,
+                    async (sources, compiller) => await compiller.Translate(sources, outputDirectory));
             });
         }
 
-        private static async Task<int> Translate(IOutputWriter outputWriter, DirectoryInfo inputDirectory,
-            DirectoryInfo outputDirectory)
+        private static void BuildCommand(CommandLineApplication c)
+        {
+            c.Description = CommandLineStrings.Build_Description;
+
+            CommandArgument inputPathCommand =
+                c.Argument("<inputPath>", CommandLineStrings.Translate_InputDirectiory_Description);
+            CommandArgument outputPathCommand =
+                c.Argument("<outputPath>", CommandLineStrings.Translate_OutputDirectory_Description);
+
+            CommandOption help = c.HelpOption("-h|--help");
+            help.Description = CommandLineStrings.HelpDescription;
+
+            c.OnExecute(async () =>
+            {
+                if (help.HasValue())
+                {
+                    return 0;
+                }
+
+                string inputPath = inputPathCommand.Value;
+                string outputPath = outputPathCommand.Value;
+
+                bool isInputEmpty = string.IsNullOrEmpty(inputPath);
+                bool isOutputEmpty = string.IsNullOrWhiteSpace(outputPath);
+
+                IOutputWriter outputWriter = ServiceProvider.GetService<IOutputWriter>();
+
+                if (isInputEmpty)
+                {
+                    await outputWriter.WriteError(string.Format(CommandLineStrings.PathNotSet, "<inputPath>"));
+                }
+
+                if (isOutputEmpty)
+                {
+                    await outputWriter.WriteError(string.Format(CommandLineStrings.PathNotSet, "<outputPath>"));
+                }
+
+                if (isOutputEmpty || isInputEmpty)
+                {
+                    return 0;
+                }
+
+                DirectoryInfo inputDirectory = new DirectoryInfo(inputPath);
+                DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
+
+                return await ProcessSources(outputWriter, inputDirectory,
+                    async (sources, compiller) => await compiller.Build(sources, outputDirectory));
+            });
+        }
+
+        private static async Task<int> ProcessSources(IOutputWriter outputWriter, DirectoryInfo inputDirectory,
+            Func<SourceContainer, IBackendCompiller, Task> processFunction)
         {
             try
             {
@@ -135,9 +187,7 @@ namespace SlangCompiller
                 await frontendCompiller.CheckForErrors(sources);
 
                 IBackendCompiller compiller = ServiceProvider.GetService<IBackendCompiller>();
-                await compiller.Build(sources, outputDirectory);
-
-                //await compiller.Compile(sources, outputDirectory);
+                await processFunction(sources, compiller);
             }
             catch (DirectoryNotFoundException e)
             {

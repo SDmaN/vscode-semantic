@@ -9,7 +9,7 @@ namespace CompillerServices.ProjectFile
     {
         private const string ProjectFilePattern = "*.slproj";
 
-        public string GetMainModule(DirectoryInfo projectDirectory)
+        public FileInfo GetProjectFile(DirectoryInfo projectDirectory)
         {
             if (!projectDirectory.Exists)
             {
@@ -30,9 +30,16 @@ namespace CompillerServices.ProjectFile
                 throw new ProjectFileException(string.Format(Resources.Resources.TooManyProjectFiles));
             }
 
+            return files.First();
+        }
+
+        public string GetMainModule(DirectoryInfo projectDirectory)
+        {
+            FileInfo projectFile = GetProjectFile(projectDirectory);
+
             try
             {
-                using (TextReader textReader = files.First().OpenText())
+                using (TextReader textReader = projectFile.OpenText())
                 {
                     JsonReader jsonReader = new JsonTextReader(textReader);
 

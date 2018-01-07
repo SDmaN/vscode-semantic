@@ -43,6 +43,11 @@ namespace CompillerServices.Output
             await WriteLineAsync($"[clean]: {cleainingDirectoryInfo.FullName}");
         }
 
+        public virtual async Task WriteBuilding(string message)
+        {
+            await WriteLineAsync($"[build]: {message}");
+        }
+
         private async Task WriteLineAsync(string line)
         {
             await _outputWriter.WriteLineAsync(line);

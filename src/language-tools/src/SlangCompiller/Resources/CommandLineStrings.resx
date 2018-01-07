@@ -120,6 +120,9 @@
   <data name="ApplicationDescription" xml:space="preserve">
     <value>Compiller for slang language.</value>
   </data>
+  <data name="Build_Description" xml:space="preserve">
+    <value>Translates Semantic Language code to C++ code and builds an executable.</value>
+  </data>
   <data name="HelpDescription" xml:space="preserve">
     <value>Show help.</value>
   </data>

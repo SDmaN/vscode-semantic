@@ -26,7 +26,8 @@ namespace CompillerServices.IO
             string mainModuleName = _projectFileManager.GetMainModule(inputDirectory);
             SourceContainer container = new SourceContainer
             {
-                MainModuleName = mainModuleName
+                MainModuleName = mainModuleName,
+                ProjectFile = _projectFileManager.GetProjectFile(inputDirectory)
             };
 
             IEnumerable<FileInfo> inputFiles =

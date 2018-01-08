@@ -57,7 +57,7 @@ namespace CompillerServices.Backend.Translators
 
         public CppVisitorTranslator(string headerFileName, TextWriter headerWriter, TextWriter sourceWriter)
         {
-            _headerFileName = headerFileName.Replace('.', '_').ToUpper();
+            _headerFileName = headerFileName;
             _headerWriter = new IndentedTextWriter(headerWriter);
             _sourceWriter = new IndentedTextWriter(sourceWriter);
         }
@@ -82,8 +82,8 @@ namespace CompillerServices.Backend.Translators
 
         public override object VisitStart(SlangParser.StartContext context)
         {
-            _headerWriter.WriteLine($"#ifndef {_headerFileName}");
-            _headerWriter.WriteLine($"#define {_headerFileName}");
+            _headerWriter.WriteLine($"#ifndef {_headerFileName.Replace('.', '_')}");
+            _headerWriter.WriteLine($"#define {_headerFileName.Replace('.', '_')}");
             _headerWriter.WriteLine();
 
             base.VisitStart(context);
@@ -105,6 +105,7 @@ namespace CompillerServices.Backend.Translators
             WriteLine("#include <iostream>");
             WriteLine("#include <vector>");
             WriteLine("#include <functional>");
+            _sourceWriter.WriteLine($"#include \"{_headerFileName}\"");
 
             foreach (ITerminalNode module in context.Id())
             {

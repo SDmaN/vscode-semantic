@@ -9,20 +9,6 @@ using SlangGrammar;
 
 namespace CompillerServices.Backend.Translators
 {
-    internal class SystemFunction
-    {
-        public SystemFunction(string moduleName, string slangFunction, string cppFunction)
-        {
-            ModuleName = moduleName;
-            SlangFunction = slangFunction;
-            CppFunction = cppFunction;
-        }
-
-        public string ModuleName { get; }
-        public string SlangFunction { get; }
-        public string CppFunction { get; }
-    }
-
     public class CppVisitorTranslator : SlangBaseVisitor<object>, ITranslator
     {
         #region Standard library modules

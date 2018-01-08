@@ -199,6 +199,11 @@ namespace SlangCompiller
                 await outputWriter.WriteError(e.Message);
                 return 1;
             }
+            catch (ProjectFileException e)
+            {
+                await outputWriter.WriteError(e.Message);
+                return 1;
+            }
             catch (ModuleAndFileMatchException e)
             {
                 await outputWriter.WriteError(e);

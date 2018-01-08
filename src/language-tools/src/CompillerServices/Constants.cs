@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace CompillerServices
@@ -23,7 +25,7 @@ namespace CompillerServices
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                CppCompillerPath = "./mingw/mingw32/bin";
+                CppCompillerPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mingw/mingw32/bin");
             }
         }
     }

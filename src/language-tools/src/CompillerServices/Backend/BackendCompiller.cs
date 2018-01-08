@@ -88,7 +88,7 @@ namespace CompillerServices.Backend
 
             string gccFileName = Path.Combine(gccDirectory.FullName, Constants.CppCompillerName);
             string gccArgs =
-                $"-o {Path.Combine(outputDirectory.FullName, CppOutput, sources.ProjectFile.GetShortNameWithoutExtension())} {Path.Combine(outputDirectory.FullName, "*cpp")}";
+                $"-o {Path.Combine(outputDirectory.FullName, CppOutput, sources.ProjectFile.GetShortNameWithoutExtension())} {Path.Combine(outputDirectory.FullName, "*.cpp")}";
             ProcessStartInfo processStartInfo = new ProcessStartInfo(gccFileName, gccArgs)
             {
                 WorkingDirectory = gccDirectory.FullName

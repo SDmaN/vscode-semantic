@@ -44,5 +44,10 @@
                        (Type != null ? Type.GetHashCode() : 0);
             }
         }
+
+        public override string ToString()
+        {
+            return $"{Modifier} {Type}";
+        }
     }
 }

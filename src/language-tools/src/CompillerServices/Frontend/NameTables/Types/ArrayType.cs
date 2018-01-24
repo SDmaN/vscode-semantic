@@ -1,4 +1,6 @@
-﻿namespace CompillerServices.Frontend.NameTables.Types
+﻿using System.Text;
+
+namespace CompillerServices.Frontend.NameTables.Types
 {
     public class ArrayType : SlangType
     {
@@ -32,6 +34,22 @@
             {
                 return ((ElementType != null ? ElementType.GetHashCode() : 0) * 397) ^ Dimentions;
             }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.Append("array ");
+
+            for (int i = 0; i < Dimentions; i++)
+            {
+                builder.Append("[]");
+            }
+
+            builder.Append($" {ElementType}");
+
+            return builder.ToString();
         }
     }
 }

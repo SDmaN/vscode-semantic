@@ -348,10 +348,32 @@ namespace CompillerServices.Backend.Translators
             return null;
         }
 
-        public override object VisitSimpleDeclare(SlangParser.SimpleDeclareContext context)
+        public override object VisitScalarDeclare(SlangParser.ScalarDeclareContext context)
         {
             Visit(context.scalarType());
 
+            Write(" ");
+            Write(context.Id().GetText());
+
+            if (context.mathExp() != null)
+            {
+                Write(" = ");
+                Visit(context.mathExp());
+            }
+
+            if (context.boolOr() != null)
+            {
+                Write(" = ");
+                Visit(context.boolOr());
+            }
+
+            return null;
+        }
+
+        public override object VisitConstDeclare(SlangParser.ConstDeclareContext context)
+        {
+            Write("const ");
+            Visit(context.simpleType());
             Write(" ");
             Write(context.Id().GetText());
 

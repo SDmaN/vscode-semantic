@@ -40,8 +40,9 @@ statement: singleStatement | multiStatement;
 singleStatement: declare | assign | input | output | return | call;
 multiStatement: if | whileLoop | doWhileLoop;
 
-declare: simpleDeclare | arrayDeclare;
-simpleDeclare: scalarType Id (Assign mathExp | Assign boolOr)?;
+declare: constDeclare | scalarDeclare | arrayDeclare;
+constDeclare: 'const' simpleType Id Assign (mathExp | boolOr);
+scalarDeclare: scalarType Id (Assign mathExp | Assign boolOr)?;
 arrayDeclare: arrayDeclareType Id;
 arrayDeclareType: Array (arrayDeclareDimention)+ scalarType;
 arrayDeclareDimention: ArrayLeftBracket mathExp ArrayRightBracket;

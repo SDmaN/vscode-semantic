@@ -10,8 +10,6 @@ namespace CompillerServices.Frontend
 {
     internal class SecondStepVisitor : SlangBaseVisitor<object>
     {
-        /*
-        
         private static readonly IEnumerable<string> Keywords = new HashSet<string>
         {
             "import",
@@ -36,7 +34,7 @@ namespace CompillerServices.Frontend
             _moduleRow = _nameTableContainer.ModuleNameTable.GetModuleRow(_slangModule.ModuleName);
         }
 
-        public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
+        /*public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
         {
             ICollection<string> alreadyImported = new HashSet<string>();
 

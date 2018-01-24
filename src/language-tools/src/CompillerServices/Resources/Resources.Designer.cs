@@ -79,6 +79,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Id could not be same as keyword..
+        /// </summary>
+        internal static string IdCouldNotBeSameAsKeyword {
+            get {
+                return ResourceManager.GetString("IdCouldNotBeSameAsKeyword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The module can&apos;t import itself..
         /// </summary>
         internal static string ImportingCurrentModuleError {

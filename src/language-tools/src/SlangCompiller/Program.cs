@@ -204,7 +204,7 @@ namespace SlangCompiller
                 await outputWriter.WriteError(e.Message);
                 return 1;
             }
-            catch (ModuleAndFileMatchException e)
+            catch (ModuleAndFileMismatchException e)
             {
                 await outputWriter.WriteError(e);
                 return 1;

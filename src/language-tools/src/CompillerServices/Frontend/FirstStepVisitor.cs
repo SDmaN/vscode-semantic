@@ -1,4 +1,11 @@
-﻿using CompillerServices.Frontend.NameTables;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
+using CompillerServices.Exceptions;
+using CompillerServices.Frontend.NameTables;
+using CompillerServices.Frontend.NameTables.Types;
 using CompillerServices.IO;
 using SlangGrammar;
 
@@ -17,7 +24,7 @@ namespace CompillerServices.Frontend
             _slangModule = slangModule;
         }
 
-        /*public override object VisitStart(SlangParser.StartContext context)
+        public override object VisitStart(SlangParser.StartContext context)
         {
             Visit(context.module());
             Visit(context.moduleImports());
@@ -25,16 +32,67 @@ namespace CompillerServices.Frontend
             return null;
         }
 
+        public override object VisitSimpleType(SlangParser.SimpleTypeContext context)
+        {
+            return new SimpleType(context.SimpleType().GetText());
+        }
+
+        public override object VisitFuncType(SlangParser.FuncTypeContext context)
+        {
+            IEnumerable<RoutineTypeArg> routineTypeArgs = (IEnumerable<RoutineTypeArg>) Visit(context.routineArgList());
+            SlangType returningType = (SlangType) Visit(context.type());
+
+            return new FunctionType(returningType, routineTypeArgs);
+        }
+
+        public override object VisitProcType(SlangParser.ProcTypeContext context)
+        {
+            IEnumerable<RoutineTypeArg> routineTypeArgs = (IEnumerable<RoutineTypeArg>) Visit(context.routineArgList());
+            return new ProcedureType(routineTypeArgs);
+        }
+
+        public override object VisitRoutineArgList(SlangParser.RoutineArgListContext context)
+        {
+            IList<RoutineTypeArg> routineTypeArgs = new List<RoutineTypeArg>(context.routineArg().Length);
+
+            foreach (SlangParser.RoutineArgContext arg in context.routineArg())
+            {
+                routineTypeArgs.Add((RoutineTypeArg) Visit(arg));
+            }
+
+            return routineTypeArgs;
+        }
+
+        public override object VisitRoutineArg(SlangParser.RoutineArgContext context)
+        {
+            string modifier = context.ArgPassModifier().GetText();
+            SlangType type = (SlangType) Visit(context.type());
+
+            return new RoutineTypeArg(modifier, type);
+        }
+
+        public override object VisitArrayType(SlangParser.ArrayTypeContext context)
+        {
+            SlangType elementType = (SlangType) Visit(context.scalarType());
+            int dimentions = context.arrayDimention().Length;
+
+            return new ArrayType(elementType, dimentions);
+        }
+
         public override object VisitModule(SlangParser.ModuleContext context)
         {
             ITerminalNode id = context.Id();
+
             string moduleName = id.GetText();
 
             if (moduleName != _slangModule.ModuleName)
             {
-                throw new ModuleAndFileMatchException(_slangModule.ModuleFile, moduleName, id.Symbol.Line,
+                throw new ModuleAndFileMismatchException(_slangModule.ModuleFile, moduleName, id.Symbol.Line,
                     id.Symbol.Column);
             }
+
+            // Поскольку название файлов всегда разное, а название модуля должно совпадать с назаванием файла
+            // то и проверять наличие в таблице символов не нужно
 
             IToken symbol = id.Symbol;
             _moduleRow = new ModuleNameTableRow(symbol.Line, symbol.Column, moduleName);
@@ -54,10 +112,11 @@ namespace CompillerServices.Frontend
             return null;
         }
 
-        public override object VisitFunc(SlangParser.FuncContext context)
+        public override object VisitFuncDeclare(SlangParser.FuncDeclareContext context)
         {
-            string modifier = context.ModuleAccessModifier().GetText();
-            string type = GetRuleTypeString(context.arrayOrSimpleType());
+            string modifier = context.AccessModifier().GetText();
+            SlangType type = (SlangType) Visit(context.type());
+            
             string name = context.Id().GetText();
             IToken nameSymbol = context.Id().Symbol;
 
@@ -68,86 +127,46 @@ namespace CompillerServices.Frontend
 
             _currentSubprogram = functionRow;
 
-            Visit(context.argList());
-            Visit(context.statementBlock());
+            Visit(context.routineDeclareArgList());
+            Visit(context.statementSequence());
 
             return null;
         }
 
-        public override object VisitProc(SlangParser.ProcContext context)
+        public override object VisitProcDeclare(SlangParser.ProcDeclareContext context)
         {
-            string modifier = context.ModuleAccessModifier().GetText();
+            string modifier = context.AccessModifier().GetText();
+            
             string name = context.Id().GetText();
             IToken nameSymbol = context.Id().Symbol;
 
-            ProcedureNameTableRow procedureRow =
+            ProcedureNameTableRow row =
                 new ProcedureNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier, name, _moduleRow);
-            _nameTableContainer.ProcedureNameTable.Add(procedureRow);
-            _moduleRow.Procedures.Add(procedureRow);
+            _nameTableContainer.ProcedureNameTable.Add(row);
+            _moduleRow.Procedures.Add(row);
 
-            _currentSubprogram = procedureRow;
+            _currentSubprogram = row;
 
-            Visit(context.argList());
-            Visit(context.statementBlock());
-
-            return null;
-        }
-
-        public override object VisitArgList(SlangParser.ArgListContext context)
-        {
-            ITerminalNode[] modifiers = context.ArgPassModifier();
-            SlangParser.ArrayOrSimpleTypeContext[] types = context.arrayOrSimpleType();
-            ITerminalNode[] names = context.Id();
-
-            for (int i = 0; i < names.Length; i++)
-            {
-                string modifier = modifiers[i].GetText();
-                string type = GetRuleTypeString(types[i]);
-                string name = names[i].GetText();
-
-                IToken nameSymbol = names[i].Symbol;
-
-                ArgumentNameTableRow argument = new ArgumentNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier,
-                    type, name, _currentSubprogram);
-                _nameTableContainer.ArgumentNameTable.TryAdd(argument);
-                _currentSubprogram.Arguments.Add(argument);
-            }
+            Visit(context.routineDeclareArgList());
+            Visit(context.statementSequence());
 
             return null;
         }
 
-        public override object VisitDeclare(SlangParser.DeclareContext context)
+        public override object VisitRoutineDeclareArg(SlangParser.RoutineDeclareArgContext context)
         {
-            string type = GetRuleTypeString(context.arrayOrSimpleType());
-            string name = context.Id().GetText();
-            IToken nameSymbol = context.Id().Symbol;
+            ITerminalNode modifier = context.ArgPassModifier();
+            SlangType type = (SlangType) Visit(context.type());
+            ITerminalNode id = context.Id();
+            IToken idSymbol = id.Symbol;
 
-            VariableNameTableRow variable =
-                new VariableNameTableRow(nameSymbol.Line, nameSymbol.Column, type, name, _currentSubprogram);
+            ArgumentNameTableRow row = new ArgumentNameTableRow(idSymbol.Line, idSymbol.Column,
+                modifier.GetText(), type, id.GetText(), _currentSubprogram);
 
-            _nameTableContainer.VariableNameTable.TryAdd(variable);
-            _currentSubprogram.Variables.Add(variable);
+            _nameTableContainer.ArgumentNameTable.Add(row);
+            _currentSubprogram.Arguments.Add(row);
 
             return null;
         }
-
-        public override object VisitArrayType(SlangParser.ArrayTypeContext context)
-        {
-            StringBuilder builder = new StringBuilder();
-
-            builder.Append(context.Type().GetText());
-
-            for (int i = 0; i < context.ArrayTypeBrackets().Length; i++)
-            {
-                builder.Append("[]");
-            }
-
-            return builder.ToString();
-        }
-
-        private string GetRuleTypeString(SlangParser.ArrayOrSimpleTypeContext context)
-        {
-            return context.arrayType() != null ? (string) Visit(context.arrayType()) : context.Type().ToString();
-        }*/
     }
 }

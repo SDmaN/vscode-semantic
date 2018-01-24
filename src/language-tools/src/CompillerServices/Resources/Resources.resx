@@ -123,6 +123,9 @@
   <data name="CouldNotFindDirectory" xml:space="preserve">
     <value>Could not find directory {0}.</value>
   </data>
+  <data name="IdCouldNotBeSameAsKeyword" xml:space="preserve">
+    <value>Id could not be same as keyword.</value>
+  </data>
   <data name="ImportingCurrentModuleError" xml:space="preserve">
     <value>The module can't import itself.</value>
   </data>

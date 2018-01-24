@@ -2,7 +2,7 @@
   "profiles": {
     "SlangCompiller": {
       "commandName": "Project",
-      "commandLineArgs": "b C:\\Users\\sdman\\Desktop\\semlang C:\\Users\\sdman\\Desktop\\semlang\\out"
+      "commandLineArgs": "tr C:\\Users\\sdman\\Desktop\\BubbleSort C:\\Users\\sdman\\Desktop\\BubbleSort\\out"
     }
   }
 }

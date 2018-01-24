@@ -27,7 +27,7 @@ namespace CompillerServices.Output
             await WriteLineAsync($"[err]: {errorMessage}");
         }
 
-        public async Task WriteError(ErrorCheckException exception)
+        public async Task WriteError(CompillerException exception)
         {
             await WriteLineAsync(
                 $"[err|{exception.ModuleName}|{exception.Line}:{exception.Column}]: {exception.Message}");

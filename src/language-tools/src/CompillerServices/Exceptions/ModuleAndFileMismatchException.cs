@@ -2,9 +2,9 @@
 
 namespace CompillerServices.Exceptions
 {
-    public class ModuleAndFileMatchException : ErrorCheckException
+    public class ModuleAndFileMismatchException : CompillerException
     {
-        public ModuleAndFileMatchException(FileInfo moduleFile, string moduleName, int line, int column)
+        public ModuleAndFileMismatchException(FileInfo moduleFile, string moduleName, int line, int column)
             : base(string.Format(Resources.Resources.ModuleDoesNotMatchFile, moduleName, moduleFile.Name), moduleName, line, column)
         {
             ModuleFile = moduleFile;

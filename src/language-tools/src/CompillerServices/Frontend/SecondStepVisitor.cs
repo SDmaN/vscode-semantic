@@ -10,7 +10,22 @@ namespace CompillerServices.Frontend
 {
     internal class SecondStepVisitor : SlangBaseVisitor<object>
     {
-        /*private readonly INameTableContainer _nameTableContainer;
+        /*
+        
+        private static readonly IEnumerable<string> Keywords = new HashSet<string>
+        {
+            "import",
+            "module",
+            "fun",
+            "proc",
+            "end",
+            "int",
+            "real",
+            "bool",
+            "const"
+        };
+        
+        private readonly INameTableContainer _nameTableContainer;
         private readonly SlangModule _slangModule;
         private readonly ModuleNameTableRow _moduleRow;
 

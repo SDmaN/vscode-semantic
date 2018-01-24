@@ -1,4 +1,6 @@
-﻿namespace CompillerServices.Frontend.NameTables
+﻿using CompillerServices.Frontend.NameTables.Types;
+
+namespace CompillerServices.Frontend.NameTables
 {
     public class FunctionNameTable : NameTable<FunctionNameTableRow>
     {
@@ -6,13 +8,13 @@
 
     public class FunctionNameTableRow : SubprogramNameTableRow
     {
-        public FunctionNameTableRow(int line, int column, string accessModifier, string type, string name,
+        public FunctionNameTableRow(int line, int column, string accessModifier, SlangType returningType, string name,
             ModuleNameTableRow parent)
             : base(line, column, accessModifier, name, parent)
         {
-            Type = type;
+            ReturningType = returningType;
         }
 
-        public string Type { get; }
+        public SlangType ReturningType { get; }
     }
 }

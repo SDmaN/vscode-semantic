@@ -1,10 +1,19 @@
-﻿namespace CompillerServices.Exceptions
+﻿using System;
+
+namespace CompillerServices.Exceptions
 {
-    public class CompillerException : ErrorCheckException
+    public class CompillerException : ApplicationException
     {
         public CompillerException(string message, string moduleName, int line, int column)
-            : base(message, moduleName, line, column)
+            : base(message)
         {
+            ModuleName = moduleName;
+            Line = line;
+            Column = column;
         }
+
+        public string ModuleName { get; }
+        public int Line { get; }
+        public int Column { get; }
     }
 }

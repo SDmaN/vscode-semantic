@@ -117,14 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ArgumentAlreadyDefined" xml:space="preserve">
+    <value>Argument '{0}' already defined.</value>
+  </data>
   <data name="CompillerDirectoryNotFound" xml:space="preserve">
     <value>Compiler directory {0} not exists.</value>
   </data>
+  <data name="CorrespondingToKeywordError" xml:space="preserve">
+    <value>Name {0} corresponds to keyword.</value>
+  </data>
   <data name="CouldNotFindDirectory" xml:space="preserve">
     <value>Could not find directory {0}.</value>
-  </data>
-  <data name="IdCouldNotBeSameAsKeyword" xml:space="preserve">
-    <value>Id could not be same as keyword.</value>
   </data>
   <data name="ImportingCurrentModuleError" xml:space="preserve">
     <value>The module can't import itself.</value>
@@ -157,13 +160,13 @@ int main(int argc, char* argv[])
     <value>Main module is not specified in project file.</value>
   </data>
   <data name="ModuleAlreadyImported" xml:space="preserve">
-    <value>Module {0} already imported.</value>
+    <value>Module '{0}' already imported.</value>
   </data>
   <data name="ModuleDoesNotMatchFile" xml:space="preserve">
-    <value>Module name {0} does not match file {1}.</value>
+    <value>Module name '{0}' does not match file {1}.</value>
   </data>
   <data name="ModuleIsNotDeclared" xml:space="preserve">
-    <value>Module {0} is not declared.</value>
+    <value>Module '{0}' is not declared.</value>
   </data>
   <data name="ProjectFileNotFound" xml:space="preserve">
     <value>Project file does not exists in directory {0}</value>
@@ -171,10 +174,13 @@ int main(int argc, char* argv[])
   <data name="ProjectFileParsingException" xml:space="preserve">
     <value>Project file parsing error occurred.</value>
   </data>
+  <data name="RoutineAlreadyExistsError" xml:space="preserve">
+    <value>Function or procedure '{0}' with same signature already defined.</value>
+  </data>
   <data name="TooManyProjectFiles" xml:space="preserve">
     <value>The directory must contain only one project file.</value>
   </data>
   <data name="UnknownSystemFunction" xml:space="preserve">
-    <value>Unknown system routine {0}.</value>
+    <value>Unknown system routine '{0}'.</value>
   </data>
 </root>

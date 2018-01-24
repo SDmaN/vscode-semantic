@@ -18,6 +18,5 @@ namespace CompillerServices.Frontend.NameTables
 
         public ModuleNameTableRow Parent { get; }
         public ICollection<ArgumentNameTableRow> Arguments { get; } = new List<ArgumentNameTableRow>();
-        public ICollection<VariableNameTableRow> Variables { get; } = new List<VariableNameTableRow>();
     }
 }

@@ -10,6 +10,8 @@ namespace CompillerServices
         public const string SlangExtension = ".slang";
         public const string SlangFileMask = "*" + SlangExtension;
 
+        public const string CppCompillerName = "g++";
+
         public static readonly string CppCompillerPath;
 
         public static readonly IEnumerable<string> WindowsNeededLibraries = new List<string>
@@ -18,8 +20,6 @@ namespace CompillerServices
             "libstdc++-6.dll",
             "libwinpthread-1.dll"
         };
-
-        public const string CppCompillerName = "g++";
 
         static Constants()
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -35,7 +34,8 @@ namespace CompillerServices.Frontend.NameTables.Types
         {
             unchecked
             {
-                return ((ReturningType != null ? ReturningType.GetHashCode() : 0) * 397) ^ (Args != null ? Args.GetHashCode() : 0);
+                return ((ReturningType != null ? ReturningType.GetHashCode() : 0) * 397) ^
+                       (Args != null ? Args.GetHashCode() : 0);
             }
         }
 
@@ -57,7 +57,6 @@ namespace CompillerServices.Frontend.NameTables.Types
             }
 
             builder.Append($") : {ReturningType}");
-
 
             return builder.ToString();
         }

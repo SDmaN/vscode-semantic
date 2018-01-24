@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using CompillerServices.Exceptions;
@@ -116,18 +115,33 @@ namespace CompillerServices.Frontend
         {
             string modifier = context.AccessModifier().GetText();
             SlangType type = (SlangType) Visit(context.type());
-            
+
             string name = context.Id().GetText();
             IToken nameSymbol = context.Id().Symbol;
 
             FunctionNameTableRow functionRow =
                 new FunctionNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier, type, name, _moduleRow);
+            _currentSubprogram = functionRow;
+
+            ICollection<ArgumentNameTableRow> argRows =
+                (ICollection<ArgumentNameTableRow>) Visit(context.routineDeclareArgList());
+
+            if (_moduleRow.ContainsSameRoutine(name, argRows.Select(x => x.Type).ToList()))
+            {
+                throw new RoutineAlreadyDefinedException(
+                    string.Format(Resources.Resources.RoutineAlreadyExistsError, name), _slangModule.ModuleName,
+                    nameSymbol.Line, nameSymbol.Column);
+            }
+
+            foreach (ArgumentNameTableRow argRow in argRows)
+            {
+                _nameTableContainer.ArgumentNameTable.Add(argRow);
+                functionRow.Arguments.Add(argRow);
+            }
+
             _nameTableContainer.FunctionNameTable.Add(functionRow);
             _moduleRow.Functions.Add(functionRow);
 
-            _currentSubprogram = functionRow;
-
-            Visit(context.routineDeclareArgList());
             Visit(context.statementSequence());
 
             return null;
@@ -136,21 +150,57 @@ namespace CompillerServices.Frontend
         public override object VisitProcDeclare(SlangParser.ProcDeclareContext context)
         {
             string modifier = context.AccessModifier().GetText();
-            
+
             string name = context.Id().GetText();
             IToken nameSymbol = context.Id().Symbol;
 
-            ProcedureNameTableRow row =
+            ProcedureNameTableRow procedureRow =
                 new ProcedureNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier, name, _moduleRow);
-            _nameTableContainer.ProcedureNameTable.Add(row);
-            _moduleRow.Procedures.Add(row);
+            _currentSubprogram = procedureRow;
 
-            _currentSubprogram = row;
+            ICollection<ArgumentNameTableRow> argRows =
+                (ICollection<ArgumentNameTableRow>) Visit(context.routineDeclareArgList());
+
+            if (_moduleRow.ContainsSameRoutine(name, argRows.Select(x => x.Type).ToList()))
+            {
+                throw new RoutineAlreadyDefinedException(
+                    string.Format(Resources.Resources.RoutineAlreadyExistsError, name), _slangModule.ModuleName,
+                    nameSymbol.Line, nameSymbol.Column);
+            }
+
+            foreach (ArgumentNameTableRow argRow in argRows)
+            {
+                _nameTableContainer.ArgumentNameTable.Add(argRow);
+                procedureRow.Arguments.Add(argRow);
+            }
+
+            _nameTableContainer.ProcedureNameTable.Add(procedureRow);
+            _moduleRow.Procedures.Add(procedureRow);
 
             Visit(context.routineDeclareArgList());
             Visit(context.statementSequence());
 
             return null;
+        }
+
+        public override object VisitRoutineDeclareArgList(SlangParser.RoutineDeclareArgListContext context)
+        {
+            ICollection<ArgumentNameTableRow> argRows = new List<ArgumentNameTableRow>();
+
+            foreach (SlangParser.RoutineDeclareArgContext arg in context.routineDeclareArg())
+            {
+                ArgumentNameTableRow argRow = (ArgumentNameTableRow) Visit(arg);
+
+                if (argRows.Any(x => x.Name == argRow.Name))
+                {
+                    throw new CompillerException(string.Format(Resources.Resources.ArgumentAlreadyDefined, argRow.Name),
+                        _slangModule.ModuleName, arg.Id().Symbol.Line, arg.Id().Symbol.Column);
+                }
+
+                argRows.Add(argRow);
+            }
+
+            return argRows;
         }
 
         public override object VisitRoutineDeclareArg(SlangParser.RoutineDeclareArgContext context)
@@ -163,10 +213,7 @@ namespace CompillerServices.Frontend
             ArgumentNameTableRow row = new ArgumentNameTableRow(idSymbol.Line, idSymbol.Column,
                 modifier.GetText(), type, id.GetText(), _currentSubprogram);
 
-            _nameTableContainer.ArgumentNameTable.Add(row);
-            _currentSubprogram.Arguments.Add(row);
-
-            return null;
+            return row;
         }
     }
 }

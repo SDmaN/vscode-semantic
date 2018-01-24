@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using CompillerServices.Frontend.NameTables.Types;
 
 namespace CompillerServices.Frontend.NameTables
 {
@@ -30,5 +30,14 @@ namespace CompillerServices.Frontend.NameTables
         public ICollection<string> ImportingModules { get; } = new List<string>();
         public ICollection<FunctionNameTableRow> Functions { get; } = new List<FunctionNameTableRow>();
         public ICollection<ProcedureNameTableRow> Procedures { get; } = new List<ProcedureNameTableRow>();
+
+        public bool ContainsSameRoutine(string name, ICollection<SlangType> argTypes)
+        {
+            IEnumerable<SubprogramNameTableRow> withSameName = Functions.Where(x => x.Name == name)
+                .Cast<SubprogramNameTableRow>().Concat(Procedures.Where(x => x.Name == name));
+
+            return withSameName.Select(row => row.Arguments.Select(x => x.Type))
+                .Any(rowTypes => rowTypes.SequenceEqual(argTypes));
+        }
     }
 }

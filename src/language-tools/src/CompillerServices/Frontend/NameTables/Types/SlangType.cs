@@ -1,12 +1,13 @@
 ﻿using System;
+
 #pragma warning disable 659
 
 namespace CompillerServices.Frontend.NameTables.Types
 {
     public abstract class SlangType : IEquatable<SlangType>
     {
-        public abstract bool IsAssignable(SlangType other);
         public abstract bool Equals(SlangType other);
+        public abstract bool IsAssignable(SlangType other);
 
         public override bool Equals(object obj)
         {

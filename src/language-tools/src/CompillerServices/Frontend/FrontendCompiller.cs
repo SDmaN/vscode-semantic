@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Antlr4.Runtime;
 using CompillerServices.Exceptions;
@@ -68,8 +67,8 @@ namespace CompillerServices.Frontend
 
         private async Task SecondStep(SlangParser parser, SlangModule slangModule)
         {
-            /*SecondStepVisitor visitor = new SecondStepVisitor(_nameTableContainer, slangModule);
-            await Task.Run(() => visitor.Visit(parser.start()));*/
+            SecondStepVisitor visitor = new SecondStepVisitor(_nameTableContainer, slangModule);
+            await Task.Run(() => visitor.Visit(parser.start()));
         }
     }
 

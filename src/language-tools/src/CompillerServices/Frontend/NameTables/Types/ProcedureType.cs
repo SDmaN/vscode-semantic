@@ -52,7 +52,6 @@ namespace CompillerServices.Frontend.NameTables.Types
 
             builder.Append($")");
 
-
             return builder.ToString();
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using CompillerServices.Exceptions;
 using CompillerServices.Frontend.NameTables;
@@ -20,12 +21,15 @@ namespace CompillerServices.Frontend
             "int",
             "real",
             "bool",
-            "const"
+            "const",
+
+            "class"
         };
-        
+
+        private readonly ModuleNameTableRow _moduleRow;
+
         private readonly INameTableContainer _nameTableContainer;
         private readonly SlangModule _slangModule;
-        private readonly ModuleNameTableRow _moduleRow;
 
         public SecondStepVisitor(INameTableContainer nameTableContainer, SlangModule slangModule)
         {
@@ -34,75 +38,73 @@ namespace CompillerServices.Frontend
             _moduleRow = _nameTableContainer.ModuleNameTable.GetModuleRow(_slangModule.ModuleName);
         }
 
-        /*public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
+        public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
         {
             ICollection<string> alreadyImported = new HashSet<string>();
 
-            foreach (ITerminalNode module in context.Id())
+            foreach (ITerminalNode importingModule in context.Id())
             {
-                string moduleName = module.GetText();
+                ThrowIfCorrespondingToKeyword(importingModule);
+
+                string moduleName = importingModule.GetText();
 
                 if (!_nameTableContainer.ModuleNameTable.Contains(moduleName))
                 {
                     throw new CompillerException(string.Format(Resources.Resources.ModuleIsNotDeclared, moduleName),
-                        _slangModule.ModuleName, module.Symbol.Line, module.Symbol.Column);
+                        _slangModule.ModuleName, importingModule.Symbol.Line, importingModule.Symbol.Column);
                 }
 
                 if (alreadyImported.Contains(moduleName))
                 {
-                    throw new CompillerException(string.Format(Resources.Resources.ModuleAlreadyImported, moduleName),
-                        _slangModule.ModuleName, module.Symbol.Line, module.Symbol.Column);
+                    throw new AlreadyImportedException(
+                        string.Format(Resources.Resources.ModuleAlreadyImported, moduleName),
+                        _slangModule.ModuleName, importingModule.Symbol.Line, importingModule.Symbol.Column);
                 }
 
                 if (moduleName == _moduleRow.ModuleName)
                 {
                     throw new CompillerException(Resources.Resources.ImportingCurrentModuleError,
-                        _slangModule.ModuleName, module.Symbol.Line, module.Symbol.Column);
+                        _slangModule.ModuleName, importingModule.Symbol.Line, importingModule.Symbol.Column);
                 }
 
                 alreadyImported.Add(moduleName);
             }
 
-            return base.VisitModuleImports(context);
+            return null;
         }
 
-        public override object VisitArrayType(SlangParser.ArrayTypeContext context)
+        public override object VisitModule(SlangParser.ModuleContext context)
         {
-            StringBuilder builder = new StringBuilder();
+            ITerminalNode id = context.Id();
+            ThrowIfCorrespondingToKeyword(id);
 
-            builder.Append(context.Type().GetText());
+            Visit(context.moduleDeclare());
+            Visit(context.moduleEntry());
 
-            for (int i = 0; i < context.ArrayTypeBrackets().Length; i++)
+            return null;
+        }
+
+        public override object VisitFuncDeclare(SlangParser.FuncDeclareContext context)
+        {
+            return base.VisitFuncDeclare(context);
+        }
+
+        private static bool IsCorrespondingToKeyword(IParseTree id)
+        {
+            return Keywords.Contains(id.GetText());
+        }
+
+        private void ThrowIfCorrespondingToKeyword(ITerminalNode id)
+        {
+            if (!IsCorrespondingToKeyword(id))
             {
-                builder.Append("[]");
+                return;
             }
 
-            return builder.ToString();
+            IToken symbol = id.Symbol;
+            throw new KeywordCorrespondingException(
+                string.Format(Resources.Resources.CorrespondingToKeywordError, id.GetText()), _slangModule.ModuleName,
+                symbol.Line, symbol.Column);
         }
-
-        private IEnumerable<SubprogramArgument> CreateArguments(SlangParser.ArgListContext context)
-        {
-            SlangParser.ArrayOrSimpleTypeContext[] argTypes = context.arrayOrSimpleType();
-            ITerminalNode[] argNames = context.Id();
-            ITerminalNode[] passModifiers = context.ArgPassModifier();
-
-            IList<SubprogramArgument> arguments = new List<SubprogramArgument>(argTypes.Length);
-
-            for (int i = 0; i < argTypes.Length; i++)
-            {
-                string modifier = passModifiers[i].GetText();
-                string argType = GetRuleTypeString(argTypes[i]);
-                string argName = argNames[i].GetText();
-
-                arguments.Add(new SubprogramArgument(modifier, argType, argName));
-            }
-
-            return arguments;
-        }
-
-        private string GetRuleTypeString(SlangParser.ArrayOrSimpleTypeContext context)
-        {
-            return context.arrayType() != null ? (string) Visit(context.arrayType()) : context.Type().ToString();
-        }*/
     }
 }

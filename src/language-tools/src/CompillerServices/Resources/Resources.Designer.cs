@@ -61,6 +61,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument &apos;{0}&apos; already defined..
+        /// </summary>
+        internal static string ArgumentAlreadyDefined {
+            get {
+                return ResourceManager.GetString("ArgumentAlreadyDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Compiler directory {0} not exists..
         /// </summary>
         internal static string CompillerDirectoryNotFound {
@@ -70,20 +79,20 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Name {0} corresponds to keyword..
+        /// </summary>
+        internal static string CorrespondingToKeywordError {
+            get {
+                return ResourceManager.GetString("CorrespondingToKeywordError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find directory {0}..
         /// </summary>
         internal static string CouldNotFindDirectory {
             get {
                 return ResourceManager.GetString("CouldNotFindDirectory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Id could not be same as keyword..
-        /// </summary>
-        internal static string IdCouldNotBeSameAsKeyword {
-            get {
-                return ResourceManager.GetString("IdCouldNotBeSameAsKeyword", resourceCulture);
             }
         }
         
@@ -142,7 +151,7 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Module {0} already imported..
+        ///   Looks up a localized string similar to Module &apos;{0}&apos; already imported..
         /// </summary>
         internal static string ModuleAlreadyImported {
             get {
@@ -151,7 +160,7 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Module name {0} does not match file {1}..
+        ///   Looks up a localized string similar to Module name &apos;{0}&apos; does not match file {1}..
         /// </summary>
         internal static string ModuleDoesNotMatchFile {
             get {
@@ -160,7 +169,7 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Module {0} is not declared..
+        ///   Looks up a localized string similar to Module &apos;{0}&apos; is not declared..
         /// </summary>
         internal static string ModuleIsNotDeclared {
             get {
@@ -187,6 +196,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Function or procedure &apos;{0}&apos; with same signature already defined..
+        /// </summary>
+        internal static string RoutineAlreadyExistsError {
+            get {
+                return ResourceManager.GetString("RoutineAlreadyExistsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The directory must contain only one project file..
         /// </summary>
         internal static string TooManyProjectFiles {
@@ -196,7 +214,7 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unknown system routine {0}..
+        ///   Looks up a localized string similar to Unknown system routine &apos;{0}&apos;..
         /// </summary>
         internal static string UnknownSystemFunction {
             get {

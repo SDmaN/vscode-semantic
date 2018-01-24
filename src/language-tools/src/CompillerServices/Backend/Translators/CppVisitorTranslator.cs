@@ -497,7 +497,7 @@ namespace CompillerServices.Backend.Translators
         {
             Write("return ");
             base.VisitReturn(context);
-            
+
             return null;
         }
 
@@ -902,7 +902,6 @@ namespace CompillerServices.Backend.Translators
 
             throw new CompillerException(string.Format(Resources.Resources.UnknownSystemFunction, functionName),
                 _moduleName, function.Symbol.Line, function.Symbol.Column);
-
         }
 
         private static string TranslateType(string slangType)

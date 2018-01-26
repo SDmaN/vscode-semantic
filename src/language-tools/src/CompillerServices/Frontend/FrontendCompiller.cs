@@ -4,6 +4,7 @@ using Antlr4.Runtime;
 using CompillerServices.Exceptions;
 using CompillerServices.Frontend.NameTables;
 using CompillerServices.IO;
+using Microsoft.Extensions.Localization;
 using SlangGrammar;
 using SlangGrammar.Factories;
 
@@ -12,15 +13,19 @@ namespace CompillerServices.Frontend
     public class FrontendCompiller : IFrontendCompiller
     {
         private readonly ILexerFactory _lexerFactory;
+        private readonly IStringLocalizer<FrontendCompiller> _localizer;
         private readonly INameTableContainer _nameTableContainer;
         private readonly IParserFactory _parserFactory;
+        private readonly IStepVisitorFactory _stepVisitorFactory;
 
-        public FrontendCompiller(INameTableContainer nameTableContainer, ILexerFactory lexerFactory,
-            IParserFactory parserFactory)
+        public FrontendCompiller(IStringLocalizer<FrontendCompiller> localizer, INameTableContainer nameTableContainer,
+            ILexerFactory lexerFactory, IParserFactory parserFactory, IStepVisitorFactory stepVisitorFactory)
         {
+            _localizer = localizer;
             _nameTableContainer = nameTableContainer;
             _lexerFactory = lexerFactory;
             _parserFactory = parserFactory;
+            _stepVisitorFactory = stepVisitorFactory;
         }
 
         public async Task CheckForErrors(SourceContainer sources)
@@ -47,7 +52,7 @@ namespace CompillerServices.Frontend
             }
         }
 
-        private static void CheckMainModuleExists(SourceContainer sourceContainer)
+        private void CheckMainModuleExists(SourceContainer sourceContainer)
         {
             if (sourceContainer.ContainsMainModule)
             {
@@ -55,19 +60,18 @@ namespace CompillerServices.Frontend
             }
 
             string mainModuleFileName = $"{sourceContainer.MainModuleName}{Constants.SlangExtension}";
-            throw new FileNotFoundException(string.Format(Resources.Resources.MainModuleFileNotFound,
-                mainModuleFileName));
+            throw new FileNotFoundException(_localizer["Main module file {0} not found.", mainModuleFileName]);
         }
 
         private async Task FirstStep(SlangParser parser, SlangModule slangModule)
         {
-            FirstStepVisitor visitor = new FirstStepVisitor(_nameTableContainer, slangModule);
+            FirstStepVisitor visitor = _stepVisitorFactory.CreateFirstStepVisitor(_nameTableContainer, slangModule);
             await Task.Run(() => visitor.Visit(parser.start()));
         }
 
         private async Task SecondStep(SlangParser parser, SlangModule slangModule)
         {
-            SecondStepVisitor visitor = new SecondStepVisitor(_nameTableContainer, slangModule);
+            SecondStepVisitor visitor = _stepVisitorFactory.CreateSecondStepVisitor(_nameTableContainer, slangModule);
             await Task.Run(() => visitor.Visit(parser.start()));
         }
     }

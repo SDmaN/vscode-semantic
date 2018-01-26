@@ -1,14 +1,16 @@
 ﻿using System;
 using CompillerServices.Backend;
 using CompillerServices.Backend.EntryPoint;
-using CompillerServices.Backend.TranslatorFactories;
+using CompillerServices.Backend.Translators;
 using CompillerServices.Frontend;
 using CompillerServices.Frontend.NameTables;
 using CompillerServices.IO;
-using CompillerServices.Output;
+using CompillerServices.Logging;
 using CompillerServices.ProjectFile;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SlangGrammar.Factories;
 
 namespace CompillerServices.DependencyInjection
@@ -22,6 +24,9 @@ namespace CompillerServices.DependencyInjection
                 throw new ArgumentNullException(nameof(serviceCollection));
             }
 
+            AddLogger(serviceCollection);
+            AddLocalization(serviceCollection);
+
             serviceCollection.TryAddTransient<IFileLoader, FileLoader>();
 
             serviceCollection.TryAddTransient<ILexerFactory, LexerFactory>();
@@ -31,12 +36,24 @@ namespace CompillerServices.DependencyInjection
             serviceCollection.TryAddTransient<IBackendCompiller, BackendCompiller>();
             serviceCollection.TryAddTransient<IProjectFileManager, ProjectFileManager>();
             serviceCollection.TryAddTransient<IEntryPointWriter, EntryPointWriter>();
-            serviceCollection.TryAddTransient<IOutputWriter, ConsoleOutputWriter>();
 
             serviceCollection.TryAddTransient<IFrontendCompiller, FrontendCompiller>();
             serviceCollection.TryAddTransient<INameTableContainer, NameTableContainer>();
+            serviceCollection.TryAddTransient<IStepVisitorFactory, StepVisitorFactory>();
 
             return serviceCollection;
+        }
+
+        private static void AddLogger(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddLogging(logBuilder => logBuilder.AddProvider(new CompillerLoggerProvider()));
+        }
+
+        private static void AddLocalization(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddOptions();
+            serviceCollection.Configure<LocalizationOptions>(options => options.ResourcesPath = "Resources");
+            serviceCollection.AddLocalization();
         }
     }
 }

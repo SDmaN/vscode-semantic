@@ -3,39 +3,32 @@ using System.IO;
 using System.Threading.Tasks;
 using CompillerServices.Backend;
 using CompillerServices.DependencyInjection;
-using CompillerServices.Exceptions;
 using CompillerServices.Frontend;
 using CompillerServices.IO;
-using CompillerServices.Output;
+using CompillerServices.Logging;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
-using SlangCompiller.Resources;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 
 namespace SlangCompiller
 {
-    internal static class Program
+    internal class Program
     {
         private static IServiceProvider _serviceProvider;
-
-        private static IServiceProvider ServiceProvider
-        {
-            get
-            {
-                if (_serviceProvider != null)
-                {
-                    return _serviceProvider;
-                }
-
-                IServiceCollection serviceCollection = new ServiceCollection();
-                serviceCollection.AddCompillers();
-                _serviceProvider = serviceCollection.BuildServiceProvider();
-
-                return _serviceProvider;
-            }
-        }
+        private static IStringLocalizer<Program> _localizer;
+        private static ILogger<Program> _logger;
 
         public static void Main(string[] args)
         {
+            IServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddCompillers();
+                
+            _serviceProvider = serviceCollection.BuildServiceProvider();
+
+            _localizer = _serviceProvider.GetService<IStringLocalizer<Program>>();
+            _logger = _serviceProvider.GetService<ILogger<Program>>();
+
             InitializeCli(args);
         }
 
@@ -44,11 +37,11 @@ namespace SlangCompiller
             CommandLineApplication application = new CommandLineApplication
             {
                 Name = AppDomain.CurrentDomain.FriendlyName,
-                Description = CommandLineStrings.ApplicationDescription
+                Description = _localizer["Compiller for Slang language."]
             };
 
             CommandOption help = application.HelpOption("-h|--help");
-            help.Description = CommandLineStrings.HelpDescription;
+            help.Description = _localizer["Show help."];
 
             application.Command("tr", TranslateCommand);
             application.Command("b", BuildCommand);
@@ -60,7 +53,7 @@ namespace SlangCompiller
                     return 0;
                 }
 
-                Console.WriteLine(CommandLineStrings.Welcome);
+                Console.WriteLine(_localizer["Welcome to Slang to C++ translator and compiller!"]);
                 application.ShowHint();
 
                 return 0;
@@ -77,15 +70,15 @@ namespace SlangCompiller
 
         private static void TranslateCommand(CommandLineApplication c)
         {
-            c.Description = CommandLineStrings.Translate_Description;
+            c.Description = _localizer["Translates Slang code to C++ code."];
 
             CommandArgument inputPathCommand =
-                c.Argument("<inputPath>", CommandLineStrings.Translate_InputDirectiory_Description);
+                c.Argument("<inputPath>", _localizer["Directory that contains source Slang code."]);
             CommandArgument outputPathCommand =
-                c.Argument("<outputPath>", CommandLineStrings.Translate_OutputDirectory_Description);
+                c.Argument("<outputPath>", _localizer["Directory where output C++ code will be stored."]);
 
             CommandOption help = c.HelpOption("-h|--help");
-            help.Description = CommandLineStrings.HelpDescription;
+            help.Description = _localizer["Show help."];
 
             c.OnExecute(async () =>
             {
@@ -100,16 +93,14 @@ namespace SlangCompiller
                 bool isInputEmpty = string.IsNullOrEmpty(inputPath);
                 bool isOutputEmpty = string.IsNullOrWhiteSpace(outputPath);
 
-                IOutputWriter outputWriter = ServiceProvider.GetService<IOutputWriter>();
-
                 if (isInputEmpty)
                 {
-                    await outputWriter.WriteError(string.Format(CommandLineStrings.PathNotSet, "<inputPath>"));
+                    _logger.LogCompillerError(_localizer["Path not specified: {0}.", "<inputPath>"]);
                 }
 
                 if (isOutputEmpty)
                 {
-                    await outputWriter.WriteError(string.Format(CommandLineStrings.PathNotSet, "<outputPath>"));
+                    _logger.LogCompillerError(_localizer["Path not specified: {0}.", "<outputPath>"]);
                 }
 
                 if (isOutputEmpty || isInputEmpty)
@@ -120,22 +111,22 @@ namespace SlangCompiller
                 DirectoryInfo inputDirectory = new DirectoryInfo(inputPath);
                 DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
 
-                return await ProcessSources(outputWriter, inputDirectory,
+                return await ProcessSources(inputDirectory,
                     async (sources, compiller) => await compiller.Translate(sources, outputDirectory));
             });
         }
 
         private static void BuildCommand(CommandLineApplication c)
         {
-            c.Description = CommandLineStrings.Build_Description;
+            c.Description = "Translates Slang code to C++ code and builds an executable.";
 
             CommandArgument inputPathCommand =
-                c.Argument("<inputPath>", CommandLineStrings.Translate_InputDirectiory_Description);
+                c.Argument("<inputPath>", _localizer["Directory that contains source Slang code."]);
             CommandArgument outputPathCommand =
-                c.Argument("<outputPath>", CommandLineStrings.Translate_OutputDirectory_Description);
+                c.Argument("<outputPath>", _localizer["Directory where output C++ code will be stored."]);
 
             CommandOption help = c.HelpOption("-h|--help");
-            help.Description = CommandLineStrings.HelpDescription;
+            help.Description = _localizer["Show help."];
 
             c.OnExecute(async () =>
             {
@@ -150,16 +141,14 @@ namespace SlangCompiller
                 bool isInputEmpty = string.IsNullOrEmpty(inputPath);
                 bool isOutputEmpty = string.IsNullOrWhiteSpace(outputPath);
 
-                IOutputWriter outputWriter = ServiceProvider.GetService<IOutputWriter>();
-
                 if (isInputEmpty)
                 {
-                    await outputWriter.WriteError(string.Format(CommandLineStrings.PathNotSet, "<inputPath>"));
+                    _logger.LogCompillerError(_localizer["Path not specified: {0}.", "<inputPath>"]);
                 }
 
                 if (isOutputEmpty)
                 {
-                    await outputWriter.WriteError(string.Format(CommandLineStrings.PathNotSet, "<outputPath>"));
+                    _logger.LogCompillerError(_localizer["Path not specified: {0}.", "<outputPath>"]);
                 }
 
                 if (isOutputEmpty || isInputEmpty)
@@ -170,54 +159,28 @@ namespace SlangCompiller
                 DirectoryInfo inputDirectory = new DirectoryInfo(inputPath);
                 DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
 
-                return await ProcessSources(outputWriter, inputDirectory,
+                return await ProcessSources(inputDirectory,
                     async (sources, compiller) => await compiller.Build(sources, outputDirectory));
             });
         }
 
-        private static async Task<int> ProcessSources(IOutputWriter outputWriter, DirectoryInfo inputDirectory,
+        private static async Task<int> ProcessSources(DirectoryInfo inputDirectory,
             Func<SourceContainer, IBackendCompiller, Task> processFunction)
         {
             try
             {
-                IFileLoader fileLoader = ServiceProvider.GetService<IFileLoader>();
+                IFileLoader fileLoader = _serviceProvider.GetService<IFileLoader>();
                 SourceContainer sources = await fileLoader.LoadSources(inputDirectory);
 
-                IFrontendCompiller frontendCompiller = ServiceProvider.GetService<IFrontendCompiller>();
+                IFrontendCompiller frontendCompiller = _serviceProvider.GetService<IFrontendCompiller>();
                 await frontendCompiller.CheckForErrors(sources);
 
-                IBackendCompiller compiller = ServiceProvider.GetService<IBackendCompiller>();
+                IBackendCompiller compiller = _serviceProvider.GetService<IBackendCompiller>();
                 await processFunction(sources, compiller);
-            }
-            catch (DirectoryNotFoundException e)
-            {
-                await outputWriter.WriteError(e.Message);
-                return 1;
-            }
-            catch (FileNotFoundException e)
-            {
-                await outputWriter.WriteError(e.Message);
-                return 1;
-            }
-            catch (ProjectFileException e)
-            {
-                await outputWriter.WriteError(e.Message);
-                return 1;
-            }
-            catch (ModuleAndFileMismatchException e)
-            {
-                await outputWriter.WriteError(e);
-                return 1;
-            }
-            catch (CompillerException e)
-            {
-                await outputWriter.WriteError(e);
-                return 1;
             }
             catch (Exception e)
             {
-                await outputWriter.WriteError(string.Format(CommandLineStrings.UnknownError, e.Message));
-                return 1;
+                _logger.LogCompillerError(e);
             }
 
             return 0;

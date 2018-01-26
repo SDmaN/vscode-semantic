@@ -7,7 +7,7 @@ using SlangGrammar;
 
 namespace CompillerServices.Frontend
 {
-    internal abstract class BaseStepVisitor : SlangBaseVisitor<object>
+    public abstract class BaseStepVisitor : SlangBaseVisitor<object>
     {
         private readonly SlangModule _slangModule;
 

@@ -1,7 +1,6 @@
 ﻿using System.IO;
-using CompillerServices.Backend.Translators;
 
-namespace CompillerServices.Backend.TranslatorFactories
+namespace CompillerServices.Backend.Translators
 {
     public interface ITranslatorFactory
     {

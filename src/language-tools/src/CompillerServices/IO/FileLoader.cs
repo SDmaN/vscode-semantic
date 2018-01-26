@@ -3,15 +3,18 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CompillerServices.ProjectFile;
+using Microsoft.Extensions.Localization;
 
 namespace CompillerServices.IO
 {
     public class FileLoader : IFileLoader
     {
+        private readonly IStringLocalizer<FileLoader> _localizer;
         private readonly IProjectFileManager _projectFileManager;
 
-        public FileLoader(IProjectFileManager projectFileManager)
+        public FileLoader(IStringLocalizer<FileLoader> localizer, IProjectFileManager projectFileManager)
         {
+            _localizer = localizer;
             _projectFileManager = projectFileManager;
         }
 
@@ -19,8 +22,8 @@ namespace CompillerServices.IO
         {
             if (!inputDirectory.Exists)
             {
-                throw new DirectoryNotFoundException(string.Format(Resources.Resources.CouldNotFindDirectory,
-                    inputDirectory.FullName));
+                throw new DirectoryNotFoundException(_localizer["Could not find directory {0}.",
+                    inputDirectory.FullName]);
             }
 
             string mainModuleName = _projectFileManager.GetMainModule(inputDirectory);

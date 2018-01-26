@@ -7,12 +7,16 @@ namespace CompillerServices
 {
     internal static class Constants
     {
+        public const string CppSourceExtension = ".cpp";
+        public const string CppHeaderExtension = ".h";
+
         public const string SlangExtension = ".slang";
         public const string SlangFileMask = "*" + SlangExtension;
 
         public const string CppCompillerName = "g++";
-
         public static readonly string CppCompillerPath;
+
+        public const string CppOutput = "bin";
 
         public static readonly IEnumerable<string> WindowsNeededLibraries = new List<string>
         {

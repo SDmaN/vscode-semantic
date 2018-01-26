@@ -6,11 +6,12 @@ using CompillerServices.Exceptions;
 using CompillerServices.Frontend.NameTables;
 using CompillerServices.Frontend.NameTables.Types;
 using CompillerServices.IO;
+using Microsoft.Extensions.Localization;
 using SlangGrammar;
 
 namespace CompillerServices.Frontend
 {
-    internal class SecondStepVisitor : BaseStepVisitor
+    public class SecondStepVisitor : BaseStepVisitor
     {
         private static readonly IEnumerable<string> Keywords = new HashSet<string>
         {
@@ -28,13 +29,16 @@ namespace CompillerServices.Frontend
         };
 
         private readonly ModuleNameTableRow _currentModuleRow;
+        private readonly IStringLocalizer<SecondStepVisitor> _localizer;
         private readonly INameTableContainer _nameTableContainer;
         private readonly SlangModule _slangModule;
         private RoutineNameTableRow _currentRoutineRow;
 
-        public SecondStepVisitor(INameTableContainer nameTableContainer, SlangModule slangModule)
+        public SecondStepVisitor(IStringLocalizer<SecondStepVisitor> localizer, INameTableContainer nameTableContainer,
+            SlangModule slangModule)
             : base(slangModule)
         {
+            _localizer = localizer;
             _nameTableContainer = nameTableContainer;
             _slangModule = slangModule;
             _currentModuleRow = _nameTableContainer.ModuleNameTable.GetModuleRow(_slangModule.ModuleName);
@@ -52,20 +56,19 @@ namespace CompillerServices.Frontend
 
                 if (!_nameTableContainer.ModuleNameTable.Contains(moduleName))
                 {
-                    ThrowCompillerException(string.Format(Resources.Resources.ModuleIsNotDeclared, moduleName),
+                    ThrowCompillerException(_localizer["Module '{0}' is not declared.", moduleName],
                         importingModule.Symbol);
                 }
 
                 if (alreadyImported.Contains(moduleName))
                 {
-                    ThrowCompillerException(string.Format(Resources.Resources.ModuleAlreadyImported, moduleName),
+                    ThrowCompillerException(_localizer["Module '{0}' already imported.", moduleName],
                         importingModule.Symbol);
                 }
 
                 if (moduleName == _currentModuleRow.ModuleName)
                 {
-                    throw new CompillerException(Resources.Resources.ImportingCurrentModuleError,
-                        _slangModule.ModuleName, importingModule.Symbol.Line, importingModule.Symbol.Column);
+                    ThrowCompillerException(_localizer["The module can't import itself."], importingModule.Symbol);
                 }
 
                 alreadyImported.Add(moduleName);
@@ -220,7 +223,7 @@ namespace CompillerServices.Frontend
                 {
                     ITerminalNode routineId = context.call().Id(1);
                     ThrowCompillerException(
-                        string.Format(Resources.Resources.ProcedureCantBeUsedInExpression, routineId.GetText()),
+                        _localizer["'{0}' is not a function and can't be used in expression.", routineId.GetText()],
                         routineId.Symbol);
                 }
 
@@ -233,6 +236,7 @@ namespace CompillerServices.Frontend
             else if (context.arrayElement() != null)
             {
                 SlangType slangType = (SlangType) Visit(context.arrayElement());
+                result = null;
             }
             else if (context.IntValue() != null)
             {
@@ -251,8 +255,8 @@ namespace CompillerServices.Frontend
 
                 if (!SimpleType.Real.IsAssignable(variableRow.Type))
                 {
-                    ThrowCompillerException(string.Format(Resources.Resources.VariableIsNotMath, id.GetText()),
-                        id.Symbol);
+                    ThrowCompillerException(
+                        _localizer["Variable '{0}' has not a mathematic type (int or real).", id.GetText()], id.Symbol);
                 }
 
                 result = new ExpressionResult(variableRow.Type, ExpressionType.Variable);
@@ -278,16 +282,15 @@ namespace CompillerServices.Frontend
             }
 
             IToken symbol = id.Symbol;
-
-            ThrowCompillerException(string.Format(Resources.Resources.CorrespondingToKeywordError, id.GetText()),
-                symbol);
+            ThrowCompillerException(_localizer["Name {0} corresponds to keyword.", id.GetText()], symbol);
         }
 
         private void ThrowIfNotDeclared(ITerminalNode variableId)
         {
             if (!_currentRoutineRow.ContainsVariable(variableId.GetText()))
             {
-                ThrowCompillerException(string.Format(Resources.Resources.VariableIsNotDeclared, variableId.GetText()),
+                ThrowCompillerException(
+                    _localizer["Variable '{0}' is not declared in this context.", variableId.GetText()],
                     variableId.Symbol);
             }
         }

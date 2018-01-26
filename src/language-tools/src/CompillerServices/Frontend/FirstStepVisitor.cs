@@ -6,20 +6,24 @@ using CompillerServices.Exceptions;
 using CompillerServices.Frontend.NameTables;
 using CompillerServices.Frontend.NameTables.Types;
 using CompillerServices.IO;
+using Microsoft.Extensions.Localization;
 using SlangGrammar;
 
 namespace CompillerServices.Frontend
 {
-    internal class FirstStepVisitor : BaseStepVisitor
+    public class FirstStepVisitor : BaseStepVisitor
     {
+        private readonly IStringLocalizer<FirstStepVisitor> _localizer;
         private readonly INameTableContainer _nameTableContainer;
         private readonly SlangModule _slangModule;
         private RoutineNameTableRow _currentRoutine;
         private ModuleNameTableRow _moduleRow;
 
-        public FirstStepVisitor(INameTableContainer nameTableContainer, SlangModule slangModule)
+        public FirstStepVisitor(IStringLocalizer<FirstStepVisitor> localizer, INameTableContainer nameTableContainer,
+            SlangModule slangModule)
             : base(slangModule)
         {
+            _localizer = localizer;
             _nameTableContainer = nameTableContainer;
             _slangModule = slangModule;
         }
@@ -40,8 +44,9 @@ namespace CompillerServices.Frontend
 
             if (moduleName != _slangModule.ModuleName)
             {
-                throw new ModuleAndFileMismatchException(_slangModule.ModuleFile, moduleName, id.Symbol.Line,
-                    id.Symbol.Column);
+                throw new ModuleAndFileMismatchException(
+                    _localizer["Module name '{0}' does not match file {1}.", moduleName, _slangModule.ModuleFile.Name],
+                    _slangModule.ModuleFile, _slangModule.ModuleName, id.Symbol.Line, id.Symbol.Column);
             }
 
             // Поскольку название файлов всегда разное, а название модуля должно совпадать с назаванием файла
@@ -82,7 +87,8 @@ namespace CompillerServices.Frontend
 
             if (_moduleRow.ContainsExactRoutine(name, argRows.Select(x => x.Type).ToList()))
             {
-                ThrowCompillerException(string.Format(Resources.Resources.RoutineAlreadyExistsError, name), nameSymbol);
+                ThrowCompillerException(
+                    _localizer["Function or procedure '{0}' with same signature already defined.", name], nameSymbol);
             }
 
             foreach (ArgumentNameTableRow argRow in argRows)
@@ -115,7 +121,8 @@ namespace CompillerServices.Frontend
 
             if (_moduleRow.ContainsExactRoutine(name, argRows.Select(x => x.Type).ToList()))
             {
-                ThrowCompillerException(string.Format(Resources.Resources.RoutineAlreadyExistsError, name), nameSymbol);
+                ThrowCompillerException(
+                    _localizer["Function or procedure '{0}' with same signature already defined.", name], nameSymbol);
             }
 
             foreach (ArgumentNameTableRow argRow in argRows)
@@ -143,8 +150,8 @@ namespace CompillerServices.Frontend
 
                 if (argRows.Any(x => x.Name == argRow.Name))
                 {
-                    throw new CompillerException(string.Format(Resources.Resources.ArgumentAlreadyDefined, argRow.Name),
-                        _slangModule.ModuleName, arg.Id().Symbol.Line, arg.Id().Symbol.Column);
+                    ThrowCompillerException(_localizer["Argument '{0}' already defined.", argRow.Name],
+                        arg.Id().Symbol);
                 }
 
                 argRows.Add(argRow);

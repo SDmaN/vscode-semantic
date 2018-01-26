@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Antlr4.Runtime.Tree;
 using CompillerServices.Exceptions;
+using Microsoft.Extensions.Localization;
 using SlangGrammar;
 
 namespace CompillerServices.Backend.Translators
@@ -46,6 +47,7 @@ namespace CompillerServices.Backend.Translators
 
         #endregion
 
+        private readonly IStringLocalizer<CppVisitorTranslator> _localizer;
         private readonly string _headerFileName;
         private readonly IndentedTextWriter _headerWriter;
         private readonly IndentedTextWriter _sourceWriter;
@@ -55,8 +57,10 @@ namespace CompillerServices.Backend.Translators
         // Должно быть false изначально
         private bool _shouldWriteHeader;
 
-        public CppVisitorTranslator(string headerFileName, TextWriter headerWriter, TextWriter sourceWriter)
+        public CppVisitorTranslator(IStringLocalizer<CppVisitorTranslator> localizer, string headerFileName,
+            TextWriter headerWriter, TextWriter sourceWriter)
         {
+            _localizer = localizer;
             _headerFileName = headerFileName;
             _headerWriter = new IndentedTextWriter(headerWriter);
             _sourceWriter = new IndentedTextWriter(sourceWriter);
@@ -442,12 +446,6 @@ namespace CompillerServices.Backend.Translators
             Write(" = ");
 
             base.VisitSingleAssign(context);
-
-            /*if (context.assign() == null)
-            {
-                WriteLine(";");
-            }*/
-
             return null;
         }
 
@@ -900,8 +898,8 @@ namespace CompillerServices.Backend.Translators
                 return cppFunctionName;
             }
 
-            throw new CompillerException(string.Format(Resources.Resources.UnknownSystemFunction, functionName),
-                _moduleName, function.Symbol.Line, function.Symbol.Column);
+            throw new CompillerException(_localizer["Unknown system routine '{0}'.", functionName], _moduleName,
+                function.Symbol.Line, function.Symbol.Column);
         }
 
         private static string TranslateType(string slangType)

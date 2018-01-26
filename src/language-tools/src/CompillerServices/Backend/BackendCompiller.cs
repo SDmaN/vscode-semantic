@@ -5,10 +5,11 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CompillerServices.Backend.EntryPoint;
-using CompillerServices.Backend.TranslatorFactories;
 using CompillerServices.Backend.Translators;
 using CompillerServices.IO;
-using CompillerServices.Output;
+using CompillerServices.Logging;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using SlangGrammar;
 using SlangGrammar.Factories;
 
@@ -16,22 +17,23 @@ namespace CompillerServices.Backend
 {
     public class BackendCompiller : IBackendCompiller
     {
-        private const string CppOutput = "bin";
-
-        private readonly IEntryPointWriter _entryPointWriter;
         private readonly ILexerFactory _lexerFactory;
-        private readonly IOutputWriter _outputWriter;
         private readonly IParserFactory _parserFactory;
         private readonly ITranslatorFactory _translatorFactory;
+        private readonly IEntryPointWriter _entryPointWriter;
+        private readonly ILogger<BackendCompiller> _logger;
+        private readonly IStringLocalizer<BackendCompiller> _localizer;
 
         public BackendCompiller(ILexerFactory lexerFactory, IParserFactory parserFactory,
-            ITranslatorFactory translatorFactory, IEntryPointWriter entryPointWriter, IOutputWriter outputWriter)
+            ITranslatorFactory translatorFactory, IEntryPointWriter entryPointWriter, ILogger<BackendCompiller> logger,
+            IStringLocalizer<BackendCompiller> localizer)
         {
             _lexerFactory = lexerFactory;
             _parserFactory = parserFactory;
             _translatorFactory = translatorFactory;
             _entryPointWriter = entryPointWriter;
-            _outputWriter = outputWriter;
+            _logger = logger;
+            _localizer = localizer;
         }
 
         public async Task Translate(SourceContainer sources, DirectoryInfo outputDirectory)
@@ -55,7 +57,7 @@ namespace CompillerServices.Backend
 
         public async Task Translate(SlangModule slangModule, DirectoryInfo outputDirectory)
         {
-            await _outputWriter.WriteFileTranslating(slangModule.ModuleFile);
+            _logger.LogCompillerTranslates(slangModule.ModuleName);
 
             if (!outputDirectory.Exists)
             {
@@ -77,18 +79,19 @@ namespace CompillerServices.Backend
 
             if (!gccDirectory.Exists)
             {
-                throw new DirectoryNotFoundException(string.Format(Resources.Resources.CompillerDirectoryNotFound,
-                    gccDirectory.FullName));
+                throw new DirectoryNotFoundException(_localizer["Compiler directory {0} not exists.",
+                    gccDirectory.FullName]);
             }
 
             await Translate(sources, outputDirectory);
-            DirectoryInfo binDirectory = outputDirectory.CreateSubdirectory(CppOutput);
+            DirectoryInfo binDirectory = outputDirectory.CreateSubdirectory(Constants.CppOutput);
 
-            await _outputWriter.WriteBuilding(outputDirectory.FullName);
+            _logger.LogCompillerBuilds(outputDirectory.FullName);
 
             string gccFileName = Path.Combine(gccDirectory.FullName, Constants.CppCompillerName);
             string gccArgs =
-                $"-o {Path.Combine(outputDirectory.FullName, CppOutput, sources.ProjectFile.GetShortNameWithoutExtension())} {Path.Combine(outputDirectory.FullName, "*.cpp")}";
+                $"-o {Path.Combine(outputDirectory.FullName, Constants.CppOutput, sources.ProjectFile.GetShortNameWithoutExtension())} {Path.Combine(outputDirectory.FullName, "*" + Constants.CppSourceExtension)}";
+
             ProcessStartInfo processStartInfo = new ProcessStartInfo(gccFileName, gccArgs)
             {
                 WorkingDirectory = gccDirectory.FullName
@@ -121,9 +124,9 @@ namespace CompillerServices.Backend
             return Task.CompletedTask;
         }
 
-        private async Task ClearDirectory(DirectoryInfo directory)
+        private Task ClearDirectory(DirectoryInfo directory)
         {
-            await _outputWriter.WriteDirectoryClean(directory);
+            _logger.LogCompillerCleans(directory.FullName);
 
             foreach (FileInfo file in directory.GetFiles().AsParallel())
             {
@@ -134,6 +137,8 @@ namespace CompillerServices.Backend
             {
                 subDirectory.Delete(true);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using CompillerServices.Exceptions;
+using Microsoft.Extensions.Localization;
 using Newtonsoft.Json;
 
 namespace CompillerServices.ProjectFile
@@ -8,26 +9,32 @@ namespace CompillerServices.ProjectFile
     public class ProjectFileManager : IProjectFileManager
     {
         private const string ProjectFilePattern = "*.slproj";
+        private readonly IStringLocalizer<ProjectFileManager> _localizer;
+
+        public ProjectFileManager(IStringLocalizer<ProjectFileManager> localizer)
+        {
+            _localizer = localizer;
+        }
 
         public FileInfo GetProjectFile(DirectoryInfo projectDirectory)
         {
             if (!projectDirectory.Exists)
             {
-                throw new DirectoryNotFoundException(string.Format(Resources.Resources.CouldNotFindDirectory,
-                    projectDirectory.FullName));
+                throw new DirectoryNotFoundException(_localizer["Could not find directory {0}.",
+                    projectDirectory.FullName]);
             }
 
             FileInfo[] files = projectDirectory.GetFiles(ProjectFilePattern);
 
             if (files.Length < 1)
             {
-                throw new FileNotFoundException(
-                    string.Format(Resources.Resources.ProjectFileNotFound, projectDirectory.FullName));
+                throw new FileNotFoundException(_localizer["Project file does not exist in directory {0}.",
+                    projectDirectory.FullName]);
             }
 
             if (files.Length > 1)
             {
-                throw new ProjectFileException(string.Format(Resources.Resources.TooManyProjectFiles));
+                throw new ProjectFileException(_localizer["The directory must contain only one project file."]);
             }
 
             return files.First();
@@ -47,12 +54,12 @@ namespace CompillerServices.ProjectFile
                     ProjectFileStructure structure = serializer.Deserialize<ProjectFileStructure>(jsonReader);
 
                     return structure.MainModule ??
-                           throw new ProjectFileException(Resources.Resources.MainModuleNotSpecified);
+                           throw new ProjectFileException(_localizer["Main module is not specified in project file."]);
                 }
             }
-            catch (JsonException e)
+            catch (JsonException)
             {
-                throw new ProjectFileException(Resources.Resources.ProjectFileParsingException, e);
+                throw new ProjectFileException(_localizer["Project file parsing error occurred."]);
             }
         }
     }

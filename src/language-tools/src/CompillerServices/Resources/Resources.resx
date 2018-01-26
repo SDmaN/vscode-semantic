@@ -162,11 +162,23 @@ int main(int argc, char* argv[])
   <data name="ModuleAlreadyImported" xml:space="preserve">
     <value>Module '{0}' already imported.</value>
   </data>
+  <data name="ModuleDoesNotContainsRoutine" xml:space="preserve">
+    <value>Module '{0}' does not contain definition of function or procedure '{1}' with given arguments.</value>
+  </data>
   <data name="ModuleDoesNotMatchFile" xml:space="preserve">
     <value>Module name '{0}' does not match file {1}.</value>
   </data>
   <data name="ModuleIsNotDeclared" xml:space="preserve">
     <value>Module '{0}' is not declared.</value>
+  </data>
+  <data name="ModuleIsNotImported" xml:space="preserve">
+    <value>Module '{0}' is not imported.</value>
+  </data>
+  <data name="ModuleNotImported" xml:space="preserve">
+    <value>Module '{0}' is not imported.</value>
+  </data>
+  <data name="ProcedureCantBeUsedInExpression" xml:space="preserve">
+    <value>'{0}' is not a function and can't be used in expression.</value>
   </data>
   <data name="ProjectFileNotFound" xml:space="preserve">
     <value>Project file does not exists in directory {0}</value>
@@ -177,10 +189,22 @@ int main(int argc, char* argv[])
   <data name="RoutineAlreadyExistsError" xml:space="preserve">
     <value>Function or procedure '{0}' with same signature already defined.</value>
   </data>
+  <data name="RoutineDoesNotTakesArgs" xml:space="preserve">
+    <value>Functor '{0}' does not takes this arguments.</value>
+  </data>
   <data name="TooManyProjectFiles" xml:space="preserve">
     <value>The directory must contain only one project file.</value>
   </data>
   <data name="UnknownSystemFunction" xml:space="preserve">
     <value>Unknown system routine '{0}'.</value>
+  </data>
+  <data name="VariableIsNotDeclared" xml:space="preserve">
+    <value>Variable '{0}' is not declared in this context.</value>
+  </data>
+  <data name="VariableIsNotFunctor" xml:space="preserve">
+    <value>Variable '{0}' has not a function or procedure type.</value>
+  </data>
+  <data name="VariableIsNotMath" xml:space="preserve">
+    <value>Variable '{0}' has not a mathematic type (int or real).</value>
   </data>
 </root>

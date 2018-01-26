@@ -4,16 +4,15 @@ using System.Text;
 
 namespace CompillerServices.Frontend.NameTables.Types
 {
-    public class FunctionType : SlangType
+    public class FunctionType : RoutineType
     {
-        public FunctionType(SlangType returningType, IEnumerable<RoutineTypeArg> args)
+        public FunctionType(SlangType returningType, IList<RoutineTypeArg> args)
+            : base(args)
         {
             ReturningType = returningType;
-            Args = args;
         }
 
         public SlangType ReturningType { get; }
-        public IEnumerable<RoutineTypeArg> Args { get; }
 
         public override bool IsAssignable(SlangType other)
         {

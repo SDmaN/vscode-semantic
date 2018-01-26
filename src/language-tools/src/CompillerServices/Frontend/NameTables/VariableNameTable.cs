@@ -1,4 +1,7 @@
-﻿namespace CompillerServices.Frontend.NameTables
+﻿using System;
+using CompillerServices.Frontend.NameTables.Types;
+
+namespace CompillerServices.Frontend.NameTables
 {
     public class VariableNameTable : NameTable<VariableNameTableRow>
     {
@@ -6,17 +9,20 @@
 
     public class VariableNameTableRow : NameTableRow
     {
-        public VariableNameTableRow(int line, int column, string type, string name, SubprogramNameTableRow parent)
+        public VariableNameTableRow(int line, int column, SlangType type, string name, bool isConstant,
+            RoutineNameTableRow parentRoutine)
             : base(line, column)
         {
             Type = type;
             Name = name;
-            Parent = parent;
+            IsConstant = isConstant;
+            ParentRoutine = parentRoutine;
         }
 
-        public string Type { get; }
+        public SlangType Type { get; }
         public string Name { get; }
+        public bool IsConstant { get; }
 
-        public SubprogramNameTableRow Parent { get; }
+        public RoutineNameTableRow ParentRoutine { get; }
     }
 }

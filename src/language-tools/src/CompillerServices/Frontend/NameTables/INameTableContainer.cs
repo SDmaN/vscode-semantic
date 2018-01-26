@@ -7,9 +7,12 @@ namespace CompillerServices.Frontend.NameTables
         ModuleNameTable ModuleNameTable { get; }
         FunctionNameTable FunctionNameTable { get; }
         ProcedureNameTable ProcedureNameTable { get; }
+        EntryPointNameTable EntryPointNameTable { get; }
         ArgumentNameTable ArgumentNameTable { get; }
         VariableNameTable VariableNameTable { get; }
 
         Task Clear();
+
+        ModuleNameTableRow FindModule(string name);
     }
 }

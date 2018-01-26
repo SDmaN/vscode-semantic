@@ -6,11 +6,11 @@ namespace CompillerServices.Frontend.NameTables
     {
     }
 
-    public class FunctionNameTableRow : SubprogramNameTableRow
+    public class FunctionNameTableRow : RoutineNameTableRow
     {
         public FunctionNameTableRow(int line, int column, string accessModifier, SlangType returningType, string name,
-            ModuleNameTableRow parent)
-            : base(line, column, accessModifier, name, parent)
+            ModuleNameTableRow parentModule)
+            : base(line, column, accessModifier, name, parentModule)
         {
             ReturningType = returningType;
         }

@@ -10,14 +10,15 @@ using SlangGrammar;
 
 namespace CompillerServices.Frontend
 {
-    internal class FirstStepVisitor : SlangBaseVisitor<object>
+    internal class FirstStepVisitor : BaseStepVisitor
     {
         private readonly INameTableContainer _nameTableContainer;
         private readonly SlangModule _slangModule;
-        private SubprogramNameTableRow _currentSubprogram;
+        private RoutineNameTableRow _currentRoutine;
         private ModuleNameTableRow _moduleRow;
 
         public FirstStepVisitor(INameTableContainer nameTableContainer, SlangModule slangModule)
+            : base(slangModule)
         {
             _nameTableContainer = nameTableContainer;
             _slangModule = slangModule;
@@ -29,53 +30,6 @@ namespace CompillerServices.Frontend
             Visit(context.moduleImports());
 
             return null;
-        }
-
-        public override object VisitSimpleType(SlangParser.SimpleTypeContext context)
-        {
-            return new SimpleType(context.SimpleType().GetText());
-        }
-
-        public override object VisitFuncType(SlangParser.FuncTypeContext context)
-        {
-            IEnumerable<RoutineTypeArg> routineTypeArgs = (IEnumerable<RoutineTypeArg>) Visit(context.routineArgList());
-            SlangType returningType = (SlangType) Visit(context.type());
-
-            return new FunctionType(returningType, routineTypeArgs);
-        }
-
-        public override object VisitProcType(SlangParser.ProcTypeContext context)
-        {
-            IEnumerable<RoutineTypeArg> routineTypeArgs = (IEnumerable<RoutineTypeArg>) Visit(context.routineArgList());
-            return new ProcedureType(routineTypeArgs);
-        }
-
-        public override object VisitRoutineArgList(SlangParser.RoutineArgListContext context)
-        {
-            IList<RoutineTypeArg> routineTypeArgs = new List<RoutineTypeArg>(context.routineArg().Length);
-
-            foreach (SlangParser.RoutineArgContext arg in context.routineArg())
-            {
-                routineTypeArgs.Add((RoutineTypeArg) Visit(arg));
-            }
-
-            return routineTypeArgs;
-        }
-
-        public override object VisitRoutineArg(SlangParser.RoutineArgContext context)
-        {
-            string modifier = context.ArgPassModifier().GetText();
-            SlangType type = (SlangType) Visit(context.type());
-
-            return new RoutineTypeArg(modifier, type);
-        }
-
-        public override object VisitArrayType(SlangParser.ArrayTypeContext context)
-        {
-            SlangType elementType = (SlangType) Visit(context.scalarType());
-            int dimentions = context.arrayDimention().Length;
-
-            return new ArrayType(elementType, dimentions);
         }
 
         public override object VisitModule(SlangParser.ModuleContext context)
@@ -121,16 +75,14 @@ namespace CompillerServices.Frontend
 
             FunctionNameTableRow functionRow =
                 new FunctionNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier, type, name, _moduleRow);
-            _currentSubprogram = functionRow;
+            _currentRoutine = functionRow;
 
             ICollection<ArgumentNameTableRow> argRows =
                 (ICollection<ArgumentNameTableRow>) Visit(context.routineDeclareArgList());
 
-            if (_moduleRow.ContainsSameRoutine(name, argRows.Select(x => x.Type).ToList()))
+            if (_moduleRow.ContainsExactRoutine(name, argRows.Select(x => x.Type).ToList()))
             {
-                throw new RoutineAlreadyDefinedException(
-                    string.Format(Resources.Resources.RoutineAlreadyExistsError, name), _slangModule.ModuleName,
-                    nameSymbol.Line, nameSymbol.Column);
+                ThrowCompillerException(string.Format(Resources.Resources.RoutineAlreadyExistsError, name), nameSymbol);
             }
 
             foreach (ArgumentNameTableRow argRow in argRows)
@@ -156,16 +108,14 @@ namespace CompillerServices.Frontend
 
             ProcedureNameTableRow procedureRow =
                 new ProcedureNameTableRow(nameSymbol.Line, nameSymbol.Column, modifier, name, _moduleRow);
-            _currentSubprogram = procedureRow;
+            _currentRoutine = procedureRow;
 
             ICollection<ArgumentNameTableRow> argRows =
                 (ICollection<ArgumentNameTableRow>) Visit(context.routineDeclareArgList());
 
-            if (_moduleRow.ContainsSameRoutine(name, argRows.Select(x => x.Type).ToList()))
+            if (_moduleRow.ContainsExactRoutine(name, argRows.Select(x => x.Type).ToList()))
             {
-                throw new RoutineAlreadyDefinedException(
-                    string.Format(Resources.Resources.RoutineAlreadyExistsError, name), _slangModule.ModuleName,
-                    nameSymbol.Line, nameSymbol.Column);
+                ThrowCompillerException(string.Format(Resources.Resources.RoutineAlreadyExistsError, name), nameSymbol);
             }
 
             foreach (ArgumentNameTableRow argRow in argRows)
@@ -211,9 +161,18 @@ namespace CompillerServices.Frontend
             IToken idSymbol = id.Symbol;
 
             ArgumentNameTableRow row = new ArgumentNameTableRow(idSymbol.Line, idSymbol.Column,
-                modifier.GetText(), type, id.GetText(), _currentSubprogram);
+                modifier.GetText(), type, id.GetText(), _currentRoutine);
 
             return row;
+        }
+
+        public override object VisitModuleEntry(SlangParser.ModuleEntryContext context)
+        {
+            ITerminalNode start = context.Start();
+            _moduleRow.EntryPoint = new EntryPointNameTableRow(start.Symbol.Line, start.Symbol.Column, _moduleRow);
+            _nameTableContainer.EntryPointNameTable.Add(_moduleRow.EntryPoint);
+
+            return base.VisitModuleEntry(context);
         }
     }
 }

@@ -4,14 +4,12 @@ using System.Text;
 
 namespace CompillerServices.Frontend.NameTables.Types
 {
-    public class ProcedureType : SlangType
+    public class ProcedureType : RoutineType
     {
-        public ProcedureType(IEnumerable<RoutineTypeArg> args)
+        public ProcedureType(IList<RoutineTypeArg> args)
+            : base(args)
         {
-            Args = args;
         }
-
-        public IEnumerable<RoutineTypeArg> Args { get; }
 
         public override bool IsAssignable(SlangType other)
         {
@@ -50,7 +48,7 @@ namespace CompillerServices.Frontend.NameTables.Types
                 }
             }
 
-            builder.Append($")");
+            builder.Append(")");
 
             return builder.ToString();
         }

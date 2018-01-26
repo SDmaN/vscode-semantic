@@ -160,6 +160,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Module &apos;{0}&apos; does not contain definition of function or procedure &apos;{1}&apos; with given arguments..
+        /// </summary>
+        internal static string ModuleDoesNotContainsRoutine {
+            get {
+                return ResourceManager.GetString("ModuleDoesNotContainsRoutine", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Module name &apos;{0}&apos; does not match file {1}..
         /// </summary>
         internal static string ModuleDoesNotMatchFile {
@@ -174,6 +183,33 @@ namespace CompillerServices.Resources {
         internal static string ModuleIsNotDeclared {
             get {
                 return ResourceManager.GetString("ModuleIsNotDeclared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Module &apos;{0}&apos; is not imported..
+        /// </summary>
+        internal static string ModuleIsNotImported {
+            get {
+                return ResourceManager.GetString("ModuleIsNotImported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Module &apos;{0}&apos; is not imported..
+        /// </summary>
+        internal static string ModuleNotImported {
+            get {
+                return ResourceManager.GetString("ModuleNotImported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a function and can&apos;t be used in expression..
+        /// </summary>
+        internal static string ProcedureCantBeUsedInExpression {
+            get {
+                return ResourceManager.GetString("ProcedureCantBeUsedInExpression", resourceCulture);
             }
         }
         
@@ -205,6 +241,15 @@ namespace CompillerServices.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Functor &apos;{0}&apos; does not takes this arguments..
+        /// </summary>
+        internal static string RoutineDoesNotTakesArgs {
+            get {
+                return ResourceManager.GetString("RoutineDoesNotTakesArgs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The directory must contain only one project file..
         /// </summary>
         internal static string TooManyProjectFiles {
@@ -219,6 +264,33 @@ namespace CompillerServices.Resources {
         internal static string UnknownSystemFunction {
             get {
                 return ResourceManager.GetString("UnknownSystemFunction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Variable &apos;{0}&apos; is not declared in this context..
+        /// </summary>
+        internal static string VariableIsNotDeclared {
+            get {
+                return ResourceManager.GetString("VariableIsNotDeclared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Variable &apos;{0}&apos; has not a function or procedure type..
+        /// </summary>
+        internal static string VariableIsNotFunctor {
+            get {
+                return ResourceManager.GetString("VariableIsNotFunctor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Variable &apos;{0}&apos; has not a mathematic type (int or real)..
+        /// </summary>
+        internal static string VariableIsNotMath {
+            get {
+                return ResourceManager.GetString("VariableIsNotMath", resourceCulture);
             }
         }
     }

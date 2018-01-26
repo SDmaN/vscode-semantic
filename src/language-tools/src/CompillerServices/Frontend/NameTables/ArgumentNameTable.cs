@@ -9,7 +9,7 @@ namespace CompillerServices.Frontend.NameTables
     public class ArgumentNameTableRow : NameTableRow
     {
         public ArgumentNameTableRow(int line, int column, string passModifier, SlangType type, string name,
-            SubprogramNameTableRow parent)
+            RoutineNameTableRow parent)
             : base(line, column)
         {
             PassModifier = passModifier;
@@ -22,6 +22,6 @@ namespace CompillerServices.Frontend.NameTables
         public SlangType Type { get; }
         public string Name { get; }
 
-        public SubprogramNameTableRow Parent { get; }
+        public RoutineNameTableRow Parent { get; }
     }
 }

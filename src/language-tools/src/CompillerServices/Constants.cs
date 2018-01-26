@@ -28,5 +28,12 @@ namespace CompillerServices
                 CppCompillerPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mingw/mingw32/bin");
             }
         }
+
+        public static class Keywords
+        {
+            public const string Bool = "bool";
+            public const string Int = "int";
+            public const string Real = "real";
+        }
     }
 }

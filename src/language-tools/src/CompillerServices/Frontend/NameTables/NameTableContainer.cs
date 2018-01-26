@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 namespace CompillerServices.Frontend.NameTables
 {
@@ -7,19 +8,25 @@ namespace CompillerServices.Frontend.NameTables
         public ModuleNameTable ModuleNameTable { get; } = new ModuleNameTable();
         public FunctionNameTable FunctionNameTable { get; } = new FunctionNameTable();
         public ProcedureNameTable ProcedureNameTable { get; } = new ProcedureNameTable();
+        public EntryPointNameTable EntryPointNameTable { get; } = new EntryPointNameTable();
         public ArgumentNameTable ArgumentNameTable { get; } = new ArgumentNameTable();
         public VariableNameTable VariableNameTable { get; } = new VariableNameTable();
 
-        public Task Clear()
+        public async Task Clear()
         {
-            return Task.Run(() =>
-            {
-                ModuleNameTable.Clear();
-                FunctionNameTable.Clear();
-                ProcedureNameTable.Clear();
-                ArgumentNameTable.Clear();
-                VariableNameTable.Clear();
-            });
+            await Task.WhenAll(
+                Task.Run(() => ModuleNameTable.Clear()),
+                Task.Run(() => FunctionNameTable.Clear()),
+                Task.Run(() => ProcedureNameTable.Clear()),
+                Task.Run(() => EntryPointNameTable.Clear()),
+                Task.Run(() => ArgumentNameTable.Clear()),
+                Task.Run(() => VariableNameTable.Clear())
+            );
+        }
+
+        public ModuleNameTableRow FindModule(string name)
+        {
+            return ModuleNameTable.FirstOrDefault(x => x.ModuleName == name);
         }
     }
 }

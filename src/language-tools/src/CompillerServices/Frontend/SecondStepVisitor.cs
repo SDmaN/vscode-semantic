@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text;
 using Antlr4.Runtime;
@@ -115,6 +114,7 @@ namespace CompillerServices.Frontend
         public override object VisitConstDeclare(SlangParser.ConstDeclareContext context)
         {
             ITerminalNode id = context.Id();
+            ThrowIfCorrespondingToKeyword(id);
 
             if (_currentRoutineRow.ContainsVariable(id.GetText()))
             {
@@ -132,7 +132,7 @@ namespace CompillerServices.Frontend
             {
                 return null;
             }
-            
+
             ExpressionResult expressionResult = (ExpressionResult) Visit(expressionContext);
 
             if (!expressionResult.IsAssignableToType(constantType))
@@ -144,7 +144,8 @@ namespace CompillerServices.Frontend
                         constantType], context.Start);
             }
 
-            StatementVariableNameTableRow constantRow = new StatementVariableNameTableRow(id.Symbol.Line, id.Symbol.Column, constantType, id.GetText(), true, _currentRoutineRow);
+            StatementVariableNameTableRow constantRow = new StatementVariableNameTableRow(id.Symbol.Line,
+                id.Symbol.Column, constantType, id.GetText(), true, _currentRoutineRow);
             _currentRoutineRow.StatementVariables.Add(constantRow);
             _nameTableContainer.StatementVariableNameTable.Add(constantRow);
 
@@ -154,6 +155,7 @@ namespace CompillerServices.Frontend
         public override object VisitScalarDeclare(SlangParser.ScalarDeclareContext context)
         {
             ITerminalNode id = context.Id();
+            ThrowIfCorrespondingToKeyword(id);
 
             if (_currentRoutineRow.ContainsVariable(id.GetText()))
             {
@@ -167,23 +169,22 @@ namespace CompillerServices.Frontend
 
             ParserRuleContext expressionContext = context.mathExp() ?? (ParserRuleContext) context.boolOr();
 
-            if (expressionContext == null)
+            if (expressionContext != null)
             {
-                return null;
+                ExpressionResult expressionResult = (ExpressionResult) Visit(expressionContext);
+
+                if (!expressionResult.IsAssignableToType(variableType))
+                {
+                    string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+
+                    ThrowCompillerException(
+                        _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
+                            variableType], context.Start);
+                }
             }
 
-            ExpressionResult expressionResult = (ExpressionResult) Visit(expressionContext);
-
-            if (!expressionResult.IsAssignableToType(variableType))
-            {
-                string expressionTypeText = GetExpressionResultTypeText(expressionResult);
-
-                ThrowCompillerException(
-                    _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
-                        variableType], context.Start);
-            }
-
-            StatementVariableNameTableRow variableRow = new StatementVariableNameTableRow(id.Symbol.Line, id.Symbol.Column, variableType, id.GetText(), false, _currentRoutineRow);
+            StatementVariableNameTableRow variableRow = new StatementVariableNameTableRow(id.Symbol.Line,
+                id.Symbol.Column, variableType, id.GetText(), false, _currentRoutineRow);
             _currentRoutineRow.StatementVariables.Add(variableRow);
             _nameTableContainer.StatementVariableNameTable.Add(variableRow);
 
@@ -193,6 +194,7 @@ namespace CompillerServices.Frontend
         public override object VisitArrayDeclare(SlangParser.ArrayDeclareContext context)
         {
             ITerminalNode id = context.Id();
+            ThrowIfCorrespondingToKeyword(id);
 
             if (_currentRoutineRow.ContainsVariable(id.GetText()))
             {
@@ -234,6 +236,104 @@ namespace CompillerServices.Frontend
             }
 
             return null;
+        }
+
+        public override object VisitArrayElement(SlangParser.ArrayElementContext context)
+        {
+            ITerminalNode id = context.Id();
+            ThrowIfVariableNotDeclared(id);
+
+            VariableNameTableRow arrayVariableRow = _currentRoutineRow.FindVariable(id.GetText());
+
+            if (!(arrayVariableRow.Type is ArrayType))
+            {
+                ThrowCompillerException(_localizer["'{0}' has not an array type", id.GetText()], id.Symbol);
+            }
+
+            ArrayType arrayType = (ArrayType) arrayVariableRow.Type;
+
+            if (arrayType.Dimentions != context.arrayDeclareDimention().Length)
+            {
+                ThrowCompillerException(
+                    _localizer["Array '{0}' has {1} dimentions, but specified {2}.", id.GetText(), arrayType.Dimentions,
+                        context.arrayDeclareDimention().Length], context.Start);
+            }
+
+            foreach (SlangParser.ArrayDeclareDimentionContext dimention in context.arrayDeclareDimention())
+            {
+                Visit(dimention);
+            }
+
+            return arrayType.ElementType;
+        }
+
+        public override object VisitArrayLength(SlangParser.ArrayLengthContext context)
+        {
+            ITerminalNode id = context.Id();
+            ThrowIfVariableNotDeclared(id);
+
+            VariableNameTableRow arrayVariableRow = _currentRoutineRow.FindVariable(id.GetText());
+
+            if (!(arrayVariableRow.Type is ArrayType))
+            {
+                ThrowCompillerException(_localizer["'{0}' has not an array type.", id.GetText()], id.Symbol);
+            }
+
+            ArrayType arrayType = (ArrayType) arrayVariableRow.Type;
+            int specifiedDimention = int.Parse(context.IntValue().GetText());
+
+            if (arrayType.Dimentions <= specifiedDimention)
+            {
+                ThrowCompillerException(
+                    _localizer["Maximum value of length index for '{0}' is {1}.", id.GetText(),
+                        arrayType.Dimentions - 1], id.Symbol);
+            }
+
+            return SimpleType.Int;
+        }
+
+        public override object VisitSingleAssign(SlangParser.SingleAssignContext context)
+        {
+            ITerminalNode id = context.Id();
+            ThrowIfVariableNotDeclared(id);
+
+            VariableNameTableRow variableRow = _currentRoutineRow.FindVariable(id.GetText());
+
+            if (variableRow is StatementVariableNameTableRow statementVariable && statementVariable.IsConstant)
+            {
+                ThrowCompillerException(_localizer["Impossible to assign a value to constant '{0}'.", variableRow.Name],
+                    id.Symbol);
+            }
+
+            ExpressionResult expressionResult = (ExpressionResult) base.VisitSingleAssign(context);
+
+            if (!expressionResult.IsAssignableToType(variableRow.Type))
+            {
+                string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+
+                ThrowCompillerException(
+                    _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
+                        variableRow.Type], context.Start);
+            }
+
+            return expressionResult;
+        }
+
+        public override object VisitArrayAssign(SlangParser.ArrayAssignContext context)
+        {
+            SlangType elementType = (SlangType) Visit(context.arrayElement());
+            ExpressionResult expressionResult = (ExpressionResult) base.VisitArrayAssign(context);
+
+            if (!expressionResult.IsAssignableToType(elementType))
+            {
+                string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+
+                ThrowCompillerException(
+                    _localizer["Cannot convert type '{0}' to array element type '{1}'.", expressionTypeText,
+                        elementType], context.Start);
+            }
+
+            return expressionResult;
         }
 
         //public override object VisitCall(SlangParser.CallContext context)
@@ -334,25 +434,6 @@ namespace CompillerServices.Frontend
         //        context.callArg().Select(arg => (ExpressionResult) Visit(arg)).ToList();
         //    return argTypes;
         //}
-
-        public override object VisitArrayElement(SlangParser.ArrayElementContext context)
-        {
-            ITerminalNode id = context.Id();
-            ThrowIfVariableNotDeclared(id);
-
-            VariableNameTableRow arrayVariableRow = _currentRoutineRow.FindVariable(id.GetText());
-            ArrayType arrayType = (ArrayType) arrayVariableRow.Type;
-
-            return arrayType.ElementType;
-        }
-
-        public override object VisitArrayLength(SlangParser.ArrayLengthContext context)
-        {
-            ITerminalNode id = context.Id();
-            ThrowIfVariableNotDeclared(id);
-
-            return SimpleType.Int;
-        }
 
         public override object VisitMathExpSum(SlangParser.MathExpSumContext context)
         {
@@ -483,7 +564,8 @@ namespace CompillerServices.Frontend
             string op = context.GetChild(0).GetText();
 
             ThrowCompillerException(
-                _localizer["Operator '{0}' can't be applied to operand of type '{1}'", op, result.PossibleTypes.First()],
+                _localizer["Operator '{0}' can't be applied to operand of type '{1}'", op,
+                    result.PossibleTypes.First()],
                 context.Start);
             return null;
         }
@@ -680,7 +762,7 @@ namespace CompillerServices.Frontend
         }
 
         /// <summary>
-        /// По-умолчанию - проверкая для математических выражений
+        ///     По-умолчанию - проверкая для математических выражений
         /// </summary>
         private object VisitBinaryExpression(ParserRuleContext context,
             Func<ExpressionResult, ExpressionResult, bool> applyChecker,

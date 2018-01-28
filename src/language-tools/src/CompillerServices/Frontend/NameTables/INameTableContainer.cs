@@ -9,7 +9,7 @@ namespace CompillerServices.Frontend.NameTables
         ProcedureNameTable ProcedureNameTable { get; }
         EntryPointNameTable EntryPointNameTable { get; }
         ArgumentNameTable ArgumentNameTable { get; }
-        VariableNameTable VariableNameTable { get; }
+        StatementVariableNameTable StatementVariableNameTable { get; }
 
         Task Clear();
 

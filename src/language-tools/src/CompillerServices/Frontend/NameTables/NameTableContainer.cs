@@ -10,7 +10,7 @@ namespace CompillerServices.Frontend.NameTables
         public ProcedureNameTable ProcedureNameTable { get; } = new ProcedureNameTable();
         public EntryPointNameTable EntryPointNameTable { get; } = new EntryPointNameTable();
         public ArgumentNameTable ArgumentNameTable { get; } = new ArgumentNameTable();
-        public VariableNameTable VariableNameTable { get; } = new VariableNameTable();
+        public StatementVariableNameTable StatementVariableNameTable { get; } = new StatementVariableNameTable();
 
         public async Task Clear()
         {
@@ -20,7 +20,7 @@ namespace CompillerServices.Frontend.NameTables
                 Task.Run(() => ProcedureNameTable.Clear()),
                 Task.Run(() => EntryPointNameTable.Clear()),
                 Task.Run(() => ArgumentNameTable.Clear()),
-                Task.Run(() => VariableNameTable.Clear())
+                Task.Run(() => StatementVariableNameTable.Clear())
             );
         }
 

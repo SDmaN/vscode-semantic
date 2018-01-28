@@ -518,24 +518,9 @@ namespace CompillerServices.Backend.Translators
 
         public override object VisitCall(SlangParser.CallContext context)
         {
-            ITerminalNode[] ids = context.Id();
+            Visit(context.id());
 
-            ITerminalNode module = null;
-            ITerminalNode function;
-
-            if (ids.Length == 2)
-            {
-                module = ids[0];
-                function = ids[1];
-            }
-            else
-            {
-                function = ids[0];
-            }
-
-            string translated = TranslateCall(module, function);
-
-            Write($"{translated}(");
+            Write("(");
             base.VisitCall(context);
             Write(")");
 
@@ -691,26 +676,6 @@ namespace CompillerServices.Backend.Translators
             return null;
         }
 
-        public override object VisitMathAtom(SlangParser.MathAtomContext context)
-        {
-            ITerminalNode id = context.Id();
-            ITerminalNode i = context.IntValue();
-            ITerminalNode r = context.RealValue();
-            SlangParser.CallContext c = context.call();
-            SlangParser.ArrayElementContext ae = context.arrayElement();
-            SlangParser.ArrayLengthContext al = context.arrayLength();
-
-            if (context.call() == null && context.arrayElement() == null && context.arrayLength() == null)
-            {
-                Write(context.GetChild(0).GetText());
-                return null;
-            }
-
-            base.VisitMathAtom(context);
-
-            return null;
-        }
-
         public override object VisitLogicOr(SlangParser.LogicOrContext context)
         {
             Visit(context.boolAnd());
@@ -828,14 +793,39 @@ namespace CompillerServices.Backend.Translators
             return null;
         }
 
-        public override object VisitBoolAtom(SlangParser.BoolAtomContext context)
+        public override object VisitExpAtom(SlangParser.ExpAtomContext context)
         {
-            if (context.call() == null && context.arrayElement() == null)
+            if (context.call() == null && context.arrayElement() == null && context.arrayLength() == null)
             {
                 Write(context.GetChild(0).GetText());
+                return null;
             }
 
-            return base.VisitBoolAtom(context);
+            base.VisitExpAtom(context);
+            return null;
+        }
+
+        public override object VisitId(SlangParser.IdContext context)
+        {
+            ITerminalNode[] ids = context.Id();
+
+            ITerminalNode module = null;
+            ITerminalNode id;
+
+            if (ids.Length > 1)
+            {
+                module = ids[0];
+                id = ids[1];   
+            }
+            else
+            {
+                id = ids[0];
+            }
+
+            string translated = TranslateOtherModuleId(module, id);
+            Write(translated);
+
+            return null;
         }
 
         #endregion
@@ -877,29 +867,29 @@ namespace CompillerServices.Backend.Translators
             }
         }
 
-        private string TranslateCall(IParseTree module, ITerminalNode function)
+        private string TranslateOtherModuleId(IParseTree module, ITerminalNode id)
         {
             if (module == null)
             {
-                return $"{function.GetText()}";
+                return $"{id.GetText()}";
             }
 
             string moduleName = module.GetText();
 
             if (!SystemModules.ContainsKey(module.GetText()))
             {
-                return $"{moduleName}::{function}";
+                return $"{moduleName}::{id}";
             }
 
-            string functionName = function.GetText();
+            string idName = id.GetText();
 
-            if (SystemFunctions.TryGetValue(function.GetText(), out string cppFunctionName))
+            if (SystemFunctions.TryGetValue(id.GetText(), out string cppFunctionName))
             {
                 return cppFunctionName;
             }
 
-            throw new CompillerException(_localizer["Unknown system routine '{0}'.", functionName], _moduleName,
-                function.Symbol.Line, function.Symbol.Column);
+            throw new CompillerException(_localizer["Unknown system routine '{0}'.", idName], _moduleName,
+                id.Symbol.Line, id.Symbol.Column);
         }
 
         private static string TranslateType(string slangType)

@@ -6,7 +6,7 @@ namespace CompillerServices.Frontend.NameTables
 {
     public class ModuleNameTable : NameTable<ModuleNameTableRow>
     {
-        public ModuleNameTableRow GetModuleRow(string moduleName)
+        public ModuleNameTableRow FindModule(string moduleName)
         {
             return this.FirstOrDefault(x => x.ModuleName == moduleName);
         }
@@ -31,7 +31,6 @@ namespace CompillerServices.Frontend.NameTables
         public ICollection<FunctionNameTableRow> Functions { get; } = new List<FunctionNameTableRow>();
         public ICollection<ProcedureNameTableRow> Procedures { get; } = new List<ProcedureNameTableRow>();
         public EntryPointNameTableRow EntryPoint { get; set; }
-        public ICollection<VariableNameTableRow> Variables { get; } = new List<VariableNameTableRow>();
 
         public bool IsImported(string moduleName)
         {
@@ -89,7 +88,7 @@ namespace CompillerServices.Frontend.NameTables
             return Functions.Any(x => x.Name == name) || Procedures.Any(x => x.Name == name);
         }
 
-        private IEnumerable<RoutineNameTableRow> FindRoutinesByName(string name)
+        public IEnumerable<RoutineNameTableRow> FindRoutinesByName(string name)
         {
             return Functions.Where(x => x.Name == name).Cast<RoutineNameTableRow>()
                 .Concat(Procedures.Where(x => x.Name == name));

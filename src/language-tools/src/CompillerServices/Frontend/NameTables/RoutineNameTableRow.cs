@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using CompillerServices.Frontend.NameTables.Types;
 
 namespace CompillerServices.Frontend.NameTables
 {
-    public class RoutineNameTableRow : NameTableRow
+    public abstract class RoutineNameTableRow : NameTableRow
     {
-        public RoutineNameTableRow(int line, int column, string accessModifier, string name,
+        protected RoutineNameTableRow(int line, int column, string accessModifier, string name,
             ModuleNameTableRow parentModule)
             : base(line, column)
         {
@@ -20,11 +21,19 @@ namespace CompillerServices.Frontend.NameTables
         public ModuleNameTableRow ParentModule { get; }
         public IList<ArgumentNameTableRow> Arguments { get; } = new List<ArgumentNameTableRow>();
 
-        public ICollection<VariableNameTableRow> Variables { get; } = new List<VariableNameTableRow>();
+        public ICollection<StatementVariableNameTableRow> StatementVariables { get; } = new List<StatementVariableNameTableRow>();
+
+        public abstract SlangType ToSlangType();
+
+        protected IList<RoutineTypeArg> GetRoutineTypeArgs()
+        {
+            return Arguments.Select(x => new RoutineTypeArg(x.PassModifier, x.Type)).ToList();
+        }
 
         public VariableNameTableRow FindVariable(string name)
         {
-            return Variables.FirstOrDefault(x => x.Name == name);
+            VariableNameTableRow variableRow = Arguments.FirstOrDefault(x => x.Name == name);
+            return variableRow ?? StatementVariables.FirstOrDefault(x => x.Name == name);
         }
 
         public bool ContainsVariable(string name)

@@ -16,5 +16,10 @@ namespace CompillerServices.Frontend.NameTables
         }
 
         public SlangType ReturningType { get; }
+
+        public override SlangType ToSlangType()
+        {
+            return new FunctionType(ReturningType, GetRoutineTypeArgs());
+        }
     }
 }

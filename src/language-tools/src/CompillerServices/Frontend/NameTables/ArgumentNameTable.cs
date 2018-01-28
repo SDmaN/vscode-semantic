@@ -6,22 +6,15 @@ namespace CompillerServices.Frontend.NameTables
     {
     }
 
-    public class ArgumentNameTableRow : NameTableRow
+    public class ArgumentNameTableRow : VariableNameTableRow
     {
         public ArgumentNameTableRow(int line, int column, string passModifier, SlangType type, string name,
             RoutineNameTableRow parent)
-            : base(line, column)
+            : base(line, column, type, name, parent)
         {
             PassModifier = passModifier;
-            Type = type;
-            Name = name;
-            Parent = parent;
         }
 
         public string PassModifier { get; }
-        public SlangType Type { get; }
-        public string Name { get; }
-
-        public RoutineNameTableRow Parent { get; }
     }
 }

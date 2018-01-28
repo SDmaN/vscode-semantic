@@ -59,7 +59,7 @@ return: 'return' (mathExp | boolOr)?;
 input: 'input' Id;
 output: 'output' (mathExp | boolOr);
 
-call: 'call' (Id '::')? Id RoutineLeftBracket callArgList RoutineRightBracket; // Вызов процедуры/функции
+call: 'call' id RoutineLeftBracket callArgList RoutineRightBracket; // Вызов процедуры/функции
 callArgList: (callArg (',' callArg)*) | /* нет аргументов */ ;
 callArg: mathExp | boolOr;
 
@@ -69,15 +69,16 @@ doWhileLoop: 'repeat' statementSequence 'while' '(' boolOr ')';
 
 mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpSub;
 mathTerm: mathFactor #MathTermEmpty | mathFactor '*' mathTerm #MathTermMul | mathFactor '/' mathTerm #MathTermDiv | mathFactor '%' mathTerm #MathTermMod;
-mathFactor : mathAtom #MathFactorEmpty | '(' mathExp ')' #MathFactorBrackets | '+' mathFactor #MathFactorUnaryPlus | '-' mathFactor #MathFactorUnaryMinus;
-mathAtom: call | arrayLength | arrayElement | IntValue | RealValue | Id;
+mathFactor : expAtom #MathFactorEmpty | '(' mathExp ')' #MathFactorBrackets | '+' mathFactor #MathFactorUnaryPlus | '-' mathFactor #MathFactorUnaryMinus;
 
 boolOr: boolAnd #BoolOrEmpty | boolAnd '||' boolOr #LogicOr;
 boolAnd: boolEquality #BoolAndEmpty | boolEquality '&&' boolAnd #LogicAnd;
 boolEquality: boolInequality #BoolEqualityEmpty | boolInequality '==' boolEquality #BoolEqual | mathExp '==' mathExp #MathEqual | boolInequality '!=' boolEquality #BoolNotEqual | mathExp '!=' mathExp #MathNotEqual;
 boolInequality: boolFactor #BoolInequalityEmpty | mathExp '>' mathExp #Bigger | mathExp '<' mathExp #Lesser | mathExp '>=' mathExp #BiggerOrEqual | mathExp '<=' mathExp #LesserOrEqual;
-boolFactor: boolAtom #BoolAtomEmpty | '!' boolAtom #Not | '(' boolOr ')' #BoolAtomBrackets | '!' '(' boolOr ')' #BoolAtomBracketsNot;
-boolAtom: call | arrayElement | BoolValue | Id;
+boolFactor: expAtom #BoolAtomEmpty | '!' expAtom #Not | '(' boolOr ')' #BoolAtomBrackets | '!' '(' boolOr ')' #BoolAtomBracketsNot;
+
+expAtom: call | arrayLength | arrayElement | id | IntValue | RealValue | BoolValue;
+id: (Id '::')? Id;
 
 /*
  * Lexer Rules
@@ -113,13 +114,13 @@ fragment PrivateModifier: 'private';
 
 Assign: '=';
 
-Id: [_a-zA-Z][_a-zA-Z0-9]*;
-
 IntValue: Digit+;
 RealValue: Digit*'.'?Digit+([eE][-+]?Digit+)?;
 fragment Digit: [0-9];
 
 BoolValue: 'true' | 'false';
+
+Id: [_a-zA-Z][_a-zA-Z0-9]*;
 
 fragment Symbol: [a-zA-Z];
 fragment Escape: [\t\r\n];

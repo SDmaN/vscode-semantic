@@ -509,9 +509,17 @@ namespace CompillerServices.Backend.Translators
 
         public override object VisitOutput(SlangParser.OutputContext context)
         {
-            Write("std::cout << ");
-            base.VisitOutput(context);
-            Write(" << std::endl");
+            Write("std::cout");
+
+            foreach (SlangParser.ExpContext exp in context.exp())
+            {
+                Write(" << ");
+                Visit(exp);
+                Write(" << ' '");
+            }
+
+            WriteLine(";");
+            Write("std::cout << std::endl");
 
             return null;
         }

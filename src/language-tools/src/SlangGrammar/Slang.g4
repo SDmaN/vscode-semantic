@@ -57,7 +57,7 @@ arrayAssign: arrayElement Assign mathExp | arrayElement Assign boolOr | arrayEle
 return: 'return' (mathExp | boolOr)?;
 
 input: 'input' Id;
-output: 'output' (mathExp | boolOr);
+output: 'output' exp (',' exp)*;
 
 call: 'call' id RoutineLeftBracket callArgList RoutineRightBracket; // Вызов процедуры/функции
 callArgList: (callArg (',' callArg)*) | /* нет аргументов */ ;
@@ -79,6 +79,8 @@ boolFactor: expAtom #BoolAtomEmpty | '!' expAtom #Not | '(' boolOr ')' #BoolAtom
 
 expAtom: call | arrayLength | arrayElement | id | IntValue | RealValue | BoolValue;
 id: (Id '::')? Id;
+
+exp: mathExp | boolOr;
 
 /*
  * Lexer Rules

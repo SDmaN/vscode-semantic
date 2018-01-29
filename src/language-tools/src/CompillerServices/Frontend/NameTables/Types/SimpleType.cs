@@ -1,4 +1,6 @@
-﻿namespace CompillerServices.Frontend.NameTables.Types
+﻿using System.Linq;
+
+namespace CompillerServices.Frontend.NameTables.Types
 {
     public sealed class SimpleType : SlangType
     {
@@ -41,6 +43,11 @@
         public override string ToString()
         {
             return TypeKeyword;
+        }
+
+        public static bool IsAssignableToSimple(params SlangType[] other)
+        {
+            return other.All(x => Real.IsAssignable(x) || Bool.IsAssignable(x));
         }
     }
 }

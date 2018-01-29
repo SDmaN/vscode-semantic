@@ -397,10 +397,28 @@ namespace CompillerServices.Frontend
 
             VariableNameTableRow variableRow = _currentRoutineRow.FindVariable(id.GetText());
 
-            if (!SimpleType.Real.IsAssignable(variableRow.Type) && !SimpleType.Bool.IsAssignable(variableRow.Type))
+            if (!SimpleType.IsAssignableToSimple(variableRow.Type))
             {
-                ThrowCompillerException(_localizer["Cannot input variable with type '{0}'.", variableRow.Type],
+                ThrowCompillerException(_localizer["Cannot input variable of type '{0}'.", variableRow.Type],
                     id.Symbol);
+            }
+
+            return null;
+        }
+
+        public override object VisitOutput(SlangParser.OutputContext context)
+        {
+            foreach (SlangParser.ExpContext exp in context.exp())
+            {
+                ExpressionResult result = (ExpressionResult) Visit(exp);
+
+                if (!SimpleType.IsAssignableToSimple(result.PossibleTypes))
+                {
+                    string expressionTypeText = GetExpressionResultTypeText(result);
+
+                    ThrowCompillerException(_localizer["Cannot output expression of type '{0}'.", expressionTypeText],
+                        exp.Start);
+                }
             }
 
             return null;

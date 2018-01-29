@@ -390,6 +390,22 @@ namespace CompillerServices.Frontend
             return new StatementResult(true);
         }
 
+        public override object VisitInput(SlangParser.InputContext context)
+        {
+            ITerminalNode id = context.Id();
+            ThrowIfVariableNotDeclared(id);
+
+            VariableNameTableRow variableRow = _currentRoutineRow.FindVariable(id.GetText());
+
+            if (!SimpleType.Real.IsAssignable(variableRow.Type) && !SimpleType.Bool.IsAssignable(variableRow.Type))
+            {
+                ThrowCompillerException(_localizer["Cannot input variable with type '{0}'.", variableRow.Type],
+                    id.Symbol);
+            }
+
+            return null;
+        }
+
         //public override object VisitCall(SlangParser.CallContext context)
         //{
         //    // Если есть модуль, то это другой модуль, иначе функция из текущего или переменная

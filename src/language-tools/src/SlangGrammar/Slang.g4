@@ -54,7 +54,7 @@ assign: singleAssign | arrayAssign;
 singleAssign: Id Assign mathExp | Id Assign boolOr | Id Assign assign;
 arrayAssign: arrayElement Assign mathExp | arrayElement Assign boolOr | arrayElement Assign assign;
 
-return: 'return' (mathExp | boolOr)?;
+return: 'return' (exp)?;
 
 input: 'input' Id;
 output: 'output' exp (',' exp)*;
@@ -64,7 +64,7 @@ callArgList: (callArg (',' callArg)*) | /* нет аргументов */ ;
 callArg: mathExp | boolOr;
 
 if: 'if' '(' boolOr ')' 'then' statementSequence End #IfSingle | 'if' '(' boolOr ')' 'then' statementSequence 'else' statementSequence End #IfElse;
-whileLoop: 'while' '(' boolOr ')' 'repeat' statementSequence End;
+whileLoop: 'while' '(' boolOr ')' 'do' statementSequence End;
 doWhileLoop: 'repeat' statementSequence 'while' '(' boolOr ')';
 
 mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpSub;

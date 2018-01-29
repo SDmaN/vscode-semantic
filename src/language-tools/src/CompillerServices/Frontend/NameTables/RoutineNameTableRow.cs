@@ -17,10 +17,8 @@ namespace CompillerServices.Frontend.NameTables
 
         public string AccessModifier { get; }
         public string Name { get; }
-
         public ModuleNameTableRow ParentModule { get; }
         public IList<ArgumentNameTableRow> Arguments { get; } = new List<ArgumentNameTableRow>();
-
         public ICollection<StatementVariableNameTableRow> StatementVariables { get; } = new List<StatementVariableNameTableRow>();
 
         public abstract SlangType ToSlangType();

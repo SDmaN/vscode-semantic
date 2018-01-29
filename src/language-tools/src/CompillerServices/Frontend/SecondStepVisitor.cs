@@ -93,7 +93,15 @@ namespace CompillerServices.Frontend
 
             _currentRoutineRow =
                 _currentModuleRow.FindFunctionByPosition(id.GetText(), id.Symbol.Line, id.Symbol.Column);
-            return base.VisitFuncDeclare(context);
+
+            StatementResult statementResult = (StatementResult) Visit(context.statementSequence());
+
+            if (!statementResult.ReturnsValue)
+            {
+                ThrowCompillerException(_localizer["Not all code path returns a value."], id.Symbol);
+            }
+
+            return null;
         }
 
         public override object VisitProcDeclare(SlangParser.ProcDeclareContext context)
@@ -109,6 +117,24 @@ namespace CompillerServices.Frontend
         {
             _currentRoutineRow = _currentModuleRow.EntryPoint;
             return base.VisitModuleEntry(context);
+        }
+
+        public override object VisitStatementSequence(SlangParser.StatementSequenceContext context)
+        {
+            bool returnsValue = false;
+
+            foreach (SlangParser.StatementContext statement in context.statement())
+            {
+                object result = Visit(statement);
+
+                if (!returnsValue && result != null && result is StatementResult statementResult &&
+                    statementResult.ReturnsValue)
+                {
+                    returnsValue = true;
+                }
+            }
+
+            return new StatementResult(returnsValue);
         }
 
         public override object VisitConstDeclare(SlangParser.ConstDeclareContext context)
@@ -127,12 +153,6 @@ namespace CompillerServices.Frontend
             SlangType constantType = (SlangType) Visit(context.simpleType());
 
             ParserRuleContext expressionContext = context.mathExp() ?? (ParserRuleContext) context.boolOr();
-
-            if (expressionContext == null)
-            {
-                return null;
-            }
-
             ExpressionResult expressionResult = (ExpressionResult) Visit(expressionContext);
 
             if (!expressionResult.IsAssignableToType(constantType))
@@ -336,6 +356,40 @@ namespace CompillerServices.Frontend
             return expressionResult;
         }
 
+        public override object VisitReturn(SlangParser.ReturnContext context)
+        {
+            // Для функций
+
+            if (_currentRoutineRow is FunctionNameTableRow functionRow)
+            {
+                if (context.exp() == null)
+                {
+                    ThrowCompillerException(_localizer["Missing expression in return operator."], context.Start);
+                }
+
+                ExpressionResult expressionResult = (ExpressionResult) Visit(context.exp());
+
+                if (!expressionResult.IsAssignableToType(functionRow.ReturningType))
+                {
+                    string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+
+                    ThrowCompillerException(
+                        _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
+                            functionRow.ReturningType], context.Start);
+                }
+
+                return new StatementResult(true);
+            }
+
+            // Для процедур
+            if (context.exp() != null)
+            {
+                ThrowCompillerException(_localizer["Only functions can return a value."], context.Start);
+            }
+
+            return new StatementResult(true);
+        }
+
         //public override object VisitCall(SlangParser.CallContext context)
         //{
         //    // Если есть модуль, то это другой модуль, иначе функция из текущего или переменная
@@ -434,6 +488,16 @@ namespace CompillerServices.Frontend
         //        context.callArg().Select(arg => (ExpressionResult) Visit(arg)).ToList();
         //    return argTypes;
         //}
+
+        public override object VisitIfElse(SlangParser.IfElseContext context)
+        {
+            Visit(context.boolOr());
+
+            StatementResult ifResult = (StatementResult) Visit(context.statementSequence(0));
+            StatementResult elseResult = (StatementResult) Visit(context.statementSequence(1));
+
+            return new StatementResult(ifResult.ReturnsValue && elseResult.ReturnsValue);
+        }
 
         public override object VisitMathExpSum(SlangParser.MathExpSumContext context)
         {

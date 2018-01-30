@@ -33,6 +33,7 @@ namespace CompillerServices.Frontend
         private readonly IStringLocalizer<SecondStepVisitor> _localizer;
         private readonly INameTableContainer _nameTableContainer;
         private RoutineNameTableRow _currentRoutineRow;
+        private StatementVariableNameTable _currentStatementVariables = new StatementVariableNameTable();
 
         public SecondStepVisitor(IStringLocalizer<SecondStepVisitor> localizer, INameTableContainer nameTableContainer,
             SlangModule slangModule)
@@ -121,6 +122,9 @@ namespace CompillerServices.Frontend
 
         public override object VisitStatementSequence(SlangParser.StatementSequenceContext context)
         {
+            StatementVariableNameTable higherLevelVariables = _currentStatementVariables;
+            _currentStatementVariables = new StatementVariableNameTable(higherLevelVariables);
+
             bool returnsValue = false;
 
             foreach (SlangParser.StatementContext statement in context.statement())
@@ -134,6 +138,8 @@ namespace CompillerServices.Frontend
                 }
             }
 
+            _currentStatementVariables = higherLevelVariables;
+
             return new StatementResult(returnsValue);
         }
 
@@ -142,7 +148,7 @@ namespace CompillerServices.Frontend
             ITerminalNode id = context.Id();
             ThrowIfCorrespondingToKeyword(id);
 
-            if (_currentRoutineRow.ContainsVariable(id.GetText()))
+            if (_currentRoutineRow.ContainsArgument(id.GetText()))
             {
                 ThrowCompillerException(
                     _localizer[
@@ -166,7 +172,7 @@ namespace CompillerServices.Frontend
 
             StatementVariableNameTableRow constantRow = new StatementVariableNameTableRow(id.Symbol.Line,
                 id.Symbol.Column, constantType, id.GetText(), true, _currentRoutineRow);
-            _currentRoutineRow.StatementVariables.Add(constantRow);
+            _currentStatementVariables.Add(constantRow);
             _nameTableContainer.StatementVariableNameTable.Add(constantRow);
 
             return null;
@@ -177,7 +183,7 @@ namespace CompillerServices.Frontend
             ITerminalNode id = context.Id();
             ThrowIfCorrespondingToKeyword(id);
 
-            if (_currentRoutineRow.ContainsVariable(id.GetText()))
+            if (_currentRoutineRow.ContainsArgument(id.GetText()))
             {
                 ThrowCompillerException(
                     _localizer[
@@ -205,7 +211,7 @@ namespace CompillerServices.Frontend
 
             StatementVariableNameTableRow variableRow = new StatementVariableNameTableRow(id.Symbol.Line,
                 id.Symbol.Column, variableType, id.GetText(), false, _currentRoutineRow);
-            _currentRoutineRow.StatementVariables.Add(variableRow);
+            _currentStatementVariables.Add(variableRow);
             _nameTableContainer.StatementVariableNameTable.Add(variableRow);
 
             return null;
@@ -216,7 +222,7 @@ namespace CompillerServices.Frontend
             ITerminalNode id = context.Id();
             ThrowIfCorrespondingToKeyword(id);
 
-            if (_currentRoutineRow.ContainsVariable(id.GetText()))
+            if (_currentRoutineRow.ContainsArgument(id.GetText()))
             {
                 ThrowCompillerException(
                     _localizer[
@@ -227,7 +233,7 @@ namespace CompillerServices.Frontend
             ArrayType arrayType = (ArrayType) Visit(context.arrayDeclareType());
             StatementVariableNameTableRow variableRow = new StatementVariableNameTableRow(id.Symbol.Line,
                 id.Symbol.Column, arrayType, id.GetText(), false, _currentRoutineRow);
-            _currentRoutineRow.StatementVariables.Add(variableRow);
+            _currentStatementVariables.Add(variableRow);
             _nameTableContainer.StatementVariableNameTable.Add(variableRow);
 
             return null;
@@ -262,8 +268,7 @@ namespace CompillerServices.Frontend
         {
             ITerminalNode id = context.Id();
             ThrowIfVariableNotDeclared(id);
-
-            VariableNameTableRow arrayVariableRow = _currentRoutineRow.FindVariable(id.GetText());
+            VariableNameTableRow arrayVariableRow = FindVariable(id);
 
             if (!(arrayVariableRow.Type is ArrayType))
             {
@@ -291,8 +296,7 @@ namespace CompillerServices.Frontend
         {
             ITerminalNode id = context.Id();
             ThrowIfVariableNotDeclared(id);
-
-            VariableNameTableRow arrayVariableRow = _currentRoutineRow.FindVariable(id.GetText());
+            VariableNameTableRow arrayVariableRow = FindVariable(id);
 
             if (!(arrayVariableRow.Type is ArrayType))
             {
@@ -317,23 +321,23 @@ namespace CompillerServices.Frontend
             ITerminalNode id = context.Id();
             ThrowIfVariableNotDeclared(id);
 
-            VariableNameTableRow variableRow = _currentRoutineRow.FindVariable(id.GetText());
+            StatementVariableNameTableRow statementVariable = _currentStatementVariables.FindVariable(id.GetText());
 
-            if (variableRow is StatementVariableNameTableRow statementVariable && statementVariable.IsConstant)
+            if (statementVariable.IsConstant)
             {
-                ThrowCompillerException(_localizer["Impossible to assign a value to constant '{0}'.", variableRow.Name],
+                ThrowCompillerException(_localizer["Impossible to assign a value to constant '{0}'.", statementVariable.Name],
                     id.Symbol);
             }
 
             ExpressionResult expressionResult = (ExpressionResult) base.VisitSingleAssign(context);
 
-            if (!expressionResult.IsAssignableToType(variableRow.Type))
+            if (!expressionResult.IsAssignableToType(statementVariable.Type))
             {
                 string expressionTypeText = GetExpressionResultTypeText(expressionResult);
 
                 ThrowCompillerException(
                     _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
-                        variableRow.Type], context.Start);
+                        statementVariable.Type], context.Start);
             }
 
             return expressionResult;
@@ -359,7 +363,6 @@ namespace CompillerServices.Frontend
         public override object VisitReturn(SlangParser.ReturnContext context)
         {
             // Для функций
-
             if (_currentRoutineRow is FunctionNameTableRow functionRow)
             {
                 if (context.exp() == null)
@@ -394,8 +397,7 @@ namespace CompillerServices.Frontend
         {
             ITerminalNode id = context.Id();
             ThrowIfVariableNotDeclared(id);
-
-            VariableNameTableRow variableRow = _currentRoutineRow.FindVariable(id.GetText());
+            VariableNameTableRow variableRow = FindVariable(id);
 
             if (!SimpleType.IsAssignableToSimple(variableRow.Type))
             {
@@ -783,7 +785,7 @@ namespace CompillerServices.Frontend
             else
             {
                 ITerminalNode id = ids[0];
-                VariableNameTableRow variableRow = _currentRoutineRow.FindVariable(id.GetText());
+                VariableNameTableRow variableRow = FindVariable(id);
 
                 if (variableRow != null)
                 {
@@ -826,12 +828,20 @@ namespace CompillerServices.Frontend
         {
             string variableName = variableId.GetText();
 
-            if (!_currentRoutineRow.ContainsVariable(variableName))
+            if (!_currentStatementVariables.ContainsVariable(variableName) &&
+                !_currentRoutineRow.ContainsArgument(variableName))
             {
                 ThrowCompillerException(
                     _localizer["Variable '{0}' is not declared in this context.", variableName],
                     variableId.Symbol);
             }
+        }
+
+        private VariableNameTableRow FindVariable(IParseTree variableId)
+        {
+            string name = variableId.GetText();
+            return _currentStatementVariables.FindVariable(name) ??
+                   (VariableNameTableRow) _currentRoutineRow.FindArgument(name);
         }
 
         private static bool CanMathBinaryOperatorBeApplied(ExpressionResult left, ExpressionResult right)
@@ -859,9 +869,6 @@ namespace CompillerServices.Frontend
             return SimpleType.Bool;
         }
 
-        /// <summary>
-        ///     По-умолчанию - проверкая для математических выражений
-        /// </summary>
         private object VisitBinaryExpression(ParserRuleContext context,
             Func<ExpressionResult, ExpressionResult, bool> applyChecker,
             Func<ExpressionResult, ExpressionResult, SlangType> resultTypeCalculator)
@@ -884,7 +891,7 @@ namespace CompillerServices.Frontend
             return new ExpressionResult(ExpressionType.Expression, type);
         }
 
-        private string GetExpressionResultTypeText(ExpressionResult result)
+        private static string GetExpressionResultTypeText(ExpressionResult result)
         {
             switch (result.ExpressionType)
             {

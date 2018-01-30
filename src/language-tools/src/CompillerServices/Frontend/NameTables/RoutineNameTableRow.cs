@@ -19,7 +19,6 @@ namespace CompillerServices.Frontend.NameTables
         public string Name { get; }
         public ModuleNameTableRow ParentModule { get; }
         public IList<ArgumentNameTableRow> Arguments { get; } = new List<ArgumentNameTableRow>();
-        public ICollection<StatementVariableNameTableRow> StatementVariables { get; } = new List<StatementVariableNameTableRow>();
 
         public abstract SlangType ToSlangType();
 
@@ -28,15 +27,14 @@ namespace CompillerServices.Frontend.NameTables
             return Arguments.Select(x => new RoutineTypeArg(x.PassModifier, x.Type)).ToList();
         }
 
-        public VariableNameTableRow FindVariable(string name)
+        public ArgumentNameTableRow FindArgument(string name)
         {
-            VariableNameTableRow variableRow = Arguments.FirstOrDefault(x => x.Name == name);
-            return variableRow ?? StatementVariables.FirstOrDefault(x => x.Name == name);
+            return Arguments.FirstOrDefault(x => x.Name == name);
         }
 
-        public bool ContainsVariable(string name)
+        public bool ContainsArgument(string name)
         {
-            return FindVariable(name) != null;
+            return FindArgument(name) != null;
         }
     }
 }

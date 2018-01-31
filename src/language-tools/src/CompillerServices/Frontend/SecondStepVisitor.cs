@@ -12,7 +12,7 @@ using SlangGrammar;
 
 namespace CompillerServices.Frontend
 {
-    public class SecondStepVisitor : BaseStepVisitor
+    internal class SecondStepVisitor : BaseStepVisitor
     {
         private static readonly IEnumerable<string> Keywords = new HashSet<string>
         {

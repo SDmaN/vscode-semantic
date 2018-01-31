@@ -10,7 +10,7 @@ using SlangGrammar.Factories;
 
 namespace CompillerServices.Frontend
 {
-    public class FrontendCompiller : IFrontendCompiller
+    internal class FrontendCompiller : IFrontendCompiller
     {
         private readonly ILexerFactory _lexerFactory;
         private readonly IStringLocalizer<FrontendCompiller> _localizer;

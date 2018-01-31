@@ -2,7 +2,7 @@
 
 namespace CompillerServices.Logging
 {
-    public class CompillerLoggerProvider : ILoggerProvider
+    internal class CompillerLoggerProvider : ILoggerProvider
     {
         public void Dispose()
         {

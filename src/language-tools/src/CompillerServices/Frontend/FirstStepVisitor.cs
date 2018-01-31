@@ -11,7 +11,7 @@ using SlangGrammar;
 
 namespace CompillerServices.Frontend
 {
-    public class FirstStepVisitor : BaseStepVisitor
+    internal class FirstStepVisitor : BaseStepVisitor
     {
         private readonly IStringLocalizer<FirstStepVisitor> _localizer;
         private readonly INameTableContainer _nameTableContainer;

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CompillerServices.Logging
 {
-    public class CompillerLogger : ILogger
+    internal class CompillerLogger : ILogger
     {
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception,
             Func<TState, Exception, string> formatter)

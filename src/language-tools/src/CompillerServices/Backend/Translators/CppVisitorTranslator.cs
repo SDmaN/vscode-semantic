@@ -182,7 +182,7 @@ namespace CompillerServices.Backend.Translators
 
             string modifier = context.ArgPassModifier().GetText();
 
-            if (modifier == "ref")
+            if (modifier == Constants.ArgModifiers.Ref)
             {
                 Write(" &");
             }
@@ -313,7 +313,7 @@ namespace CompillerServices.Backend.Translators
 
             string modifier = context.ArgPassModifier().GetText();
 
-            if (modifier == "ref")
+            if (modifier == Constants.ArgModifiers.Ref)
             {
                 Write("&");
             }
@@ -529,7 +529,7 @@ namespace CompillerServices.Backend.Translators
             Visit(context.id());
 
             Write("(");
-            base.VisitCall(context);
+            Visit(context.callArgList());
             Write(")");
 
             return null;

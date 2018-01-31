@@ -4,9 +4,9 @@ namespace CompillerServices.Frontend.NameTables.Types
 {
     public sealed class SimpleType : SlangType
     {
-        public static readonly SimpleType Bool = new SimpleType(Constants.Keywords.Bool);
-        public static readonly SimpleType Int = new SimpleType(Constants.Keywords.Int);
-        public static readonly SimpleType Real = new SimpleType(Constants.Keywords.Real);
+        public static readonly SimpleType Bool = new SimpleType(Constants.TypeKeywords.Bool);
+        public static readonly SimpleType Int = new SimpleType(Constants.TypeKeywords.Int);
+        public static readonly SimpleType Real = new SimpleType(Constants.TypeKeywords.Real);
 
         public SimpleType(string typeKeyword)
         {
@@ -27,7 +27,7 @@ namespace CompillerServices.Frontend.NameTables.Types
                 return false;
             }
 
-            return TypeKeyword == Constants.Keywords.Real && otherSimple.TypeKeyword == Constants.Keywords.Int;
+            return TypeKeyword == Constants.TypeKeywords.Real && otherSimple.TypeKeyword == Constants.TypeKeywords.Int;
         }
 
         public override bool Equals(SlangType other)

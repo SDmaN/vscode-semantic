@@ -61,7 +61,7 @@ output: 'output' exp (',' exp)*;
 
 call: 'call' id RoutineLeftBracket callArgList RoutineRightBracket; // Вызов процедуры/функции
 callArgList: (callArg (',' callArg)*) | /* нет аргументов */ ;
-callArg: mathExp | boolOr;
+callArg: exp;
 
 if: 'if' '(' boolOr ')' 'then' statementSequence End #IfSingle | 'if' '(' boolOr ')' 'then' statementSequence 'else' statementSequence End #IfElse;
 whileLoop: 'while' '(' boolOr ')' 'do' statementSequence End;

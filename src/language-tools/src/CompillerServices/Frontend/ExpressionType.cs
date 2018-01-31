@@ -1,6 +1,6 @@
 ﻿namespace CompillerServices.Frontend
 {
-    internal enum ExpressionType
+    public enum ExpressionType
     {
         Call,
         Variable,

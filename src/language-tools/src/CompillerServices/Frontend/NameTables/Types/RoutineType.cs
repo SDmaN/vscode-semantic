@@ -12,10 +12,10 @@ namespace CompillerServices.Frontend.NameTables.Types
 
         public IList<RoutineTypeArg> Args { get; }
 
-        public bool IsSuitable(IList<SlangType> argTypes)
+        public bool HasAssignableArgTypes(IList<SlangType[]> types)
         {
             int index = 0;
-            return Args.Count == argTypes.Count && Args.All(x => x.Type.IsAssignable(argTypes[index++]));
+            return Args.Count == types.Count && Args.All(x => types[index++].Any(y => x.Type.IsAssignable(y)));
         }
     }
 }

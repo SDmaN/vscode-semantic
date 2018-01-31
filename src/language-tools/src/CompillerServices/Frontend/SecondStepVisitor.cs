@@ -163,7 +163,7 @@ namespace CompillerServices.Frontend
 
             if (!expressionResult.IsAssignableToType(constantType))
             {
-                string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+                string expressionTypeText = expressionResult.GetTypeText();
 
                 ThrowCompillerException(
                     _localizer["Cannot convert type '{0}' to constant type '{1}'.", expressionTypeText,
@@ -201,7 +201,7 @@ namespace CompillerServices.Frontend
 
                 if (!expressionResult.IsAssignableToType(variableType))
                 {
-                    string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+                    string expressionTypeText = expressionResult.GetTypeText();
 
                     ThrowCompillerException(
                         _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
@@ -256,7 +256,7 @@ namespace CompillerServices.Frontend
 
             if (!expressionResult.IsAssignableToType(SimpleType.Int))
             {
-                string resultText = GetExpressionResultTypeText(expressionResult);
+                string resultText = expressionResult.GetTypeText();
                 ThrowCompillerException(
                     _localizer["Cannot convert type '{0}' to type '{1}'.", resultText, SimpleType.Int], context.Start);
             }
@@ -333,7 +333,7 @@ namespace CompillerServices.Frontend
 
             if (!expressionResult.IsAssignableToType(statementVariable.Type))
             {
-                string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+                string expressionTypeText = expressionResult.GetTypeText();
 
                 ThrowCompillerException(
                     _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
@@ -350,7 +350,7 @@ namespace CompillerServices.Frontend
 
             if (!expressionResult.IsAssignableToType(elementType))
             {
-                string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+                string expressionTypeText = expressionResult.GetTypeText();
 
                 ThrowCompillerException(
                     _localizer["Cannot convert type '{0}' to array element type '{1}'.", expressionTypeText,
@@ -374,7 +374,7 @@ namespace CompillerServices.Frontend
 
                 if (!expressionResult.IsAssignableToType(functionRow.ReturningType))
                 {
-                    string expressionTypeText = GetExpressionResultTypeText(expressionResult);
+                    string expressionTypeText = expressionResult.GetTypeText();
 
                     ThrowCompillerException(
                         _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
@@ -416,7 +416,7 @@ namespace CompillerServices.Frontend
 
                 if (!SimpleType.IsAssignableToSimple(result.PossibleTypes))
                 {
-                    string expressionTypeText = GetExpressionResultTypeText(result);
+                    string expressionTypeText = result.GetTypeText();
 
                     ThrowCompillerException(_localizer["Cannot output expression of type '{0}'.", expressionTypeText],
                         exp.Start);
@@ -426,104 +426,116 @@ namespace CompillerServices.Frontend
             return null;
         }
 
-        //public override object VisitCall(SlangParser.CallContext context)
-        //{
-        //    // Если есть модуль, то это другой модуль, иначе функция из текущего или переменная
-        //    if (context.Id().Length > 1)
-        //    {
-        //        ITerminalNode moduleId = context.Id(0);
+        public override object VisitCall(SlangParser.CallContext context)
+        {
+            ExpressionResult expressionResult = (ExpressionResult) Visit(context.id());
+            IList<ExpressionResult> callArgResults = (IList<ExpressionResult>) Visit(context.callArgList());
 
-        //        ModuleNameTableRow moduleRow = _nameTableContainer.FindModule(moduleId.GetText());
+            if (expressionResult.ExpressionType == ExpressionType.Variable)
+            {
+                SlangType variableType = expressionResult.PossibleTypes.First();
 
-        //        if (moduleRow == null)
-        //        {
-        //            ThrowCompillerException(string.Format(Resources.Resources.ModuleIsNotDeclared, moduleId.GetText()),
-        //                moduleId.Symbol);
-        //            return null;
-        //        }
+                if (!(variableType is RoutineType))
+                {
+                    ThrowCompillerException(_localizer["'{0}' is not a function or procedure type.", variableType],
+                        context.id().start);
+                    return null;
+                }
 
-        //        if (!_currentModuleRow.IsImported(moduleId.GetText()))
-        //        {
-        //            ThrowCompillerException(string.Format(Resources.Resources.ModuleIsNotImported, moduleId.GetText()),
-        //                moduleId.Symbol);
-        //        }
+                RoutineType routineType = (RoutineType) variableType;
 
-        //        ITerminalNode functionId = context.Id(1);
-        //        IList<ExpressionResult> callArgResults = (IList<ExpressionResult>) Visit(context.callArgList());
-        //        RoutineNameTableRow routineRow = moduleRow.FindSuitableRoutine(functionId.GetText(),
-        //            callArgResults.Select(x => x.SlangType).ToList());
+                if (routineType.Args.Count != callArgResults.Count)
+                {
+                    ThrowCompillerException(
+                        _localizer["Functor '{0}' takes {1} arguments, not {2}.", context.id().GetText(),
+                            routineType.Args.Count, callArgResults.Count], context.id().Start);
+                    return null;
+                }
 
-        //        switch (routineRow)
-        //        {
-        //            case null:
-        //                ThrowCompillerException(
-        //                    string.Format(Resources.Resources.ModuleDoesNotContainsRoutine, moduleId.GetText(),
-        //                        functionId.GetText()), functionId.Symbol);
-        //                break;
+                for (int i = 0; i < routineType.Args.Count; i++)
+                {
+                    RoutineTypeArg routineArg = routineType.Args[i];
+                    ExpressionResult callArgResult = callArgResults[i];
 
-        //            case FunctionNameTableRow functionRow:
-        //                return functionRow.ReturningType;
+                    if (!callArgResult.PossibleTypes.Any(x => routineArg.Type.IsAssignable(x)))
+                    {
+                        ThrowCompillerException(
+                            _localizer["Cannot convert type '{0}' to type '{1}'.", callArgResults[i].GetTypeText(),
+                                routineArg.Type], context.callArgList().callArg(i).Start);
+                    }
 
-        //            default:
-        //                return null;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        ITerminalNode functorId = context.Id(0);
-        //        IList<SlangType> callArgTypes = (IList<SlangType>) Visit(context.callArgList());
-        //        RoutineNameTableRow routineRow =
-        //            _currentModuleRow.FindSuitableRoutine(functorId.GetText(), callArgTypes);
+                    if (routineArg.Modifier == Constants.ArgModifiers.Ref &&
+                        callArgResult.ExpressionType != ExpressionType.Variable)
+                    {
+                        ThrowCompillerException(_localizer["Only variable or routines can be passed by reference."],
+                            context.callArgList().callArg(i).Start);
+                    }
+                }
 
-        //        if (routineRow != null)
-        //        {
-        //            if (routineRow is FunctionNameTableRow functionRow)
-        //            {
-        //                return functionRow.ReturningType;
-        //            }
+                return routineType is FunctionType functionType ? functionType.ReturningType : null;
+            }
 
-        //            return null;
-        //        }
+            if (expressionResult.ExpressionType == ExpressionType.Routine)
+            {
+                RoutineType[] possibleTypes = expressionResult.PossibleTypes.Cast<RoutineType>().ToArray();
+                RoutineType[] suitable = possibleTypes.Where(x => x.Args.Count == callArgResults.Count).ToArray();
 
-        //        if (_currentModuleRow.ContainsRoutine(functorId.GetText()))
-        //        {
-        //            ThrowCompillerException(
-        //                string.Format(Resources.Resources.ModuleDoesNotContainsRoutine, _slangModule.ModuleName,
-        //                    functorId.GetText()), functorId.Symbol);
-        //        }
+                if (suitable.Length == 0)
+                {
+                    if (possibleTypes.Length == 1)
+                    {
+                        ThrowCompillerException(
+                            _localizer["'{0}' takes {1} arguemnts", context.id().GetText(),
+                                possibleTypes.First().Args.Count], context.id().Start);
+                    }
+                    else
+                    {
+                        ThrowCompillerException(
+                            _localizer["No overloads of '{0}' that takes {1} arguments found.", context.id().GetText(),
+                                callArgResults.Count], context.id().start);
+                    }
 
-        //        ThrowIfNotDeclared(functorId);
-        //        VariableNameTableRow functorRow = _currentRoutineRow.FindVariable(functorId.GetText());
+                    return null;
+                }
 
-        //        if (!(functorRow.Type is RoutineType routineType))
-        //        {
-        //            ThrowCompillerException(
-        //                string.Format(Resources.Resources.VariableIsNotFunctor, functorId.GetText()), functorId.Symbol);
-        //            return null;
-        //        }
+                RoutineType chosen = suitable.FirstOrDefault(x =>
+                    x.HasAssignableArgTypes(callArgResults.Select(y => y.PossibleTypes).ToList()));
 
-        //        if (!routineType.IsSuitable(callArgTypes))
-        //        {
-        //            ThrowCompillerException(
-        //                string.Format(Resources.Resources.RoutineDoesNotTakesArgs, functorId.GetText()),
-        //                functorId.Symbol);
-        //        }
+                if (chosen == null)
+                {
+                    ThrowCompillerException(
+                        suitable.Length == 1
+                            ? _localizer["'{0}' does not take specified arguments.", context.id().GetText()]
+                            : _localizer["No overloads '{0}' takes specified arguments.", context.id().GetText()],
+                        context.id().Start);
 
-        //        if (routineType is FunctionType functionType)
-        //        {
-        //            return functionType.ReturningType;
-        //        }
-        //    }
+                    return null;
+                }
 
-        //    return null;
-        //}
+                for (int i = 0; i < chosen.Args.Count; i++)
+                {
+                    RoutineTypeArg routineArg = chosen.Args[i];
+                    ExpressionResult callArgResult = callArgResults[i];
 
-        //public override object VisitCallArgList(SlangParser.CallArgListContext context)
-        //{
-        //    IList<ExpressionResult> argTypes =
-        //        context.callArg().Select(arg => (ExpressionResult) Visit(arg)).ToList();
-        //    return argTypes;
-        //}
+                    if (routineArg.Modifier == Constants.ArgModifiers.Ref &&
+                        callArgResult.ExpressionType != ExpressionType.Variable)
+                    {
+                        ThrowCompillerException(_localizer["Only variable or routines can be passed by reference."],
+                            context.callArgList().callArg(i).Start);
+                    }
+                }
+
+                SlangType resultType = chosen is FunctionType f ? f.ReturningType : null;
+                return resultType;
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(expressionResult.ExpressionType));
+        }
+
+        public override object VisitCallArgList(SlangParser.CallArgListContext context)
+        {
+            return context.callArg().Select(arg => (ExpressionResult) Visit(arg)).ToList();
+        }
 
         public override object VisitIfElse(SlangParser.IfElseContext context)
         {
@@ -770,14 +782,23 @@ namespace CompillerServices.Frontend
                 }
 
                 ITerminalNode id = ids[1];
-                IEnumerable<RoutineNameTableRow> routineRows = moduleRow.FindRoutinesByName(id.GetText());
-                SlangType[] routineTypes = routineRows.Select(x => x.ToSlangType()).ToArray();
+                RoutineNameTableRow[] routineRows = moduleRow.FindRoutinesByName(id.GetText()).ToArray();
 
-                if (routineTypes == null || routineTypes.Length == 0)
+                if (routineRows == null || routineRows.Length == 0)
                 {
                     ThrowCompillerException(
                         _localizer["Function or procedure '{0}' is not declared in module '{1}'.", id.GetText(),
                             moduleId.GetText()], id.Symbol);
+                }
+
+                SlangType[] routineTypes = routineRows.Where(x => x.AccessModifier == Constants.AccessModifiers.Public)
+                    .Select(x => x.ToSlangType()).ToArray();
+
+                if (routineTypes.Length == 0)
+                {
+                    ThrowCompillerException(
+                        _localizer["'{0}' has '{1}' access modifier.", context.GetText(),
+                            Constants.AccessModifiers.Private], id.Symbol);
                 }
 
                 return new ExpressionResult(ExpressionType.Routine, routineTypes);
@@ -879,8 +900,8 @@ namespace CompillerServices.Frontend
             if (!applyChecker(leftResult, rightResult))
             {
                 string @operator = context.GetChild(1).GetText();
-                string leftType = GetExpressionResultTypeText(leftResult);
-                string rightType = GetExpressionResultTypeText(rightResult);
+                string leftType = leftResult.GetTypeText();
+                string rightType = rightResult.GetTypeText();
 
                 ThrowCompillerException(
                     _localizer["Operator '{0}' can't be applied to operands of type '{1}' and '{2}'.", @operator,
@@ -889,29 +910,6 @@ namespace CompillerServices.Frontend
 
             SlangType type = resultTypeCalculator(leftResult, rightResult);
             return new ExpressionResult(ExpressionType.Expression, type);
-        }
-
-        private static string GetExpressionResultTypeText(ExpressionResult result)
-        {
-            switch (result.ExpressionType)
-            {
-                case ExpressionType.Routine:
-                {
-                    StringBuilder builder = new StringBuilder();
-                    builder.Append(result.PossibleTypes[0]);
-
-                    for (int i = 1; i < result.PossibleTypes.Length; i++)
-                    {
-                        builder.Append("; ");
-                        builder.Append(result.PossibleTypes[i]);
-                    }
-
-                    return builder.ToString();
-                }
-
-                default:
-                    return result.PossibleTypes.FirstOrDefault().ToString();
-            }
         }
 
         #endregion

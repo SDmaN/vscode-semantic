@@ -59,10 +59,11 @@ namespace CompillerServices.Frontend
             base.VisitModule(context);
             return null;
         }
+        
 
         public override object VisitModuleImports(SlangParser.ModuleImportsContext context)
         {
-            foreach (ITerminalNode module in context.Id())
+            foreach (ITerminalNode module in context.moduleImport().Select(x => x.Id()))
             {
                 _moduleRow.ImportingModules.Add(module.GetText());
             }

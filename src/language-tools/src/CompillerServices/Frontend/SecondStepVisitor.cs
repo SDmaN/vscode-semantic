@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using CompillerServices.Frontend.NameTables;
@@ -48,7 +47,7 @@ namespace CompillerServices.Frontend
         {
             ICollection<string> alreadyImported = new HashSet<string>();
 
-            foreach (ITerminalNode importingModule in context.Id())
+            foreach (ITerminalNode importingModule in context.moduleImport().Select(x => x.Id()))
             {
                 ThrowIfCorrespondingToKeyword(importingModule);
 
@@ -325,7 +324,8 @@ namespace CompillerServices.Frontend
 
             if (statementVariable.IsConstant)
             {
-                ThrowCompillerException(_localizer["Impossible to assign a value to constant '{0}'.", statementVariable.Name],
+                ThrowCompillerException(
+                    _localizer["Impossible to assign a value to constant '{0}'.", statementVariable.Name],
                     id.Symbol);
             }
 
@@ -408,18 +408,19 @@ namespace CompillerServices.Frontend
             return null;
         }
 
-        public override object VisitOutput(SlangParser.OutputContext context)
+        public override object VisitOutputOperand(SlangParser.OutputOperandContext context)
         {
-            foreach (SlangParser.ExpContext exp in context.exp())
+            if (context.exp() != null)
             {
-                ExpressionResult result = (ExpressionResult) Visit(exp);
+                ExpressionResult result = (ExpressionResult) Visit(context.exp());
 
                 if (!SimpleType.IsAssignableToSimple(result.PossibleTypes))
                 {
                     string expressionTypeText = result.GetTypeText();
 
-                    ThrowCompillerException(_localizer["Cannot output expression of type '{0}'.", expressionTypeText],
-                        exp.Start);
+                    ThrowCompillerException(
+                        _localizer["Cannot output expression of type '{0}'.", expressionTypeText],
+                        context.exp().Start);
                 }
             }
 

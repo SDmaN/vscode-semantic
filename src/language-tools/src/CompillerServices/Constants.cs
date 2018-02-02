@@ -17,6 +17,7 @@ namespace CompillerServices
 
         public const string CppOutput = "bin";
         public static readonly string CppCompillerPath;
+        public static readonly string SystemModulesPath;
 
         public static readonly IEnumerable<string> WindowsNeededLibraries = new List<string>
         {
@@ -34,7 +35,10 @@ namespace CompillerServices
 #else
                 CppCompillerPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mingw/mingw32/bin");
 #endif
+                SystemModulesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SystemModules");
             }
+
+
         }
 
         public static class TypeKeywords

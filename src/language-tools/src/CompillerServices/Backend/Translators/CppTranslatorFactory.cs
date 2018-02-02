@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using CompillerServices.IO;
 using Microsoft.Extensions.Localization;
 
 namespace CompillerServices.Backend.Translators
@@ -12,7 +13,7 @@ namespace CompillerServices.Backend.Translators
             _translatorLocalizer = translatorLocalizer;
         }
 
-        public ITranslator Create(FileInfo moduleFile, DirectoryInfo outputDirectory)
+        public ITranslator Create(FileInfo moduleFile, DirectoryInfo outputDirectory, SourceContainer sourceContainer)
         {
             if (!outputDirectory.Exists)
             {
@@ -23,6 +24,7 @@ namespace CompillerServices.Backend.Translators
 
             string headerFullName =
                 Path.Combine(outputDirectory.FullName, $"{nameWithoutExtension}{Constants.CppHeaderExtension}");
+
             string sourceFullName =
                 Path.Combine(outputDirectory.FullName, $"{nameWithoutExtension}{Constants.CppSourceExtension}");
 
@@ -30,8 +32,8 @@ namespace CompillerServices.Backend.Translators
             FileStream sourceFileStream = File.Open(sourceFullName, FileMode.Create, FileAccess.Write);
 
             return new CppVisitorTranslator(_translatorLocalizer,
-                moduleFile.GetShortNameWithoutExtension() + Constants.CppHeaderExtension, new StreamWriter(headerFileStream),
-                new StreamWriter(sourceFileStream));
+                moduleFile.GetShortNameWithoutExtension() + Constants.CppHeaderExtension,
+                new StreamWriter(headerFileStream), new StreamWriter(sourceFileStream), sourceContainer);
         }
     }
 }

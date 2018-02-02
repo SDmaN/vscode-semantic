@@ -5,127 +5,433 @@
  */
 
 /* Типы */
-type: scalarType | arrayType;
-scalarType: simpleType | routineType;
+type
+	: scalarType
+	| arrayType
+	;
 
-simpleType: SimpleType;
+scalarType
+	: simpleType
+	| routineType
+	;
 
-routineType: funcType | procType;
-funcType: Func routineArgList ':' type;
-procType: Proc routineArgList;
-routineArgList: RoutineLeftBracket (routineArg (',' routineArg)* | /* Нет аргументов */ ) RoutineRightBracket;
-routineArg: ArgPassModifier type;
+simpleType
+	: SimpleType
+	;
 
-arrayType: Array (arrayDimention)+ scalarType;
-arrayDimention: ArrayLeftBracket ArrayRightBracket;
+routineType
+	: funcType
+	| procType
+	;
+
+funcType
+	: Func routineArgList ':' type
+	;
+
+procType
+	: Proc routineArgList
+	;
+
+routineArgList
+	: RoutineLeftBracket (routineArg (',' routineArg)* | /* Нет аргументов */ ) RoutineRightBracket
+	;
+
+routineArg
+	: ArgPassModifier type
+	;
+
+arrayType
+	: Array (arrayDimention)+ scalarType
+	;
+
+arrayDimention
+	: ArrayLeftBracket ArrayRightBracket
+	;
 
 /* Модуль */
-start: moduleImports module; /* СТАРТОВЫЙ НЕТЕРМИНАЛ */
+start /* СТАРТОВЫЙ НЕТЕРМИНАЛ */
+	: moduleImports module
+	;
 
-moduleImports: (Import Id)*;
+moduleImports
+	: (moduleImport | raw)*
+	;
 
-module: Module Id moduleDeclare moduleEntry;
+moduleImport
+	: Import Id
+	;
 
-moduleDeclare: (funcDeclare | procDeclare)*;
+module
+	: Module Id moduleDeclare moduleEntry
+	;
 
-funcDeclare: AccessModifier Func routineDeclareArgList ':' type Id statementSequence End;
-procDeclare: AccessModifier Proc routineDeclareArgList Id statementSequence End;
-routineDeclareArgList: RoutineLeftBracket (routineDeclareArg (',' routineDeclareArg)* | /* нет аргументов */ )  RoutineRightBracket;
-routineDeclareArg: ArgPassModifier type Id;
+moduleDeclare
+	: (funcDeclare | procDeclare | raw)*
+	;
 
-moduleEntry: Start statementSequence End;
+funcDeclare
+	: AccessModifier Func routineDeclareArgList ':' type Id statementSequence End
+	;
 
-statementSequence: (statement)*;
-statement: singleStatement | multiStatement;
-singleStatement: declare | assign | input | output | return | call;
-multiStatement: if | whileLoop | doWhileLoop;
+procDeclare
+	: AccessModifier Proc routineDeclareArgList Id statementSequence End
+	;
 
-declare: constDeclare | scalarDeclare | arrayDeclare;
-constDeclare: 'const' simpleType Id Assign (mathExp | boolOr);
-scalarDeclare: scalarType Id (Assign mathExp | Assign boolOr)?;
-arrayDeclare: arrayDeclareType Id;
-arrayDeclareType: Array (arrayDeclareDimention)+ scalarType;
-arrayDeclareDimention: ArrayLeftBracket mathExp ArrayRightBracket;
+routineDeclareArgList
+	: RoutineLeftBracket (routineDeclareArg (',' routineDeclareArg)* | /* нет аргументов */ )  RoutineRightBracket
+	;
 
-arrayElement: Id (arrayDeclareDimention)+;
-arrayLength: Id '.' 'length' RoutineLeftBracket IntValue RoutineRightBracket;
+routineDeclareArg
+	: ArgPassModifier type Id
+	;
 
-assign: singleAssign | arrayAssign;
-singleAssign: Id Assign mathExp | Id Assign boolOr | Id Assign assign;
-arrayAssign: arrayElement Assign mathExp | arrayElement Assign boolOr | arrayElement Assign assign;
+moduleEntry
+	: Start statementSequence End
+	;
 
-return: 'return' (exp)?;
+statementSequence
+	: (statement | raw)*
+	;
 
-input: 'input' Id;
-output: 'output' exp (',' exp)*;
+statement
+	: singleStatement
+	| multiStatement
+	;
 
-call: 'call' id RoutineLeftBracket callArgList RoutineRightBracket; // Вызов процедуры/функции
-callArgList: (callArg (',' callArg)*) | /* нет аргументов */ ;
-callArg: exp;
+singleStatement
+	: declare 
+	| assign 
+	| input
+	| output 
+	| return
+	| call
+	;
 
-if: 'if' '(' boolOr ')' 'then' statementSequence End #IfSingle | 'if' '(' boolOr ')' 'then' statementSequence 'else' statementSequence End #IfElse;
-whileLoop: 'while' '(' boolOr ')' 'do' statementSequence End;
-doWhileLoop: 'repeat' statementSequence 'while' '(' boolOr ')';
+multiStatement
+	: if
+	| whileLoop
+	| doWhileLoop
+	;
 
-mathExp: mathTerm #MathExpEmpty | mathTerm '+' mathExp #MathExpSum | mathTerm '-' mathExp #MathExpSub;
-mathTerm: mathFactor #MathTermEmpty | mathFactor '*' mathTerm #MathTermMul | mathFactor '/' mathTerm #MathTermDiv | mathFactor '%' mathTerm #MathTermMod;
-mathFactor : expAtom #MathFactorEmpty | '(' mathExp ')' #MathFactorBrackets | '+' mathFactor #MathFactorUnaryPlus | '-' mathFactor #MathFactorUnaryMinus;
+declare
+	: constDeclare
+	| scalarDeclare 
+	| arrayDeclare
+	;
 
-boolOr: boolAnd #BoolOrEmpty | boolAnd '||' boolOr #LogicOr;
-boolAnd: boolEquality #BoolAndEmpty | boolEquality '&&' boolAnd #LogicAnd;
-boolEquality: boolInequality #BoolEqualityEmpty | boolInequality '==' boolEquality #BoolEqual | mathExp '==' mathExp #MathEqual | boolInequality '!=' boolEquality #BoolNotEqual | mathExp '!=' mathExp #MathNotEqual;
-boolInequality: boolFactor #BoolInequalityEmpty | mathExp '>' mathExp #Bigger | mathExp '<' mathExp #Lesser | mathExp '>=' mathExp #BiggerOrEqual | mathExp '<=' mathExp #LesserOrEqual;
-boolFactor: expAtom #BoolAtomEmpty | '!' expAtom #Not | '(' boolOr ')' #BoolAtomBrackets | '!' '(' boolOr ')' #BoolAtomBracketsNot;
+constDeclare
+	: 'const' simpleType Id Assign (mathExp | boolOr)
+	;
 
-expAtom: call | arrayLength | arrayElement | id | IntValue | RealValue | BoolValue;
-id: (Id '::')? Id;
+scalarDeclare
+	: scalarType Id (Assign mathExp | Assign boolOr)?
+	;
 
-exp: mathExp | boolOr;
+arrayDeclare
+	: arrayDeclareType Id
+	;
+
+arrayDeclareType
+	: Array (arrayDeclareDimention)+ scalarType
+	;
+
+arrayDeclareDimention
+	: ArrayLeftBracket mathExp ArrayRightBracket
+	;
+
+arrayElement
+	: Id (arrayDeclareDimention)+
+	;
+
+arrayLength
+	: Id '.' 'length' RoutineLeftBracket IntValue RoutineRightBracket
+	;
+
+assign
+	: singleAssign
+	| arrayAssign
+	;
+
+singleAssign
+	: Id Assign mathExp
+	| Id Assign boolOr
+	| Id Assign assign
+	;
+
+arrayAssign
+	: arrayElement Assign mathExp
+	| arrayElement Assign boolOr
+	| arrayElement Assign assign
+	;
+
+return
+	: 'return' (exp)?
+	;
+
+input
+	: 'input' Id
+	;
+
+output
+	: 'output' outputOperand (',' outputOperand)*
+	;
+
+outputOperand
+	: StringLiteral | exp
+	;
+
+call // Вызов процедуры/функции
+	: 'call' id RoutineLeftBracket callArgList RoutineRightBracket
+	;
+
+callArgList
+	: (callArg (',' callArg)*) 
+	| /* нет аргументов */
+	;
+
+callArg
+	: exp
+	;
+
+if
+	: 'if' '(' boolOr ')' 'then' statementSequence End #IfSingle
+	| 'if' '(' boolOr ')' 'then' statementSequence 'else' statementSequence End #IfElse
+	;
+
+whileLoop
+	: 'while' '(' boolOr ')' 'do' statementSequence End
+	;
+
+doWhileLoop
+	: 'repeat' statementSequence 'while' '(' boolOr ')'
+	;
+
+mathExp
+	: mathTerm #MathExpEmpty
+	| mathTerm '+' mathExp #MathExpSum 
+	| mathTerm '-' mathExp #MathExpSub
+	;
+
+mathTerm
+	: mathFactor #MathTermEmpty
+	| mathFactor '*' mathTerm #MathTermMul 
+	| mathFactor '/' mathTerm #MathTermDiv 
+	| mathFactor '%' mathTerm #MathTermMod
+	;
+
+mathFactor
+	: expAtom #MathFactorEmpty
+	| '(' mathExp ')' #MathFactorBrackets
+	| '+' mathFactor #MathFactorUnaryPlus
+	| '-' mathFactor #MathFactorUnaryMinus
+	;
+
+boolOr
+	: boolAnd #BoolOrEmpty
+	| boolAnd '||' boolOr #LogicOr
+	;
+
+boolAnd
+	: boolEquality #BoolAndEmpty
+	| boolEquality '&&' boolAnd #LogicAnd
+	;
+
+boolEquality
+	: boolInequality #BoolEqualityEmpty
+	| boolInequality '==' boolEquality #BoolEqual
+	| mathExp '==' mathExp #MathEqual
+	| boolInequality '!=' boolEquality #BoolNotEqual 
+	| mathExp '!=' mathExp #MathNotEqual
+	;
+
+boolInequality
+	: boolFactor #BoolInequalityEmpty
+	| mathExp '>' mathExp #Bigger
+	| mathExp '<' mathExp #Lesser
+	| mathExp '>=' mathExp #BiggerOrEqual
+	| mathExp '<=' mathExp #LesserOrEqual
+	;
+
+boolFactor
+	: expAtom #BoolAtomEmpty 
+	| '!' expAtom #Not 
+	| '(' boolOr ')' #BoolAtomBrackets 
+	| '!' '(' boolOr ')' #BoolAtomBracketsNot
+	;
+
+expAtom
+	: call
+	| arrayLength
+	| arrayElement
+	| id
+	| IntValue
+	| RealValue
+	| BoolValue
+	;
+
+id
+	: (Id '::')? Id
+	;
+
+exp
+	: mathExp 
+	| boolOr
+	;
+
+raw
+	: 'raw' any End
+	;
+
+any
+	: (.)*?
+	;
 
 /*
  * Lexer Rules
  */
 
-SimpleType: Int | Real | Bool;
-fragment Int: 'int';
-fragment Real: 'real';
-fragment Bool: 'bool';
+SimpleType
+	: Int 
+	| Real 
+	| Bool
+	;
 
-Array: 'array';
-ArrayLeftBracket: '[';
-ArrayRightBracket: ']';
+fragment 
+Int
+	: 'int'
+	;
 
-Func: 'fun';
-Proc: 'proc';
-RoutineLeftBracket: '(';
-RoutineRightBracket: ')';
+fragment 
+Real
+	: 'real'
+	;
 
-Import: 'import';
-Module: 'module';
+fragment 
+Bool
+	: 'bool'
+	;
 
-Start: 'start';
-End: 'end';
+Array
+	: 'array'
+	;
 
-ArgPassModifier: ValPassModifier | RefPassModifier;
-fragment ValPassModifier: 'val';
-fragment RefPassModifier: 'ref';
+ArrayLeftBracket
+	: '['
+	;
 
-AccessModifier: PublicModifier | PrivateModifier;
-fragment PublicModifier: 'public';
-fragment PrivateModifier: 'private';
+ArrayRightBracket
+	: ']'
+	;
 
-Assign: '=';
+Func
+	: 'fun'
+	;
 
-IntValue: Digit+;
-RealValue: Digit*'.'?Digit+([eE][-+]?Digit+)?;
-fragment Digit: [0-9];
+Proc
+	: 'proc'
+	;
 
-BoolValue: 'true' | 'false';
+RoutineLeftBracket
+	: '('
+	;
 
-Id: [_a-zA-Z][_a-zA-Z0-9]*;
+RoutineRightBracket
+	: ')'
+	;
 
-fragment Symbol: [a-zA-Z];
-fragment Escape: [\t\r\n];
+Import
+	: 'import'
+	;
 
-Comment: ('//' ~[\r\n]* | '/*' .*? '*/') -> skip;
-Ws: [ \t\r\n] -> skip;
+Module
+	: 'module'
+	;
+
+Start
+	: 'start'
+	;
+
+End
+	: 'end'
+	;
+
+ArgPassModifier
+	: ValPassModifier
+	| RefPassModifier
+	;
+
+fragment 
+ValPassModifier
+	: 'val'
+	;
+
+fragment 
+RefPassModifier
+	: 'ref'
+	;
+
+AccessModifier
+	: PublicModifier
+	| PrivateModifier;
+
+fragment 
+PublicModifier
+	: 'public'
+	;
+
+fragment 
+PrivateModifier
+	: 'private'
+	;
+
+Assign
+	: '='
+	;
+
+IntValue
+	: Digit+
+	;
+
+RealValue
+	: Digit*'.'?Digit+([eE][-+]?Digit+)?
+	;
+
+fragment 
+Digit
+	: [0-9]
+	;
+
+BoolValue
+	: 'true' 
+	| 'false'
+	;
+
+Id
+	: [_a-zA-Z][_a-zA-Z0-9]*
+	;
+
+StringLiteral
+	:	'"' StringCharacter* '"'
+	;
+
+fragment
+StringCharacter
+	:	~["]
+	|	EscapeSequence
+	;
+
+fragment
+EscapeSequence
+	:	'\\' [btnfr"'\\]
+	;
+
+T: '{' | '}' | '#' | ';' ;
+
+Comment
+	: ('//' ~[\r\n]* | '/*' .*? '*/') 
+	-> skip
+	;
+Ws
+	: [ \t\r\n] 
+	-> skip
+	;

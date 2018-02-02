@@ -37,5 +37,10 @@ namespace CompillerServices.IO
                 MainModuleName = slangModule.ModuleName;
             }
         }
+
+        internal bool Contains(string moduleName)
+        {
+            return _sources.ContainsKey(moduleName);
+        }
     }
 }

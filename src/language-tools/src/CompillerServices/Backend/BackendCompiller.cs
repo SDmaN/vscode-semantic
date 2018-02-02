@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.Translators;
@@ -49,22 +50,32 @@ namespace CompillerServices.Backend
 
             foreach (SlangModule slangModule in sources)
             {
-                await Translate(slangModule, outputDirectory);
+                if (!slangModule.IsSystem)
+                {
+                    await Translate(sources, slangModule, outputDirectory);
+                }
+                else
+                {
+                    await Translate(sources, slangModule, new DirectoryInfo(Path.Combine(outputDirectory.FullName, "System")));
+                }
             }
 
             await _entryPointWriter.WriteEntryPoint(sources.MainModuleName, outputDirectory);
         }
 
-        public async Task Translate(SlangModule slangModule, DirectoryInfo outputDirectory)
+        public async Task Translate(SourceContainer sources, SlangModule slangModule, DirectoryInfo outputDirectory)
         {
-            _logger.LogCompillerTranslates(slangModule.ModuleName);
+            if(!slangModule.IsSystem)
+            {
+                _logger.LogCompillerTranslates(slangModule.ModuleName);
+            }
 
             if (!outputDirectory.Exists)
             {
                 outputDirectory.Create();
             }
 
-            using (ITranslator translator = _translatorFactory.Create(slangModule.ModuleFile, outputDirectory))
+            using (ITranslator translator = _translatorFactory.Create(slangModule.ModuleFile, outputDirectory, sources))
             {
                 SlangLexer lexer = _lexerFactory.Create(slangModule.Content);
                 SlangParser parser = _parserFactory.Create(lexer);
@@ -89,8 +100,10 @@ namespace CompillerServices.Backend
             _logger.LogCompillerBuilds(outputDirectory.FullName);
 
             string gccFileName = Path.Combine(gccDirectory.FullName, Constants.CppCompillerName);
-            string gccArgs =
-                $"-o {Path.Combine(outputDirectory.FullName, Constants.CppOutput, sources.ProjectFile.GetShortNameWithoutExtension())} {Path.Combine(outputDirectory.FullName, "*" + Constants.CppSourceExtension)}";
+            
+            outputDirectory.GetDirectories("*", SearchOption.TopDirectoryOnly);
+
+            string gccArgs = await GetGccArgs(sources, outputDirectory);
 
             ProcessStartInfo processStartInfo = new ProcessStartInfo(gccFileName, gccArgs)
             {
@@ -106,6 +119,25 @@ namespace CompillerServices.Backend
                     await PostBuild(gccDirectory, binDirectory);
                 }
             }
+        }
+
+        private static Task<string> GetGccArgs(SourceContainer sources, DirectoryInfo outputDirectory)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.Append($"-o {Path.Combine(outputDirectory.FullName, Constants.CppOutput, sources.ProjectFile.GetShortNameWithoutExtension())}");
+            builder.Append($" {Path.Combine(outputDirectory.FullName, "*" + Constants.CppSourceExtension)}");
+
+            foreach (DirectoryInfo subDir in outputDirectory.GetDirectories("*", SearchOption.TopDirectoryOnly))
+            {
+                if(subDir.Name == Constants.CppOutput)
+                {
+                    continue;
+                }
+
+                builder.Append($" {Path.Combine(subDir.FullName, "*" + Constants.CppSourceExtension)}");
+            }
+
+            return Task.FromResult(builder.ToString());
         }
 
         private static Task PostBuild(DirectoryInfo gccDirectory, DirectoryInfo binDirectory)

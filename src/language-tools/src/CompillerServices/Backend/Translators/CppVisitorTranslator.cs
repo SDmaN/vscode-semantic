@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Antlr4.Runtime;
+using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using CompillerServices.Exceptions;
+using CompillerServices.IO;
 using Microsoft.Extensions.Localization;
 using SlangGrammar;
 
@@ -12,15 +15,6 @@ namespace CompillerServices.Backend.Translators
 {
     public class CppVisitorTranslator : SlangBaseVisitor<object>, ITranslator
     {
-        #region Standard library modules
-
-        private static readonly IDictionary<string, string> SystemModules = new Dictionary<string, string>
-        {
-            { "Math", "cmath" }
-        };
-
-        #endregion
-
         #region Standard types
 
         private static readonly IDictionary<string, string> SystemTypes = new Dictionary<string, string>
@@ -49,6 +43,7 @@ namespace CompillerServices.Backend.Translators
 
         private readonly IStringLocalizer<CppVisitorTranslator> _localizer;
         private readonly string _headerFileName;
+        private readonly SourceContainer _sourceContainer;
         private readonly IndentedTextWriter _headerWriter;
         private readonly IndentedTextWriter _sourceWriter;
 
@@ -58,10 +53,11 @@ namespace CompillerServices.Backend.Translators
         private bool _shouldWriteHeader;
 
         public CppVisitorTranslator(IStringLocalizer<CppVisitorTranslator> localizer, string headerFileName,
-            TextWriter headerWriter, TextWriter sourceWriter)
+            TextWriter headerWriter, TextWriter sourceWriter, SourceContainer sourceContainer)
         {
             _localizer = localizer;
             _headerFileName = headerFileName;
+            _sourceContainer = sourceContainer;
             _headerWriter = new IndentedTextWriter(headerWriter);
             _sourceWriter = new IndentedTextWriter(sourceWriter);
         }
@@ -111,14 +107,30 @@ namespace CompillerServices.Backend.Translators
             WriteLine("#include <functional>");
             _sourceWriter.WriteLine($"#include \"{_headerFileName}\"");
 
-            foreach (ITerminalNode module in context.Id())
-            {
-                WriteModule(module);
-            }
-
+            base.VisitModuleImports(context);
+            
             WriteLine();
             ToggleOnlyHeader();
 
+            return null;
+        }
+
+        public override object VisitModuleImport(SlangParser.ModuleImportContext context)
+        {
+            SlangModule importingModule = _sourceContainer[context.Id().GetText()];
+            string includingFile;
+
+            if (importingModule.IsSystem)
+            {
+                includingFile = $"System/{context.Id().GetText()}";
+            }
+            else
+            {
+                includingFile = context.Id().GetText();
+            }
+
+            WriteLine($"#include \"{includingFile}.h\"");
+            
             return null;
         }
 
@@ -332,10 +344,7 @@ namespace CompillerServices.Backend.Translators
             WriteLine("{");
             _sourceWriter.Indent++;
 
-            foreach (SlangParser.StatementContext statement in context.statement())
-            {
-                Visit(statement);
-            }
+            base.VisitStatementSequence(context);
 
             _sourceWriter.Indent--;
             WriteLine("}");
@@ -511,10 +520,10 @@ namespace CompillerServices.Backend.Translators
         {
             Write("std::cout");
 
-            foreach (SlangParser.ExpContext exp in context.exp())
+            foreach (SlangParser.OutputOperandContext operand in context.outputOperand())
             {
                 Write(" << ");
-                Visit(exp);
+                Visit(operand);
                 Write(" << ' '");
             }
 
@@ -522,6 +531,19 @@ namespace CompillerServices.Backend.Translators
             Write("std::cout << std::endl");
 
             return null;
+        }
+
+        public override object VisitOutputOperand(SlangParser.OutputOperandContext context)
+        {
+            if (context.exp() != null)
+            {
+                Visit(context.exp());
+                return null;
+            }
+
+            Write(context.StringLiteral().GetText());
+
+            return base.VisitOutputOperand(context);
         }
 
         public override object VisitCall(SlangParser.CallContext context)
@@ -836,6 +858,21 @@ namespace CompillerServices.Backend.Translators
             return null;
         }
 
+        public override object VisitRaw(SlangParser.RawContext context)
+        {
+            WriteLine();
+            ICharStream characterStream = context.any().Start.InputStream;
+
+            IToken a = context.any().Start;
+            IToken b = context.any().Stop;
+
+            Interval interval = new Interval(a.StartIndex, b.StopIndex);
+            
+            Write(characterStream.GetText(interval));
+            WriteLine();
+            return null;
+        }
+
         #endregion
 
         #region Private members
@@ -860,22 +897,7 @@ namespace CompillerServices.Backend.Translators
             _sourceWriter.WriteLine(text);
         }
 
-        private void WriteModule(IParseTree module)
-        {
-            string moduleName = module.GetText();
-
-            if (SystemModules.TryGetValue(moduleName, out string cppName))
-            {
-                WriteLine($"#include <{cppName}>");
-            }
-            else
-            {
-                WriteLine($"#include \"{moduleName}.h\"");
-                WriteLine($"using namespace {moduleName};");
-            }
-        }
-
-        private string TranslateOtherModuleId(IParseTree module, ITerminalNode id)
+        private static string TranslateOtherModuleId(IParseTree module, ITerminalNode id)
         {
             if (module == null)
             {
@@ -883,21 +905,7 @@ namespace CompillerServices.Backend.Translators
             }
 
             string moduleName = module.GetText();
-
-            if (!SystemModules.ContainsKey(module.GetText()))
-            {
-                return $"{moduleName}::{id}";
-            }
-
-            string idName = id.GetText();
-
-            if (SystemFunctions.TryGetValue(id.GetText(), out string cppFunctionName))
-            {
-                return cppFunctionName;
-            }
-
-            throw new CompillerException(_localizer["Unknown system routine '{0}'.", idName], _moduleName,
-                id.Symbol.Line, id.Symbol.Column);
+            return $"{moduleName}::{id}";
         }
 
         private static string TranslateType(string slangType)

@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using Antlr4.Runtime;
-using CompillerServices.Exceptions;
 using CompillerServices.Frontend.NameTables;
 using CompillerServices.IO;
 using Microsoft.Extensions.Localization;
@@ -73,22 +71,6 @@ namespace CompillerServices.Frontend
         {
             SecondStepVisitor visitor = _stepVisitorFactory.CreateSecondStepVisitor(_nameTableContainer, slangModule);
             await Task.Run(() => visitor.Visit(parser.start()));
-        }
-    }
-
-    internal class ExceptionErrorListener : BaseErrorListener
-    {
-        private readonly SlangModule _module;
-
-        public ExceptionErrorListener(SlangModule module)
-        {
-            _module = module;
-        }
-
-        public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line,
-            int charPositionInLine, string msg, RecognitionException e)
-        {
-            throw new CompillerException(msg, _module.ModuleName, line, charPositionInLine);
         }
     }
 }

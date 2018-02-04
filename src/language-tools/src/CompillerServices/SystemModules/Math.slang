@@ -94,5 +94,15 @@ public fun (val real a) : real Cos
     return result
 end
 
+public fun (val real a) : int ToInteger
+	int result = 0
+
+	raw
+	result = static_cast<int64_t>(a);
+	end	
+
+	return result
+end
+
 start
 end

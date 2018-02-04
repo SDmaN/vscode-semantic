@@ -58,36 +58,6 @@ namespace CompillerServices.Frontend.NameTables
             return FindExactRoutine(name, argTypes) != null;
         }
 
-        public RoutineNameTableRow FindSuitableRoutine(string name, IList<SlangType> argTypes)
-        {
-            RoutineNameTableRow exact = FindExactRoutine(name, argTypes);
-
-            if (exact != null)
-            {
-                return exact;
-            }
-
-            IEnumerable<RoutineNameTableRow> withSameName = FindRoutinesByName(name);
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (RoutineNameTableRow row in withSameName)
-            {
-                int argIndex = 0;
-
-                if (row.Arguments.Count == argTypes.Count && row.Arguments.All(x => x.Type.IsAssignable(argTypes[argIndex++])))
-                {
-                    return row;
-                }
-            }
-
-            return null;
-        }
-
-        public bool ContainsRoutine(string name)
-        {
-            return Functions.Any(x => x.Name == name) || Procedures.Any(x => x.Name == name);
-        }
-
         public IEnumerable<RoutineNameTableRow> FindRoutinesByName(string name)
         {
             return Functions.Where(x => x.Name == name).Cast<RoutineNameTableRow>()

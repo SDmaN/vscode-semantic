@@ -271,7 +271,7 @@ namespace CompillerServices.Frontend
 
             if (!(arrayVariableRow.Type is ArrayType))
             {
-                ThrowCompillerException(_localizer["'{0}' has not an array type", id.GetText()], id.Symbol);
+                ThrowCompillerException(_localizer["'{0}' has not an array type.", id.GetText()], id.Symbol);
             }
 
             ArrayType arrayType = (ArrayType) arrayVariableRow.Type;

@@ -26,21 +26,6 @@ namespace CompillerServices.Backend.Translators
 
         #endregion
 
-        #region System functions
-
-        private static readonly IDictionary<string, string> SystemFunctions = new Dictionary<string, string>
-        {
-            { "Abs", "abs" },
-            { "FAbs", "fabs" },
-            { "Pow", "pow" },
-            { "Log", "log10" },
-            { "Ln", "log" },
-            { "Exp", "exp" },
-            { "Sqrt", "sqrt" }
-        };
-
-        #endregion
-
         private readonly IStringLocalizer<CppVisitorTranslator> _localizer;
         private readonly string _headerFileName;
         private readonly SourceContainer _sourceContainer;
@@ -524,11 +509,7 @@ namespace CompillerServices.Backend.Translators
             {
                 Write(" << ");
                 Visit(operand);
-                Write(" << ' '");
-            }
-
-            WriteLine(";");
-            Write("std::cout << std::endl");
+            }   
 
             return null;
         }

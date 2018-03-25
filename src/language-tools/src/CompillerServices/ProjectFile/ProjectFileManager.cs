@@ -8,7 +8,6 @@ namespace CompillerServices.ProjectFile
 {
     public class ProjectFileManager : IProjectFileManager
     {
-        private const string ProjectFilePattern = "*.slproj";
         private readonly IStringLocalizer<ProjectFileManager> _localizer;
 
         public ProjectFileManager(IStringLocalizer<ProjectFileManager> localizer)
@@ -24,7 +23,7 @@ namespace CompillerServices.ProjectFile
                     projectDirectory.FullName]);
             }
 
-            FileInfo[] files = projectDirectory.GetFiles(ProjectFilePattern);
+            FileInfo[] files = projectDirectory.GetFiles(Constants.ProjectFileMask);
 
             if (files.Length < 1)
             {

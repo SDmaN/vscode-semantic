@@ -12,6 +12,7 @@ namespace CompillerServices
 
         public const string SlangExtension = ".slang";
         public const string SlangFileMask = "*" + SlangExtension;
+        public const string ProjectFileMask = "*.slproj";
 
         public const string CppCompillerName = "g++";
 

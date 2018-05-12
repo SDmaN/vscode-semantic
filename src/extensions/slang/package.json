@@ -1,11 +1,11 @@
 {
     "name": "slang",
     "displayName": "slang",
-    "description": "Slang support for Visual Studio Code.",
+    "description": "VSCode Slang support.",
     "version": "0.0.1",
-    "publisher": "SDmaN",
+    "publisher": "sdman",
     "engines": {
-        "vscode": "^1.21.0"
+        "vscode": "^1.23.0"
     },
     "categories": [
         "Other"
@@ -17,8 +17,8 @@
     "contributes": {
         "commands": [
             {
-                "command": "slang.RefreshStart",
-                "title": "Refresh start.html"
+                "command": "extension.sayHello",
+                "title": "Hello World"
             }
         ]
     },
@@ -30,10 +30,10 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
-        "tslint": "^5.8.0",
+        "@types/mocha": "^2.2.42",
         "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "tslint": "^5.10.0",
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.6"
     }
 }

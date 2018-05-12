@@ -1,9 +1,14 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import { initExtensionPaths } from './utils/extensionPaths';
+import { openView, registerViewContentProvider } from './views/viewContentProvider';
 
 export function activate(context: vscode.ExtensionContext) {
-    vscode.window.showInformationMessage('Hello World!');
+    initExtensionPaths(context);
+    registerViewContentProvider(context);
+
+    openView('Добро пожаловать в Slang!', 'start.html');
 
 
     // let disposable = vscode.commands.registerCommand('extension.sayHello', () => {

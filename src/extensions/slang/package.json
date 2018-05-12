@@ -17,8 +17,16 @@
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "slang.startPage",
+                "title": "Открыть начальную страницу"
+            },
+            {
+                "command": "slang.createProject",
+                "title": "Создать проект"
+            },
+            {
+                "command": "slang.openProject",
+                "title": "Открыть проект"
             }
         ]
     },
@@ -31,11 +39,15 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
+        "@types/fs-extra": "^5.0.2",
         "@types/mocha": "^2.2.42",
         "@types/node": "^7.0.43",
         "copyfiles": "^2.0.0",
         "tslint": "^5.10.0",
         "typescript": "^2.6.1",
         "vscode": "^1.1.6"
+    },
+    "dependencies": {
+        "fs-extra": "^6.0.1"
     }
 }

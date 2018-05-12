@@ -1,9 +1,8 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as vscode from 'vscode';
-import { CancellationToken, EventEmitter, ExtensionContext, TextDocumentContentProvider, Uri } from 'vscode';
-import { extensionPaths } from '../utils/extensionPaths';
-import { readFileAsString } from '../utils/io';
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as vscode from "vscode";
+import { CancellationToken, EventEmitter, ExtensionContext, TextDocumentContentProvider, Uri } from "vscode";
+import { extensionPaths } from "../utils/extensionPaths";
 
 export class ViewContentProvider implements TextDocumentContentProvider {
     private readonly _didChangeEmmiter = new EventEmitter<Uri>();
@@ -12,7 +11,7 @@ export class ViewContentProvider implements TextDocumentContentProvider {
         const relativePath = path.join(uri.authority, uri.path);
         const fullPath = extensionPaths.getViewPath(relativePath);
 
-        let viewContent = await readFileAsString(fullPath);
+        let viewContent = (await fs.readFile(fullPath)).toString();
         viewContent = this.addStyles(viewContent);
 
         return viewContent;
@@ -28,8 +27,8 @@ export class ViewContentProvider implements TextDocumentContentProvider {
     }
 
     private addStyles(viewContent: string) {
-        const stylesVariable = '$${STYLE_PATH}$$';
-        const cssPath = extensionPaths.getViewPath('css/styles.css');
+        const stylesVariable = "$${STYLE_PATH}$$";
+        const cssPath = extensionPaths.getViewPath("css/styles.css");
 
         return viewContent.replace(stylesVariable, cssPath);
     }
@@ -42,14 +41,14 @@ export function updateView(viewPath: string) {
 }
 
 export function registerViewContentProvider(context: ExtensionContext) {
-    const registration = vscode.workspace.registerTextDocumentContentProvider('views', viewContentProvider);
+    const registration = vscode.workspace.registerTextDocumentContentProvider("views", viewContentProvider);
     context.subscriptions.push(registration);
 }
 
 export function openView(title: string, filePath: string) {
     const uri = getViewContentProviderUri(filePath);
 
-    vscode.commands.executeCommand('vscode.previewHtml', uri, vscode.ViewColumn.One, title)
+    vscode.commands.executeCommand("vscode.previewHtml", uri, vscode.ViewColumn.One, title)
         .then(undefined, (error: any) => {
             vscode.window.showErrorMessage(error);
         });
@@ -59,7 +58,7 @@ export function openWatchableView(title: string, filePath: string): vscode.Dispo
     openView(title, filePath);
 
     const fullPath = extensionPaths.getViewPath(filePath);
-    const watcher = fs.watch(fullPath).addListener('change', () => {
+    const watcher = fs.watch(fullPath).addListener("change", () => {
         updateView(filePath);
     });
 

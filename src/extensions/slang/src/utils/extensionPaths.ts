@@ -12,7 +12,7 @@ export class ExtensionPaths {
 
         this.base = path.join(context.extensionPath);
         this.viewsMarkup = path.join(this.base, scriptsFolder, "views", "markup");
-        this.templates = path.join(this.base, "templates");
+        this.templates = path.join(this.base, scriptsFolder, "templates");
     }
 
     public getViewPath(relativePath: string) {

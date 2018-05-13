@@ -1,0 +1,20 @@
+{
+    "Import": {
+        "prefix": "import",
+        "body": [
+            "import ${1:<название модуля>}"
+        ],
+        "description": "Импорт модуля с заданным названием."
+    },
+    "Module_Declaration": {
+        "prefix": "module",
+        "body": [
+            "module ${1:<название модуля>}",
+            "\t${2:<объявление функций>}",
+            "start",
+            "\t$3",
+            "end"
+        ],
+        "description": "Объявление модуля."
+    }
+}

@@ -16,5 +16,130 @@
             "end"
         ],
         "description": "Объявление модуля."
+    },
+    "Function_Declaration": {
+        "prefix": "fun",
+        "body": [
+            "${3:<модификатор>} fun (${4:<аргументы>}) : ${2:<тип>} ${1:<название>}",
+            "\t${5}",
+            "end"
+        ],
+        "description": "Объявление функции."
+    },
+    "Procedure_Declaration": {
+        "prefix": "proc",
+        "body": [
+            "${2:<модификатор>} proc (${3:<аргументы>}) ${1:<название>}",
+            "\t${4}",
+            "end"
+        ],
+        "description": "Объявление процедуры."
+    },
+    "Arg_Sm": {
+        "prefix": "argsm",
+        "body": [
+            "${2|val,ref|} ${3:<тип>} ${1:<название>}${4}"
+        ],
+        "description": "Аргумент простейшего типа."
+    },
+    "Arg_Arr": {
+        "prefix": "argarr",
+        "body": [
+            "${2|val,ref|} array[]${4} ${3:<тип>} ${1:<название>}${5}"
+        ],
+        "description": "Аргумент-массив."
+    },
+    "Arg_Fun": {
+        "prefix": "argfun",
+        "body": [
+            "${2|val,ref|} fun (${4:<аргументы>}) : ${3:<тип>} ${1:<название>}${5}"
+        ],
+        "description": "Аргумент-функция."
+    },
+    "Arg_Proc": {
+        "prefix": "argproc",
+        "body": [
+            "${2|val,ref|} proc (${3:<аргументы>}) ${1:<название>}${4}"
+        ],
+        "description": "Аргумент-процедура."
+    },
+    "Var_Sm": {
+        "prefix": "varsm",
+        "body": [
+            "${2:<тип>} ${1:<название>"
+        ],
+        "description": "Переменная простого типа."
+    },
+    "Var_Arr": {
+        "prefix": "vararr",
+        "body": [
+            "array[${3}]${4} ${2:<тип>} ${1:<название>}"
+        ],
+        "description": "Переменная-массив."
+    },
+    "Input": {
+        "prefix": "input",
+        "body": [
+            "input ${1}"
+        ],
+        "description": "Оператор ввода."
+    },
+    "Output": {
+        "prefix": "output",
+        "body": [
+            "output ${1}"
+        ],
+        "description": "Оператор вывода."
+    },
+    "Return": {
+        "prefix": "return",
+        "body": [
+            "return ${1}"
+        ],
+        "description": "Оператор возврата значения."
+    },
+    "Call": {
+        "prefix": "call",
+        "body": [
+            "call ${1:<название>}(${2:<аргументы>})"
+        ],
+        "description": "Оператор вызова функции."
+    },
+    "If": {
+        "prefix": "if",
+        "body": [
+            "if (${1:<условие>}) then",
+            "\t${2}",
+            "end"
+        ],
+        "description": "Условный оператор ЕСЛИ."
+    },
+    "If_Else": {
+        "prefix": "ifel",
+        "body": [
+            "if (${1:<условие>}) then",
+            "\t${2}",
+            "else",
+            "\t${3}",
+            "end"
+        ],
+        "description": "Условный оператор ЕСЛИ-ИНАЧЕ."
+    },
+    "While": {
+        "prefix": "while",
+        "body": [
+            "while (${1:<условие>}) repeat",
+            "\t${2}",
+            "end"
+        ],
+        "description": "Цикл ПОКА с предусловием."
+    },
+    "Do_While": {
+        "prefix": "dowhile",
+        "body": [
+            "repeat",
+            "\t${1}",
+            "while (${2:<условие>})"
+        ]
     }
 }

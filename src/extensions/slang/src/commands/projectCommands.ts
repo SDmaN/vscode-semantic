@@ -33,7 +33,7 @@ export function openProjectCommand() {
     vscode.window.showOpenDialog({
         canSelectFiles: true,
         canSelectFolders: false,
-        filters: { "Slang": ["slproj"] },
+        filters: { "Slang project file": ["slproj"] },
         openLabel: "Открыть"
     }).then(urls => {
         if (urls && urls.length > 0) {

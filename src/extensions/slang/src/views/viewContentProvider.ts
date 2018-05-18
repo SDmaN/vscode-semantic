@@ -9,7 +9,7 @@ export class ViewContentProvider implements TextDocumentContentProvider {
 
     public async provideTextDocumentContent(uri: Uri, token: CancellationToken) {
         const relativePath = path.join(uri.authority, uri.path);
-        const fullPath = extensionPaths.getViewPath(relativePath);
+        const fullPath = extensionPaths.getViewPath(relativePath).fsPath;
 
         let viewContent = (await fs.readFile(fullPath)).toString();
         viewContent = this.addStyles(viewContent);
@@ -28,7 +28,7 @@ export class ViewContentProvider implements TextDocumentContentProvider {
 
     private addStyles(viewContent: string) {
         const stylesVariable = "$${STYLE_PATH}$$";
-        const cssPath = extensionPaths.getViewPath("css/styles.css");
+        const cssPath = extensionPaths.getViewPath("css/styles.css").fsPath;
 
         return viewContent.replace(stylesVariable, cssPath);
     }
@@ -57,7 +57,7 @@ export function openView(title: string, filePath: string) {
 export function openWatchableView(title: string, filePath: string): vscode.Disposable {
     openView(title, filePath);
 
-    const fullPath = extensionPaths.getViewPath(filePath);
+    const fullPath = extensionPaths.getViewPath(filePath).fsPath;
     const watcher = fs.watch(fullPath).addListener("change", () => {
         updateView(filePath);
     });

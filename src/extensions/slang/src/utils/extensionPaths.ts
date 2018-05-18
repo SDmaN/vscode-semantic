@@ -1,5 +1,5 @@
 import * as path from "path";
-import { ExtensionContext } from "vscode";
+import { ExtensionContext, Uri } from "vscode";
 import { isDebug } from "../enviroment";
 
 export class ExtensionPaths {
@@ -16,11 +16,11 @@ export class ExtensionPaths {
     }
 
     public getViewPath(relativePath: string) {
-        return path.join(this.viewsMarkup, relativePath);
+        return Uri.file(path.join(this.viewsMarkup, relativePath));
     }
 
     public getTemplatePath(relativePath: string) {
-        return path.join(this.templates, relativePath);
+        return Uri.file(path.join(this.templates, relativePath));
     }
 }
 

@@ -31,7 +31,7 @@ export class ProjectManager {
     }
 
     private async writeModule(mainModuleName: string, folderPath: string) {
-        const source = extensionPaths.getTemplatePath(mainModuleName);
+        const source = extensionPaths.getTemplatePath(mainModuleName).fsPath;
         const destination = path.join(folderPath, mainModuleName);
 
         return fs.copy(source, destination);

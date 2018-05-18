@@ -4,7 +4,7 @@ import { extensionPaths } from "./utils/extensionPaths";
 
 export class ProjectManager {
     public static readonly projectFileExtension = ".slproj";
-    private readonly moduleExtension = ".sl";
+    private readonly moduleExtension = ".slang";
     private readonly mainModuleName = "Main";
     private readonly mainModuleFile = this.mainModuleName + this.moduleExtension;
 

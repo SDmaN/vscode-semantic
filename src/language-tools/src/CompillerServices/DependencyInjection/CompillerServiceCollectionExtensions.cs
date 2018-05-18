@@ -2,6 +2,7 @@
 using CompillerServices.Backend;
 using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.Translators;
+using CompillerServices.Cpp;
 using CompillerServices.Frontend;
 using CompillerServices.Frontend.NameTables;
 using CompillerServices.IO;
@@ -40,6 +41,8 @@ namespace CompillerServices.DependencyInjection
             serviceCollection.TryAddTransient<IFrontendCompiller, FrontendCompiller>();
             serviceCollection.TryAddTransient<INameTableContainer, NameTableContainer>();
             serviceCollection.TryAddTransient<IStepVisitorFactory, StepVisitorFactory>();
+
+            serviceCollection.TryAddTransient<ICppCompillerAdapter, GccAdapter>();
 
             return serviceCollection;
         }

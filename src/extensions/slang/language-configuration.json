@@ -14,10 +14,6 @@
         [
             "[",
             "]"
-        ],
-        [
-            "start",
-            "end"
         ]
     ],
     "autoClosingPairs": [

@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Threading.Tasks;
 using CompillerServices.Backend;
-using CompillerServices.DependencyInjection;
+using CompillerServices.Cpp;
 using CompillerServices.Frontend;
 using CompillerServices.IO;
 using CompillerServices.Logging;
@@ -22,10 +21,8 @@ namespace SlangCompiller
 
         public static void Main(string[] args)
         {
-            IServiceCollection serviceCollection = new ServiceCollection();
-            serviceCollection.AddCompillers();
-                
-            _serviceProvider = serviceCollection.BuildServiceProvider();
+            var startup = new Startup();
+            _serviceProvider = startup.ConfigureServices();
 
             _localizer = _serviceProvider.GetService<IStringLocalizer<Program>>();
             _logger = _serviceProvider.GetService<ILogger<Program>>();
@@ -35,7 +32,7 @@ namespace SlangCompiller
 
         private static void InitializeCli(string[] args)
         {
-            CommandLineApplication application = new CommandLineApplication
+            var application = new CommandLineApplication
             {
                 Name = AppDomain.CurrentDomain.FriendlyName,
                 Description = _localizer["Compiller for Slang language."]
@@ -109,11 +106,11 @@ namespace SlangCompiller
                     return 0;
                 }
 
-                DirectoryInfo inputDirectory = new DirectoryInfo(inputPath);
-                DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
+                var inputDirectory = new DirectoryInfo(inputPath);
+                var outputDirectory = new DirectoryInfo(outputPath);
 
                 return await ProcessSources(inputDirectory,
-                    async (sources, compiller) => await compiller.Translate(sources, outputDirectory));
+                    async (sources, compiller, adapter) => await compiller.Translate(sources, outputDirectory));
             });
         }
 
@@ -157,27 +154,32 @@ namespace SlangCompiller
                     return 0;
                 }
 
-                DirectoryInfo inputDirectory = new DirectoryInfo(inputPath);
-                DirectoryInfo outputDirectory = new DirectoryInfo(outputPath);
+                var inputDirectory = new DirectoryInfo(inputPath);
+                var outputDirectory = new DirectoryInfo(outputPath);
 
                 return await ProcessSources(inputDirectory,
-                    async (sources, compiller) => await compiller.Build(sources, outputDirectory));
+                    async (sources, compiller, adapter) =>
+                    {
+                        await compiller.Translate(sources, outputDirectory);
+                        await adapter.Build(sources, outputDirectory);
+                    });
             });
         }
 
         private static async Task<int> ProcessSources(DirectoryInfo inputDirectory,
-            Func<SourceContainer, IBackendCompiller, Task> processFunction)
+            Func<SourceContainer, IBackendCompiller, ICppCompillerAdapter, Task> processFunction)
         {
             try
             {
-                IFileLoader fileLoader = _serviceProvider.GetService<IFileLoader>();
+                var fileLoader = _serviceProvider.GetService<IFileLoader>();
                 SourceContainer sources = await fileLoader.LoadSources(inputDirectory);
 
-                IFrontendCompiller frontendCompiller = _serviceProvider.GetService<IFrontendCompiller>();
+                var frontendCompiller = _serviceProvider.GetService<IFrontendCompiller>();
                 await frontendCompiller.CheckForErrors(sources);
 
-                IBackendCompiller compiller = _serviceProvider.GetService<IBackendCompiller>();
-                await processFunction(sources, compiller);
+                var compiller = _serviceProvider.GetService<IBackendCompiller>();
+                var adapter = _serviceProvider.GetService<ICppCompillerAdapter>();
+                await processFunction(sources, compiller, adapter);
             }
             catch (Exception e)
             {

@@ -122,7 +122,7 @@
                 },
                 {
                     "name": "keyword.other.slang",
-                    "match": "\\b(start|end|repeat)\\b"
+                    "match": "\\b(start|end|repeat|then|module|import)\\b"
                 }
             ]
         },

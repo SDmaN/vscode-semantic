@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using CompillerServices.Backend.EntryPoint;
 using CompillerServices.Backend.Translators;
@@ -65,7 +61,7 @@ namespace CompillerServices.Backend
 
         public async Task Translate(SourceContainer sources, SlangModule slangModule, DirectoryInfo outputDirectory)
         {
-            if(!slangModule.IsSystem)
+            if (!slangModule.IsSystem)
             {
                 _logger.LogCompillerTranslates(slangModule.ModuleName);
             }
@@ -82,78 +78,6 @@ namespace CompillerServices.Backend
 
                 await translator.Translate(parser);
             }
-        }
-
-        public async Task Build(SourceContainer sources, DirectoryInfo outputDirectory)
-        {
-            DirectoryInfo gccDirectory = new DirectoryInfo(Constants.CppCompillerPath);
-
-            if (!gccDirectory.Exists)
-            {
-                throw new DirectoryNotFoundException(_localizer["Compiler directory {0} not exists.",
-                    gccDirectory.FullName]);
-            }
-
-            await Translate(sources, outputDirectory);
-            DirectoryInfo binDirectory = outputDirectory.CreateSubdirectory(Constants.CppOutput);
-
-            _logger.LogCompillerBuilds(outputDirectory.FullName);
-
-            string gccFileName = Path.Combine(gccDirectory.FullName, Constants.CppCompillerName);
-            
-            outputDirectory.GetDirectories("*", SearchOption.TopDirectoryOnly);
-
-            string gccArgs = await GetGccArgs(sources, outputDirectory);
-
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(gccFileName, gccArgs)
-            {
-                WorkingDirectory = gccDirectory.FullName
-            };
-
-            using (Process gppProcess = Process.Start(processStartInfo))
-            {
-                gppProcess.WaitForExit();
-
-                if (gppProcess.ExitCode == 0)
-                {
-                    await PostBuild(gccDirectory, binDirectory);
-                }
-            }
-        }
-
-        private static Task<string> GetGccArgs(SourceContainer sources, DirectoryInfo outputDirectory)
-        {
-            StringBuilder builder = new StringBuilder();
-            builder.Append($"-o {Path.Combine(outputDirectory.FullName, Constants.CppOutput, sources.ProjectFile.GetShortNameWithoutExtension())}");
-            builder.Append($" {Path.Combine(outputDirectory.FullName, "*" + Constants.CppSourceExtension)}");
-
-            foreach (DirectoryInfo subDir in outputDirectory.GetDirectories("*", SearchOption.TopDirectoryOnly))
-            {
-                if(subDir.Name == Constants.CppOutput)
-                {
-                    continue;
-                }
-
-                builder.Append($" {Path.Combine(subDir.FullName, "*" + Constants.CppSourceExtension)}");
-            }
-
-            return Task.FromResult(builder.ToString());
-        }
-
-        private static Task PostBuild(DirectoryInfo gccDirectory, DirectoryInfo binDirectory)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                IEnumerable<FileInfo> neededLibraries = gccDirectory.EnumerateFiles()
-                    .Where(x => Constants.WindowsNeededLibraries.Contains(x.Name));
-
-                foreach (FileInfo neededLibrary in neededLibraries)
-                {
-                    neededLibrary.CopyTo(Path.Combine(binDirectory.FullName, neededLibrary.Name));
-                }
-            }
-
-            return Task.CompletedTask;
         }
 
         private Task ClearDirectory(DirectoryInfo directory)

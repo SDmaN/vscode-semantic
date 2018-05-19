@@ -2,7 +2,7 @@
   "profiles": {
     "SlangCompiller": {
       "commandName": "Project",
-      "commandLineArgs": "b C:/Users\\sdman/Desktop/123 C:/Users\\sdman/Desktop/123/out"
+      "commandLineArgs": "b C:/Users\\sdman/Desktop/H C:/Users\\sdman/Desktop/H/out"
     }
   }
 }

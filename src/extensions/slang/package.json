@@ -24,7 +24,7 @@
                     "Slang"
                 ],
                 "extensions": [
-                    "sl"
+                    "slang"
                 ],
                 "configuration": "./language-configuration.json"
             }

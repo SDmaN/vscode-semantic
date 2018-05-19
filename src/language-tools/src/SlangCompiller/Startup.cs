@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using CompillerServices.Cpp;
 using CompillerServices.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ namespace SlangCompiller
         {
             _configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("Settings.json")
+                .AddJsonFile(Path.Combine(AppContext.BaseDirectory, "Settings.json"))
                 .Build();
         }
 

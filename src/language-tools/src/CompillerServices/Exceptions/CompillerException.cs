@@ -1,18 +1,19 @@
 ﻿using System;
+using System.IO;
 
 namespace CompillerServices.Exceptions
 {
     public class CompillerException : ApplicationException
     {
-        public CompillerException(string message, string moduleName, int line, int column)
+        public CompillerException(string message, FileInfo moduleFile, int line, int column)
             : base(message)
         {
-            ModuleName = moduleName;
+            ModuleFile = moduleFile;
             Line = line;
             Column = column;
         }
 
-        public string ModuleName { get; }
+        public FileInfo ModuleFile { get; }
         public int Line { get; }
         public int Column { get; }
     }

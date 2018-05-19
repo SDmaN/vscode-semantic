@@ -65,7 +65,7 @@ namespace CompillerServices.Frontend
 
         protected void ThrowCompillerException(string message, IToken symbol)
         {
-            throw new CompillerException(message, _slangModule.ModuleName, symbol.Line, symbol.Column);
+            throw new CompillerException(message, _slangModule.ModuleFile, symbol.Line, symbol.Column);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace CompillerServices.Frontend
         public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line,
             int charPositionInLine, string msg, RecognitionException e)
         {
-            throw new CompillerException(msg, _module.ModuleName, line, charPositionInLine);
+            throw new CompillerException(msg, _module.ModuleFile, line, charPositionInLine);
         }
     }
 }

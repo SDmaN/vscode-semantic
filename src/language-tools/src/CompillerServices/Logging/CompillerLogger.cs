@@ -74,7 +74,7 @@ namespace CompillerServices.Logging
                 return prefixBuilder.ToString();
             }
 
-            prefixBuilder.Append($"|{compillerException.ModuleName}");
+            prefixBuilder.Append($"|{compillerException.ModuleFile.Name}");
             prefixBuilder.Append($"|{compillerException.Line}");
             prefixBuilder.Append($":{compillerException.Column}");
 

@@ -44,9 +44,9 @@ namespace CompillerServices.Frontend
 
             if (moduleName != _slangModule.ModuleName)
             {
-                throw new ModuleAndFileMismatchException(
+                throw new CompillerException(
                     _localizer["Module name '{0}' does not match file {1}.", moduleName, _slangModule.ModuleFile.Name],
-                    _slangModule.ModuleFile, _slangModule.ModuleName, id.Symbol.Line, id.Symbol.Column);
+                    _slangModule.ModuleFile, id.Symbol.Line, id.Symbol.Column);
             }
 
             // Поскольку название файлов всегда разное, а название модуля должно совпадать с назаванием файла

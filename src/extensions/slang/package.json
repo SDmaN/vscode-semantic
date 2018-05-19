@@ -55,6 +55,28 @@
                 "scopeName": "source.slang",
                 "path": "./syntaxes/slang.tmLanguage.json"
             }
+        ],
+        "problemMatchers": [
+            {
+                "name": "slang",
+                "owner": "slang",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceFolder}"
+                ],
+                "source": "Slang",
+                "applyTo": "allDocuments",
+                "pattern": [
+                    {
+                        "regexp": "^\\[(err)\\|(.*)\\|(\\d+):(\\d+)\\]:(.*)",
+                        "severity": 1,
+                        "file": 2,
+                        "line": 3,
+                        "column": 4,
+                        "message": 5
+                    }
+                ]
+            }
         ]
     },
     "scripts": {

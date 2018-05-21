@@ -6,6 +6,8 @@ export class ExtensionPaths {
     public readonly base: Uri;
     public readonly viewsMarkup: Uri;
     public readonly templates: Uri;
+    public readonly compiller =
+        "C:/Programming/Projects/vscode-semantic/src/language-tools/src/SlangCompiller/bin/Release/netcoreapp2.0/publish/SlangCompiller";
 
     constructor(context: ExtensionContext) {
         const scriptsFolder = isDebug ? "src" : "out";

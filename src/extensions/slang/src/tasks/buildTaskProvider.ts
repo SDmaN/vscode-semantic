@@ -15,6 +15,12 @@ export function initBuildTaskProvider(context: ExtensionContext) {
         const folder = vscode.workspace.workspaceFolders[0];
         const buildTask = new vscode.Task(taskDefinition, folder, "Build", "Slang", execution, "$slang");
         buildTask.group = vscode.TaskGroup.Build;
+        buildTask.presentationOptions = {
+            echo: false,
+            focus: false,
+            panel: vscode.TaskPanelKind.Dedicated,
+            reveal: vscode.TaskRevealKind.Silent
+        };
 
         const taskProvider: vscode.TaskProvider = {
             provideTasks: () => {

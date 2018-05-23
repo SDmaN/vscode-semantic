@@ -77,6 +77,37 @@
                     }
                 ]
             }
+        ],
+        "debuggers": [
+            {
+                "type": "slang",
+                "label": "Slang Launch",
+                "program": "./out/debugExtension/debugAdapter.js",
+                "runtime": "node",
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Путь к исполняемому файлу",
+                                "default": "C:/Programming/Projects/vscode-semantic/src/language-tools/src/SlangCompiller/bin/Release/netcoreapp2.0/publish/SlangCompiller.exe"
+                            }
+                        }
+                    }
+                },
+                "initialConfigurations": [
+                    {
+                        "type": "slang",
+                        "request": "launch",
+                        "name": "Launch Slang",
+                        "program": "${workspaceFolder/out/bin/H",
+                        "preLaunchTask": "Slang: Build"
+                    }
+                ]
+            }
         ]
     },
     "scripts": {
@@ -95,9 +126,12 @@
         "copyfiles": "^2.0.0",
         "tslint": "^5.10.0",
         "typescript": "^2.6.1",
-        "vscode": "^1.1.6"
+        "vscode": "^1.1.6",
+        "vscode-debugadapter-testsupport": "^1.29.0"
     },
     "dependencies": {
-        "fs-extra": "^6.0.1"
+        "fs-extra": "^6.0.1",
+        "vscode-debugadapter": "^1.29.0",
+        "vscode-debugprotocol": "^1.29.0"
     }
 }

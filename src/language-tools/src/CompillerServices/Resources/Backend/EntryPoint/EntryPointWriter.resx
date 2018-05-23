@@ -128,6 +128,7 @@ int main(int argc, char* argv[])
     try
     {
         start_###();
+        std::cout &lt;&lt; std::endl;
     }
     catch(std::logic_error &amp;e)
     {

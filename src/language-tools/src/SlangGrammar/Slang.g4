@@ -199,7 +199,7 @@ if
 	;
 
 whileLoop
-	: 'while' '(' boolOr ')' 'do' statementSequence End
+	: 'while' '(' boolOr ')' 'repeat' statementSequence End
 	;
 
 doWhileLoop

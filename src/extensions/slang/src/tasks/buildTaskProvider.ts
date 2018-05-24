@@ -11,7 +11,7 @@ export function initBuildTaskProvider(context: ExtensionContext) {
             "./out/"
         ];
 
-        const commandLine = path.normalize(extensionPaths.compiller);
+        const commandLine = path.normalize(extensionPaths.compiller.fsPath);
         const execution = new vscode.ShellExecution(commandLine, args, {
             cwd: vscode.workspace.workspaceFolders[0].uri.fsPath
         });

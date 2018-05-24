@@ -6,8 +6,7 @@ export class ExtensionPaths {
     public readonly base: Uri;
     public readonly viewsMarkup: Uri;
     public readonly templates: Uri;
-    public readonly compiller =
-        "C:/Programming/Projects/vscode-semantic/src/language-tools/src/SlangCompiller/bin/Release/netcoreapp2.0/publish/SlangCompiller";
+    public readonly compiller: Uri;
 
     constructor(context: ExtensionContext) {
         const scriptsFolder = isDebug ? "src" : "out";
@@ -15,6 +14,7 @@ export class ExtensionPaths {
         this.base = Uri.file(path.join(context.extensionPath));
         this.viewsMarkup = Uri.file(path.join(this.base.fsPath, scriptsFolder, "views", "markup"));
         this.templates = Uri.file(path.join(this.base.fsPath, scriptsFolder, "templates"));
+        this.compiller = Uri.file(path.join(this.base.fsPath, scriptsFolder, "compiller", "SlangCompiller"));
     }
 
     public getViewPath(relativePath: string) {

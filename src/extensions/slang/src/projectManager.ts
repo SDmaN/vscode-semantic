@@ -1,39 +1,83 @@
 import * as fs from "fs-extra";
 import * as path from "path";
+import { Uri } from "vscode";
 import { extensionPaths } from "./utils/extensionPaths";
 
 export class ProjectManager {
-    public static readonly projectFileExtension = ".slproj";
-    private readonly moduleExtension = ".slang";
+    public static readonly projectFileExtension = "slproj";
+    private readonly moduleExtension = "slang";
+
     private readonly mainModuleName = "Main";
-    private readonly mainModuleFile = this.mainModuleName + this.moduleExtension;
+    private readonly mainModuleFile = `${this.mainModuleName}.${this.moduleExtension}`;
 
-    public async createProject(projectName: string, folderPath: string) {
-        fs.exists(folderPath, (folderExists) => {
-            if (folderExists) {
-                this.writeProjectFile(this.mainModuleName, projectName, folderPath);
-                this.writeModule(this.mainModuleFile, folderPath);
-            }
-        });
+    private _openedProjectName?: string;
+    public get openedProjectName(): string | undefined {
+        return this._openedProjectName;
     }
 
-    public getProjectFolder(projectFile: string) {
-        return path.dirname(projectFile);
+    private _openedProjectFilePath?: Uri;
+    public get openedProjectFilePath(): Uri | undefined {
+        return this._openedProjectFilePath;
     }
 
-    private async writeProjectFile(mainModuleName: string, projectName: string, folderPath: string) {
-        const projectFileName = path.join(folderPath, projectName + ProjectManager.projectFileExtension);
+    private _openedProjectDirPath?: Uri;
+    public get openedProjectDirPath(): Uri | undefined {
+        return this._openedProjectDirPath;
+    }
+
+    public async openProject(projectFile: Uri) {
+        const fileExists = await fs.pathExists(projectFile.fsPath);
+
+        if (fileExists) {
+            this._openedProjectName = path.basename(projectFile.fsPath, "." + ProjectManager.projectFileExtension);
+            this._openedProjectFilePath = projectFile;
+            this._openedProjectDirPath = Uri.parse(path.dirname(projectFile.fsPath));
+        } else {
+            this.closeProject();
+        }
+
+        return fileExists;
+    }
+
+    public closeProject() {
+        this._openedProjectName = undefined;
+        this._openedProjectFilePath = undefined;
+        this._openedProjectDirPath = undefined;
+    }
+
+    public async createProject(projectName: string, folderPath: Uri) {
+        const exists = await fs.pathExists(folderPath.fsPath);
+
+        if (exists) {
+            const projectFileUri = await this.writeProjectFile(this.mainModuleName, projectName, folderPath);
+            await this.writeModule(this.mainModuleFile, folderPath);
+
+            await this.openProject(projectFileUri);
+        } else {
+            this.closeProject();
+        }
+
+        return exists;
+    }
+
+    private async writeProjectFile(mainModuleName: string, projectName: string, folderPath: Uri) {
+        const projectFileName = path.join(folderPath.fsPath, `${projectName}.${ProjectManager.projectFileExtension}`);
+        const projectUri = Uri.parse(projectFileName);
+
         const content = JSON.stringify({
             "MainModule": mainModuleName
         });
 
-        return fs.writeFile(projectFileName, content);
+        await fs.writeFile(projectFileName, content);
+        return projectUri;
     }
 
-    private async writeModule(mainModuleName: string, folderPath: string) {
+    private async writeModule(mainModuleName: string, folderPath: Uri) {
         const source = extensionPaths.getTemplatePath(mainModuleName).fsPath;
-        const destination = path.join(folderPath, mainModuleName);
+        const destination = path.join(folderPath.fsPath, mainModuleName);
 
         return fs.copy(source, destination);
     }
 }
+
+export const projectManager = new ProjectManager();

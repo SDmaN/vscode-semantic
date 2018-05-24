@@ -92,8 +92,7 @@
                         "properties": {
                             "program": {
                                 "type": "string",
-                                "description": "Путь к исполняемому файлу",
-                                "default": "C:/Programming/Projects/vscode-semantic/src/language-tools/src/SlangCompiller/bin/Release/netcoreapp2.0/publish/SlangCompiller.exe"
+                                "description": "Путь к исполняемому файлу"
                             }
                         }
                     }
@@ -103,7 +102,7 @@
                         "type": "slang",
                         "request": "launch",
                         "name": "Launch Slang",
-                        "program": "${workspaceFolder/out/bin/H",
+                        "program": "${workspaceFolder}/out/bin/{programName}",
                         "preLaunchTask": "Slang: Build"
                     }
                 ]

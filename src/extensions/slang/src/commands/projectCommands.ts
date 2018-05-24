@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ProjectManager } from "../projectManager";
+import { ProjectManager, projectManager } from "../projectManager";
 import { openView } from "../views/viewContentProvider";
 
 export function startPageCommand() {
@@ -17,14 +17,17 @@ export function createProjectCommand() {
                 canSelectFiles: false,
                 canSelectFolders: true,
                 openLabel: "Создать"
-            }).then(urls => {
+            }).then(async urls => {
                 if (urls && urls.length > 0) {
-                    const projectManager = new ProjectManager();
-                    projectManager.createProject(projectName, urls[0].fsPath)
-                        .then(() => { vscode.commands.executeCommand("vscode.openFolder", urls[0]); })
-                        .catch(error => vscode.window.showErrorMessage(error));
+                    try {
+                        if (await projectManager.createProject(projectName, urls[0])) {
+                            vscode.commands.executeCommand("vscode.openFolder", urls[0]);
+                        }
+                    } catch (e) {
+                        vscode.window.showErrorMessage(getErrorMessage(e));
+                    }
                 }
-            }, error => vscode.window.showErrorMessage(error));
+            }, error => vscode.window.showErrorMessage(getErrorMessage(error)));
         }
     });
 }
@@ -33,21 +36,23 @@ export function openProjectCommand() {
     vscode.window.showOpenDialog({
         canSelectFiles: true,
         canSelectFolders: false,
-        filters: { "Slang project file": ["slproj"] },
+        filters: { "Slang project file": [ProjectManager.projectFileExtension] },
         openLabel: "Открыть"
-    }).then(urls => {
-        if (urls && urls.length > 0) {
-            const projectManager = new ProjectManager();
-            const folder = projectManager.getProjectFolder(urls[0].fsPath);
-            const folderUrl = vscode.Uri.parse(folder);
-
-            vscode.commands.executeCommand("vscode.openFolder", folderUrl);
+    }).then(async urls => {
+        try {
+            if (urls && urls.length > 0) {
+                if (await projectManager.openProject(urls[0])) {
+                    vscode.commands.executeCommand("vscode.openFolder", projectManager.openedProjectDirPath);
+                }
+            }
+        } catch (e) {
+            vscode.window.showErrorMessage(getErrorMessage(e));
         }
-    });
+    }, error => vscode.window.showErrorMessage(getErrorMessage(error)));
 }
 
 function isProjectNameValid(name: string) {
-    const regexp = /^[a-zA-Z\d]+$/;
+    const regexp = /^[a-zA-Z][a-zA-Z\d]+$/;
     return regexp.test(name);
 }
 
@@ -57,4 +62,8 @@ function validateProjectName(name: string) {
     }
 
     return null;
+}
+
+function getErrorMessage(e: any) {
+    return e.message ? e.message : e;
 }

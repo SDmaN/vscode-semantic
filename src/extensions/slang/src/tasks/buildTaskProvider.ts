@@ -6,10 +6,13 @@ export function initBuildTaskProvider(context: ExtensionContext) {
     if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
         const args = "b . ./out/";
         const commandLine = extensionPaths.compiller + " " + args;
-        const execution = new vscode.ShellExecution(commandLine);
+        const execution = new vscode.ProcessExecution(commandLine, {
+            cwd: vscode.workspace.workspaceFolders[0].uri.fsPath
+        });
 
         const taskDefinition: vscode.TaskDefinition = {
-            type: "slang"
+            type: "shell",
+            label: "Slang: Build"
         };
 
         const folder = vscode.workspace.workspaceFolders[0];

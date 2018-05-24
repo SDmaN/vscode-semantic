@@ -20,7 +20,7 @@ export function initBuildTaskProvider(context: ExtensionContext) {
             echo: false,
             focus: false,
             panel: vscode.TaskPanelKind.Dedicated,
-            reveal: vscode.TaskRevealKind.Silent
+            reveal: vscode.TaskRevealKind.Always
         };
 
         const taskProvider: vscode.TaskProvider = {

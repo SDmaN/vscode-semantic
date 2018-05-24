@@ -62,7 +62,16 @@ namespace CompillerServices.Logging
         private static void WriteMessage(string message, EventId eventId, Exception exception)
         {
             string prefix = GetPrefix(eventId, exception);
-            Console.WriteLine("[{0}]: {1}", prefix, exception?.Message ?? message);
+            string consoleOutput = $"[{prefix}]: {exception?.Message ?? message}";
+
+            if (!eventId.Equals(CompillerLogEvents.Error))
+            {
+                Console.WriteLine(consoleOutput);
+            }
+            else
+            {
+                Console.Error.WriteLine(consoleOutput);
+            }
         }
 
         private static string GetPrefix(EventId eventId, Exception exception)

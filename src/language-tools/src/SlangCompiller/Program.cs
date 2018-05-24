@@ -19,7 +19,7 @@ namespace SlangCompiller
         private static IStringLocalizer<Program> _localizer;
         private static ILogger<Program> _logger;
 
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             var startup = new Startup();
             _serviceProvider = startup.ConfigureServices();
@@ -27,10 +27,18 @@ namespace SlangCompiller
             _localizer = _serviceProvider.GetService<IStringLocalizer<Program>>();
             _logger = _serviceProvider.GetService<ILogger<Program>>();
 
-            InitializeCli(args);
+            try
+            {
+                return InitializeCli().Execute(args);
+            }
+            catch(CommandParsingException)
+            {
+            }
+
+            return 0;
         }
 
-        private static void InitializeCli(string[] args)
+        private static CommandLineApplication InitializeCli()
         {
             var application = new CommandLineApplication
             {
@@ -57,13 +65,7 @@ namespace SlangCompiller
                 return 0;
             });
 
-            try
-            {
-                application.Execute(args);
-            }
-            catch (CommandParsingException)
-            {
-            }
+            return application;
         }
 
         private static void TranslateCommand(CommandLineApplication c)
@@ -103,7 +105,7 @@ namespace SlangCompiller
 
                 if (isOutputEmpty || isInputEmpty)
                 {
-                    return 0;
+                    return 1;
                 }
 
                 var inputDirectory = new DirectoryInfo(inputPath);
@@ -151,7 +153,7 @@ namespace SlangCompiller
 
                 if (isOutputEmpty || isInputEmpty)
                 {
-                    return 0;
+                    return 1;
                 }
 
                 var inputDirectory = new DirectoryInfo(inputPath);
@@ -184,6 +186,7 @@ namespace SlangCompiller
             catch (Exception e)
             {
                 _logger.LogCompillerError(e);
+                return 1;
             }
 
             return 0;

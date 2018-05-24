@@ -1,12 +1,20 @@
+import * as path from "path";
 import * as vscode from "vscode";
 import { ExtensionContext } from "vscode";
 import { extensionPaths } from "../utils/extensionPaths";
 
 export function initBuildTaskProvider(context: ExtensionContext) {
     if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-        const args = "b . ./out/";
-        const commandLine = extensionPaths.compiller + " " + args;
-        const execution = new vscode.ShellExecution(commandLine);
+        const args = [
+            "b",
+            ".",
+            "./out/"
+        ];
+
+        const commandLine = path.normalize(extensionPaths.compiller);
+        const execution = new vscode.ShellExecution(commandLine, args, {
+            cwd: vscode.workspace.workspaceFolders[0].uri.fsPath
+        });
 
         const taskDefinition: vscode.TaskDefinition = {
             type: "shell",
@@ -18,7 +26,7 @@ export function initBuildTaskProvider(context: ExtensionContext) {
         buildTask.group = vscode.TaskGroup.Build;
         buildTask.presentationOptions = {
             echo: false,
-            focus: false,
+            focus: true,
             panel: vscode.TaskPanelKind.Dedicated,
             reveal: vscode.TaskRevealKind.Always
         };

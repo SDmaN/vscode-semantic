@@ -627,12 +627,12 @@ namespace CompillerServices.Frontend
 
         public override object VisitBoolEqual(SlangParser.BoolEqualContext context)
         {
-            return VisitBinaryExpression(context, CanBoolBinaryOperatorBeApplied, CalculateBinaryBoolType);
+            return VisitBinaryExpression(context, CanBinaryOperatorBeApplied, CalculateBinaryBoolType);
         }
 
         public override object VisitMathEqual(SlangParser.MathEqualContext context)
         {
-            return VisitBinaryExpression(context, CanMathBinaryOperatorBeApplied, CalculateBinaryBoolType);
+            return VisitBinaryExpression(context, CanBinaryOperatorBeApplied, CalculateBinaryBoolType);
         }
 
         public override object VisitBoolNotEqual(SlangParser.BoolNotEqualContext context)
@@ -874,6 +874,12 @@ namespace CompillerServices.Frontend
         private static bool CanBoolBinaryOperatorBeApplied(ExpressionResult left, ExpressionResult right)
         {
             return left.IsAssignableToType(SimpleType.Bool) && right.IsAssignableToType(SimpleType.Bool);
+        }
+
+        private static bool CanBinaryOperatorBeApplied(ExpressionResult left, ExpressionResult right)
+        {
+            return (left.IsAssignableToType(SimpleType.Bool) && right.IsAssignableToType(SimpleType.Bool))
+                || (left.IsAssignableToType(SimpleType.Real) && right.IsAssignableToType(SimpleType.Real));
         }
 
         private static SlangType CalculateBinaryMathType(ExpressionResult left, ExpressionResult right)

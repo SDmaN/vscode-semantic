@@ -2,7 +2,7 @@
   "profiles": {
     "SlangCompiller": {
       "commandName": "Project",
-      "commandLineArgs": "dwadwad"
+      "commandLineArgs": "tr C:\\Users\\sdman\\Desktop\\HelloWorld C:\\Users\\sdman\\Desktop\\HelloWorld\\out"
     }
   }
 }

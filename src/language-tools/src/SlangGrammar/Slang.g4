@@ -238,10 +238,10 @@ boolAnd
 
 boolEquality
 	: boolInequality #BoolEqualityEmpty
-	| boolInequality '==' boolEquality #BoolEqual
 	| mathExp '==' mathExp #MathEqual
-	| boolInequality '!=' boolEquality #BoolNotEqual 
+	| boolInequality '==' boolEquality #BoolEqual
 	| mathExp '!=' mathExp #MathNotEqual
+	| boolInequality '!=' boolEquality #BoolNotEqual 
 	;
 
 boolInequality

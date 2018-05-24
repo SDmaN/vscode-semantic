@@ -8,7 +8,8 @@ try {
     $extensionFolder = './src/extensions/slang/'
     $compillerExtensionFolder = $extensionFolder + 'out/compiller/'
 
-    dotnet publish $compillerProject -c Release -o $compillerBuildFolder -r $runtime
+    dotnet clean ./src/language-tools/
+    dotnet publish $compillerProject -c Release -r $runtime
 
     New-Item -Force -ItemType Directory -Path $compillerExtensionFolder
     Get-ChildItem -Path $compillerBuildFolder | Copy-Item -Destination $compillerExtensionFolder -Force -Recurse -Container

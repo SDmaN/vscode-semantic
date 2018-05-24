@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using CompillerServices.Cpp;
 using CompillerServices.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -25,7 +24,19 @@ namespace SlangCompiller
             IServiceCollection serviceCollection = new ServiceCollection();
             serviceCollection.AddCompillers();
 
-            serviceCollection.Configure<CppCompillerOptions>(_configuration.GetSection(nameof(CppCompillerOptions)));
+            serviceCollection.Configure<CppCompillerOptions>(o =>
+            {
+                string path = _configuration
+                    .GetSection(nameof(CppCompillerOptions))
+                    .GetValue<string>(nameof(CppCompillerOptions.CppCompillerPath));
+
+                if (path.StartsWith("~/"))
+                {
+                    path = Path.Combine(AppContext.BaseDirectory, path.Substring(2));
+                }
+
+                o.CppCompillerPath = path;
+            });
 
             return serviceCollection.BuildServiceProvider();
         }

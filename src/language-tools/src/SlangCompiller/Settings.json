@@ -1,5 +1,6 @@
 ﻿{
   "CppCompillerOptions": {
-    "CppCompillerPath": "/mingw/mingw32/bin/"
+    // Символ "~/" указывает, что путь начинатся из директории с компилятором
+    "CppCompillerPath": "~/mingw/mingw32/bin/"
   }
 }

@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "slang",
+            "request": "launch",
+            "name": "Launch Slang",
+            "program": "${workspaceFolder}/out/bin/{programName}",
+            "preLaunchTask": "Slang: Build"
+        }
+    ]
+}

@@ -51,6 +51,7 @@ export class ProjectManager {
         if (exists) {
             const projectFileUri = await this.writeProjectFile(this.mainModuleName, projectName, folderPath);
             await this.writeModule(this.mainModuleFile, folderPath);
+            await this.writeLaunch(folderPath);
 
             await this.openProject(projectFileUri);
         } else {
@@ -75,6 +76,13 @@ export class ProjectManager {
     private async writeModule(mainModuleName: string, folderPath: Uri) {
         const source = extensionPaths.getTemplatePath(mainModuleName).fsPath;
         const destination = path.join(folderPath.fsPath, mainModuleName);
+
+        return fs.copy(source, destination);
+    }
+
+    private async writeLaunch(folderPath: Uri) {
+        const source = extensionPaths.getTemplatePath(".vscode/launch.json").fsPath;
+        const destination = path.join(folderPath.fsPath, ".vscode", "launch.json");
 
         return fs.copy(source, destination);
     }

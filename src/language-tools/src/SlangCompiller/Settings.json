@@ -1,5 +1,5 @@
 ﻿{
   "CppCompillerOptions": {
-    "CppCompillerPath": "C:/Programming/Projects/vscode-semantic/src/language-tools/src/SlangCompiller/mingw/mingw32/bin/"
+    "CppCompillerPath": "/mingw/mingw32/bin/"
   }
 }

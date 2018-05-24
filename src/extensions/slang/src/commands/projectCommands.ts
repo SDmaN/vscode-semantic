@@ -52,7 +52,7 @@ export function openProjectCommand() {
 }
 
 function isProjectNameValid(name: string) {
-    const regexp = /^[a-zA-Z][a-zA-Z\d]+$/;
+    const regexp = /^[a-zA-Z][a-zA-Z\d]*$/;
     return regexp.test(name);
 }
 

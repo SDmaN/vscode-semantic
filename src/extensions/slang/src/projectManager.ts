@@ -81,7 +81,7 @@ export class ProjectManager {
     }
 
     private async writeLaunch(folderPath: Uri) {
-        const source = extensionPaths.getTemplatePath(".vscode/launch.json").fsPath;
+        const source = extensionPaths.getTemplatePath("launch/launch.json").fsPath;
         const destination = path.join(folderPath.fsPath, ".vscode", "launch.json");
 
         return fs.copy(source, destination);

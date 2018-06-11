@@ -1,18 +1,27 @@
+using namespace System.IO
+
 try {
     $runtime = 'win-x64'
 
     $compillerProjectFolder = './src/language-tools/src/SlangCompiller/'
-    $compillerProject = $compillerProjectFolder + 'SlangCompiller.csproj'
-    $compillerBuildFolder = $compillerProjectFolder + 'bin/Release/netcoreapp2.0/' + $runtime + '/publish/'
+    $compillerProject = [Path]::Combine($compillerProjectFolder, 'SlangCompiller.csproj')
+    $compillerBuildFolder = [Path]::Combine($compillerProjectFolder, 'bin/Release/netcoreapp2.0/', $runtime, 'publish/')
+    $mingwFolder = [Path]::Combine($compillerProjectFolder, 'mingw/')
 
     $extensionFolder = './src/extensions/slang/'
-    $compillerExtensionFolder = $extensionFolder + 'out/compiller/'
+    $compillerExtensionFolder = [Path]::Combine($extensionFolder, 'out/compiller/')
+    $mingwExtensionFolder = [Path]::Combine($compillerExtensionFolder, 'mingw/mingw32/')
 
     dotnet clean ./src/language-tools/
     dotnet publish $compillerProject -c Release -r $runtime
 
     New-Item -Force -ItemType Directory -Path $compillerExtensionFolder
-    Get-ChildItem -Path $compillerBuildFolder | Copy-Item -Destination $compillerExtensionFolder -Force -Recurse -Container
+
+    Get-ChildItem -Path $compillerBuildFolder | Copy-Item -Destination $compillerExtensionFolder -Force -Recurse -Container -Verbose
+
+    if (-Not [Directory]::Exists($mingwExtensionFolder)) {
+        Get-ChildItem -Path $mingwFolder | Copy-Item -Destination $mingwExtensionFolder -Force -Recurse -Container -Verbose   
+    }
 
     try {
         Set-Location $extensionFolder

@@ -118,7 +118,7 @@ namespace SlangCompiller
 
         private static void BuildCommand(CommandLineApplication c)
         {
-            c.Description = "Translates Slang code to C++ code and builds an executable.";
+            c.Description = _localizer["Translates Slang code to C++ code and builds an executable."];
 
             CommandArgument inputPathCommand =
                 c.Argument("<inputPath>", _localizer["Directory that contains source Slang code."]);

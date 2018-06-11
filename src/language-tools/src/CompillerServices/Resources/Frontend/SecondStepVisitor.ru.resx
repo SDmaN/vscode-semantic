@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="'{0}' does not take specified arguments." xml:space="preserve">
+    <value>'{0}' не принимает заданные аргументы.</value>
+  </data>
+  <data name="'{0}' has '{1}' access modifier." xml:space="preserve">
+    <value>'{0}' имеет тип доступа '{1}'.</value>
+  </data>
+  <data name="'{0}' has not an array type." xml:space="preserve">
+    <value>'{0}' не является массивом.</value>
+  </data>
+  <data name="'{0}' is not a function and can't be used in expression." xml:space="preserve">
+    <value>'{0}' не является функцией и не может быть использована в выражении.</value>
+  </data>
+  <data name="'{0}' is not a function or procedure type." xml:space="preserve">
+    <value>'{0}' не является типом процедуры или функции.</value>
+  </data>
+  <data name="'{0}' takes {1} arguemnts." xml:space="preserve">
+    <value>'{0}' принимает '{1}' аргументов.</value>
+  </data>
+  <data name="Array '{0}' cannot be declared because another variable or constant with same name already exists." xml:space="preserve">
+    <value>Массив '{0}' не может быть объявлен, так как другая переменная или константа с данным именем уже объявлена.</value>
+  </data>
+  <data name="Array '{0}' has {1} dimentions, but specified {2}." xml:space="preserve">
+    <value>Количество размерностей массива '{0}' - {1}, но указано {2}.</value>
+  </data>
+  <data name="Cannot convert type '{0}' to array element type '{1}'." xml:space="preserve">
+    <value>Невозможно преобразовать тип '{0}' к типу элемента массива '{1}'</value>
+  </data>
+  <data name="Cannot convert type '{0}' to constant type '{1}'." xml:space="preserve">
+    <value>Невозможно преобразовать тип '{0}' к типу константы '{1}'.</value>
+  </data>
+  <data name="Cannot convert type '{0}' to type '{1}'." xml:space="preserve">
+    <value>Невозможно преобразовать тип '{0}' к типу '{1}'.</value>
+  </data>
+  <data name="Cannot convert type '{0}' to variable type '{1}'." xml:space="preserve">
+    <value>Невозможно преобразовать тип '{0}' к типу переменной '{1}'.</value>
+  </data>
+  <data name="Cannot input variable of type '{0}'." xml:space="preserve">
+    <value>Невозможно ввести значение для переменной типа '{0}'.</value>
+  </data>
+  <data name="Cannot output expression of type '{0}'." xml:space="preserve">
+    <value>Невозможно вывести значение выражения типа '{0}'.</value>
+  </data>
+  <data name="Constant '{0}' cannot be declared because another variable or constant with same name already exists." xml:space="preserve">
+    <value>Константа '{0}' не может быть объявлена, так как другая переменная или константа с данным именем уже объявлена.</value>
+  </data>
+  <data name="Function or procedure '{0}' is not declared in module '{1}'." xml:space="preserve">
+    <value>Функция или процедура '{0}' не объявлена в модуле '{1}'.</value>
+  </data>
+  <data name="Functor '{0}' takes {1} arguments, not {2}." xml:space="preserve">
+    <value>Функтор '{0}' принимает {1} аргументов, а не {2}.</value>
+  </data>
+  <data name="Impossible to assign a value to constant '{0}'." xml:space="preserve">
+    <value>Невозможно присвоить значение константе '{0}'.</value>
+  </data>
+  <data name="Maximum value of length index for '{0}' is {1}." xml:space="preserve">
+    <value>Максимальное значение индекса длины для '{0}' - {1}.</value>
+  </data>
+  <data name="Missing expression in return operator." xml:space="preserve">
+    <value>Отсутствует выражение для оператора return.</value>
+  </data>
+  <data name="Module '{0}' already imported." xml:space="preserve">
+    <value>Модуль '{0}' уже импортирован.</value>
+  </data>
+  <data name="Module '{0}' is not declared." xml:space="preserve">
+    <value>Модуль '{0}' не был объявлен.</value>
+  </data>
+  <data name="Module '{0}' is not defined." xml:space="preserve">
+    <value>Модуль '{0}' не объявлен.</value>
+  </data>
+  <data name="Module '{0}' is not imported." xml:space="preserve">
+    <value>Модуль '{0}' не импортирован.</value>
+  </data>
+  <data name="Name '{0}' is not declared in current context." xml:space="preserve">
+    <value>Имя '{0}' не объявлено в текущем контексте.</value>
+  </data>
+  <data name="Name {0} corresponds to keyword." xml:space="preserve">
+    <value>Имя '{0}' совпадает с ключевым словом.</value>
+  </data>
+  <data name="No overloads '{0}' takes specified arguments." xml:space="preserve">
+    <value>Ни одна перегрузка '{0}' не принимает заданные аргументы.</value>
+  </data>
+  <data name="No overloads of '{0}' that takes {1} arguments found." xml:space="preserve">
+    <value>Ни одна из перегрузок '{0}', которая принимает {1} аргументов, не найдена.</value>
+  </data>
+  <data name="Not all code path returns a value." xml:space="preserve">
+    <value>Не все пути выполнения возвращают значение.</value>
+  </data>
+  <data name="Only functions can return a value." xml:space="preserve">
+    <value>Только функции могут возвращать значение.</value>
+  </data>
+  <data name="Only variable or routines can be passed by reference." xml:space="preserve">
+    <value>Только переменные могут быть переданы по ссылке.</value>
+  </data>
+  <data name="Only variables can be passed by reference." xml:space="preserve">
+    <value>Только переменные могут быть переданы по ссылке.</value>
+  </data>
+  <data name="Operator '{0}' can't be applied to operand of type '{1}'" xml:space="preserve">
+    <value>Оператор '{0}' не может быть использован с аргументом типа '{1}'.</value>
+  </data>
+  <data name="Operator '{0}' can't be applied to operands of type '{1}' and '{2}'." xml:space="preserve">
+    <value>Оператор '{0}' не может быть использован с операндами типов '{1}' и '{2}'.</value>
+  </data>
+  <data name="The module can't import itself." xml:space="preserve">
+    <value>Модуль не может импортировать сам себя.</value>
+  </data>
+  <data name="Unknown type in expression." xml:space="preserve">
+    <value>Неизвестный тип в выражении.</value>
+  </data>
+  <data name="Variable '{0}' cannot be declared because another variable or constant with same name already exists." xml:space="preserve">
+    <value>Переменная '{0}' не может быть объявлена, так как другая переменная или константа с данным именем уже объявлена.</value>
+  </data>
+  <data name="Variable '{0}' is not declared in this context." xml:space="preserve">
+    <value>Переменная '{0}' не объявлена в текущем контексте.</value>
+  </data>
+</root>

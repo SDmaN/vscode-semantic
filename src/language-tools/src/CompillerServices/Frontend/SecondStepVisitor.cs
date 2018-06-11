@@ -486,7 +486,7 @@ namespace CompillerServices.Frontend
                     if (possibleTypes.Length == 1)
                     {
                         ThrowCompillerException(
-                            _localizer["'{0}' takes {1} arguemnts", context.id().GetText(),
+                            _localizer["'{0}' takes {1} arguemnts.", context.id().GetText(),
                                 possibleTypes.First().Args.Count], context.id().Start);
                     }
                     else
@@ -518,10 +518,10 @@ namespace CompillerServices.Frontend
                     RoutineTypeArg routineArg = chosen.Args[i];
                     ExpressionResult callArgResult = callArgResults[i];
 
-                    if (routineArg.Modifier == Constants.ArgModifiers.Ref &&
-                        callArgResult.ExpressionType != ExpressionType.Variable)
+                    if (routineArg.Modifier == Constants.ArgModifiers.Ref
+                        && callArgResult.ExpressionType != ExpressionType.Variable)
                     {
-                        ThrowCompillerException(_localizer["Only variable or routines can be passed by reference."],
+                        ThrowCompillerException(_localizer["Only variables can be passed by reference."],
                             context.callArgList().callArg(i).Start);
                     }
                 }

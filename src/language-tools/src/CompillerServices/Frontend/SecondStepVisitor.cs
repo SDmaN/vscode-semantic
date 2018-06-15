@@ -321,8 +321,15 @@ namespace CompillerServices.Frontend
             ThrowIfVariableNotDeclared(id);
 
             StatementVariableNameTableRow statementVariable = _currentStatementVariables.FindVariable(id.GetText());
+            ArgumentNameTableRow argument = _currentRoutineRow.FindArgument(id.GetText());
 
-            if (statementVariable.IsConstant)
+            if (statementVariable == null && argument == null)
+            {
+                ThrowCompillerException(
+                    _localizer["Name '{0}' is not declared in current context.", id.GetText()], id.Symbol);
+            }
+
+            if (statementVariable != null && statementVariable.IsConstant)
             {
                 ThrowCompillerException(
                     _localizer["Impossible to assign a value to constant '{0}'.", statementVariable.Name],
@@ -330,14 +337,15 @@ namespace CompillerServices.Frontend
             }
 
             ExpressionResult expressionResult = (ExpressionResult) base.VisitSingleAssign(context);
+            SlangType type = statementVariable?.Type ?? argument.Type;
 
-            if (!expressionResult.IsAssignableToType(statementVariable.Type))
+            if (!expressionResult.IsAssignableToType(type))
             {
                 string expressionTypeText = expressionResult.GetTypeText();
 
                 ThrowCompillerException(
                     _localizer["Cannot convert type '{0}' to variable type '{1}'.", expressionTypeText,
-                        statementVariable.Type], context.Start);
+                        type], context.Start);
             }
 
             return expressionResult;
